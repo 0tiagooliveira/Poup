@@ -242,6 +242,32 @@
         </nav>
     </div>
     
+    <!-- INÍCIO: Configuração do Firebase -->
+    <!-- Adicione os scripts do Firebase SDK aqui, antes do seu script.js -->
+    <!-- Você pode encontrar esses scripts nas configurações do seu projeto no Console do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+      // A configuração do seu app da web do Firebase
+      // Para obter isso, vá em: Configurações do Projeto > Seus apps > App da Web
+      const firebaseConfig = {
+        apiKey: "SUA_API_KEY",
+        authDomain: "SEU_AUTH_DOMAIN",
+        projectId: "poup-beta",
+        storageBucket: "SEU_STORAGE_BUCKET",
+        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+        appId: "SUA_APP_ID"
+      };
+
+      // Inicializa o Firebase
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+
     <script src="script.js"></script>
 
     <!-- Popup de confirmação de exclusão de conta -->

@@ -1,13 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página Minhas Receitas carregada');
 
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
     const receitasList = document.getElementById('receitas-list');
     const popupConfirmacao = document.getElementById('popup-confirmacao');
     const popupCancelar = document.getElementById('popup-cancelar');
     const popupExcluir = document.getElementById('popup-excluir');
     const totalRecebidoEl = document.getElementById('total-recebido');
     const aReceberEl = document.getElementById('a-receber');
-    let receitaSelecionada = null;
+    let receitaSelecionadaId = null;
 
     // Event Listeners
     document.getElementById('botao-nova-receita').addEventListener('click', function() {
@@ -15,16 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function obterTransacoes() {
-        let receitas = [];
-        try {
-            const transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
-            const receitasTransacoes = transacoes.filter(t => t.tipo === 'receita');
-            const receitasAntigas = JSON.parse(localStorage.getItem('receitas')) || [];
-            receitas = [...receitasTransacoes, ...receitasAntigas];
-        } catch (e) {
-            receitas = [];
-        }
-        return { receitas };
+        // Esta função será substituída pela lógica do Firebase
+        console.warn("obterTransacoes com localStorage está obsoleto. Usando Firestore.");
+        return { receitas: [] };
     }
 
     function calcularTotais(receitas) {
@@ -85,112 +81,116 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Atualize a função carregarTransacoes para usar as categorias padrão
-    function carregarTransacoes() {
-        const { receitas } = obterTransacoes();
-        receitasList.innerHTML = '';
-
-        if (receitas.length === 0) {
-            receitasList.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <span class="material-icons-round" style="font-size: 48px; margin-bottom: 16px;">receipt_long</span>
-                    <p>Nenhuma receita cadastrada ainda.</p>
-                    <p style="font-size: 0.9rem; margin-top: 8px;">Clique em "Nova Receita" para começar.</p>
-                </div>
-            `;
-            calcularTotais([]);
+    function carregarTransacoes(userId) {
+        if (!userId) {
+            console.log("Nenhum usuário logado para carregar transações.");
+            receitasList.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">Por favor, faça login para ver suas receitas.</div>`;
             return;
         }
 
-        const categoriasComIcones = JSON.parse(localStorage.getItem('categoriasReceitas')) || categoriasPadrao;
+        db.collection('receitas').where("userId", "==", userId).orderBy("data", "desc").get().then(querySnapshot => {
+            const receitas = [];
+            querySnapshot.forEach(doc => {
+                receitas.push({ id: doc.id, ...doc.data() });
+            });
 
-        receitas.forEach((receita, index) => {
-            const nome = receita.descricao || 'Receita sem nome';
-            const conta = receita.conta || receita.carteira || 'Conta não especificada';
-            const categoria = receita.categoria || 'Outros';
-            const data = receita.data || 'Data não especificada';
-            const valor = receita.valor ? receita.valor.replace('R$ ', '').replace(/\./g, '').replace(',', '.') : '0.00';
-            const valorFormatado = parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            const categoriaEncontrada = categoriasComIcones.find(cat => cat.nome === categoria);
-            const icone = categoriaEncontrada ? categoriaEncontrada.icone : 'paid';
+            receitasList.innerHTML = '';
 
-            const receitaItem = document.createElement('div');
-            receitaItem.className = 'receita-item';
-            receitaItem.innerHTML = `
-                <div class="receita-icone">
-                    <span class="material-icons-round">${icone}</span>
-                </div>
-                <div class="receita-info">
-                    <span class="receita-nome">${nome}</span>
-                    <span class="receita-detalhes">Conta: ${conta} • ${categoria} • ${data}</span>
-                </div>
-                <div class="receita-acoes">
-                    <span class="receita-valor">+ R$ ${valorFormatado}</span>
-                    <button class="botao-excluir" onclick="confirmarExclusao(${index})">
-                        <span class="material-icons-round">delete</span>
-                    </button>
-                </div>
-            `;
-            receitasList.appendChild(receitaItem);
+            if (receitas.length === 0) {
+                receitasList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <span class="material-icons-round" style="font-size: 48px; margin-bottom: 16px;">receipt_long</span>
+                        <p>Nenhuma receita cadastrada ainda.</p>
+                        <p style="font-size: 0.9rem; margin-top: 8px;">Clique em "Nova Receita" para começar.</p>
+                    </div>
+                `;
+                calcularTotais([]);
+                return;
+            }
+
+            const categoriasComIcones = JSON.parse(localStorage.getItem('categoriasReceitas')) || categoriasPadrao;
+
+            receitas.forEach((receita) => {
+                const nome = receita.descricao || 'Receita sem nome';
+                const conta = receita.conta || receita.carteira || 'Conta não especificada';
+                const categoria = receita.categoria || 'Outros';
+                const data = receita.data || 'Data não especificada';
+                const valor = receita.valor ? parseFloat(receita.valor.replace('R$ ', '').replace(/\./g, '').replace(',', '.')) : 0;
+                const valorFormatado = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                const categoriaEncontrada = categoriasComIcones.find(cat => cat.nome.toLowerCase() === categoria.toLowerCase());
+                const icone = categoriaEncontrada ? categoriaEncontrada.icone : 'paid';
+
+                const receitaItem = document.createElement('div');
+                receitaItem.className = 'receita-item';
+                receitaItem.innerHTML = `
+                    <div class="receita-icone">
+                        <span class="material-icons-round">${icone}</span>
+                    </div>
+                    <div class="receita-info">
+                        <span class="receita-nome">${nome}</span>
+                        <span class="receita-detalhes">Conta: ${conta} • ${categoria} • ${data}</span>
+                    </div>
+                    <div class="receita-acoes">
+                        <span class="receita-valor">+ R$ ${valorFormatado}</span>
+                        <button class="botao-excluir" onclick="confirmarExclusao('${receita.id}')">
+                            <span class="material-icons-round">delete</span>
+                        </button>
+                    </div>
+                `;
+                receitasList.appendChild(receitaItem);
+            });
+
+            calcularTotais(receitas);
+        }).catch(error => {
+            console.error("Erro ao buscar receitas: ", error);
         });
-
-        calcularTotais(receitas);
     }
 
-    function confirmarExclusao(index) {
-        receitaSelecionada = index;
+    function confirmarExclusao(id) {
+        receitaSelecionadaId = id;
         popupConfirmacao.style.display = 'flex';
-        console.log(`Receita selecionada para exclusão: Index ${index}`);
+        console.log(`Receita selecionada para exclusão: ID ${id}`);
     }
 
     // Tornar função global
     window.confirmarExclusao = confirmarExclusao;
 
     popupCancelar.addEventListener('click', function () {
-        receitaSelecionada = null;
+        receitaSelecionadaId = null;
         popupConfirmacao.style.display = 'none';
         console.log('Exclusão cancelada');
     });
 
     popupExcluir.addEventListener('click', function () {
-        if (receitaSelecionada !== null) {
-            // Buscar nas transações unificadas primeiro
-            let transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
-            const receitasTransacoes = transacoes.filter(t => t.tipo === 'receita');
-            
-            // Buscar no localStorage antigo de receitas
-            let receitasAntigas = JSON.parse(localStorage.getItem('receitas')) || [];
-            
-            const todasReceitas = [...receitasTransacoes, ...receitasAntigas];
-            
-            if (receitaSelecionada >= 0 && receitaSelecionada < todasReceitas.length) {
-                const receitaParaExcluir = todasReceitas[receitaSelecionada];
-                
-                // Se a receita tem ID (nova estrutura), remover das transações
-                if (receitaParaExcluir.id) {
-                    transacoes = transacoes.filter(t => t.id !== receitaParaExcluir.id);
-                    localStorage.setItem('transacoes', JSON.stringify(transacoes));
-                } else {
-                    // Se não tem ID (estrutura antiga), remover do localStorage de receitas
-                    const indexNaListaAntiga = receitasAntigas.findIndex(r => 
-                        r.descricao === receitaParaExcluir.descricao && 
-                        r.valor === receitaParaExcluir.valor && 
-                        r.data === receitaParaExcluir.data
-                    );
-                    if (indexNaListaAntiga !== -1) {
-                        receitasAntigas.splice(indexNaListaAntiga, 1);
-                        localStorage.setItem('receitas', JSON.stringify(receitasAntigas));
+        if (receitaSelecionadaId) {
+            db.collection('receitas').doc(receitaSelecionadaId).delete().then(() => {
+                console.log("Receita excluída com sucesso!");
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        carregarTransacoes(user.uid);
                     }
-                }
-                
-                carregarTransacoes();
-                console.log(`Receita de índice ${receitaSelecionada} excluída`);
-            }
+                });
+            }).catch((error) => {
+                console.error("Erro ao excluir receita: ", error);
+            });
         }
-        receitaSelecionada = null;
+        receitaSelecionadaId = null;
         popupConfirmacao.style.display = 'none';
     });
 
     // Inicializar categorias padrão e carregar receitas
     carregarCategoriasPadrao();
-    carregarTransacoes();
+    
+    // Observador de autenticação para carregar dados do usuário logado
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // O usuário está logado.
+            console.log("Usuário logado:", user.uid);
+            carregarTransacoes(user.uid);
+        } else {
+            // O usuário não está logado.
+            console.log("Nenhum usuário logado.");
+            carregarTransacoes(null);
+        }
+    });
 });

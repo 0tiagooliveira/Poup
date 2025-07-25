@@ -170,6 +170,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Função para salvar a receita no Firestore
+    function salvarReceita() {
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const user = auth.currentUser;
+
+        if (!user) {
+            mostrarPopup('Você precisa estar logado para salvar uma receita.');
+            return;
+        }
+
+        const descricao = elementos.inputDescricao.value.trim();
+        if (!descricao) {
+            mostrarPopup('Por favor, insira uma descrição para a receita.');
+            return;
+        }
+        if (estado.valorAtual === '0') {
+            mostrarPopup('Por favor, insira um valor para a receita.');
+            return;
+        }
+
+        const novaReceita = {
+            userId: user.uid,
+            valor: elementos.valorReceita.textContent,
+            descricao: descricao,
+            recebido: elementos.checkboxRecebido.checked,
+            data: elementos.dataSelecionada.textContent,
+            categoria: estado.categoriaSelecionada,
+            carteira: estado.carteiraSelecionada,
+            // Adicione outros campos se necessário
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        db.collection('receitas').add(novaReceita)
+            .then(docRef => {
+                console.log('Receita salva com sucesso no Firestore com ID: ', docRef.id);
+                mostrarPopup('Receita salva com sucesso!', () => {
+                    window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao salvar receita: ', error);
+                mostrarPopup('Ocorreu um erro ao salvar a receita.');
+            });
+    }
+
     // Funções da calculadora
     function abrirCalculadora() {
         console.log('Abrindo calculadora...');
@@ -322,6 +368,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataFormatada = `${dia}/${mes}/${ano}`;
         console.log('Data selecionada atualizada:', dataFormatada);
         elementos.dataSelecionada.textContent = dataFormatada;
+    }
+
+    // Função para exibir popups
+    function mostrarPopup(mensagem, callback) {
+        elementos.popupTexto.textContent = mensagem;
+        elementos.popupMensagem.style.display = 'flex';
+        elementos.popupBotao.onclick = function() {
+            elementos.popupMensagem.style.display = 'none';
+            if (callback) callback();
+        };
     }
 
     // Funções para categorias
