@@ -275,21 +275,30 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Salvar conta bancária
+    // Salvar conta bancária no Firestore
     function salvarConta() {
         console.log('Iniciando processo de salvar conta');
         
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const user = auth.currentUser;
+
+        if (!user) {
+            mostrarPopup('Você precisa estar logado para salvar uma conta.');
+            return;
+        }
+
         const descricao = elementos.campoDescricao.value.trim();
         const incluirSoma = document.getElementById('incluir-soma').checked;
         const notificacaoRapida = document.getElementById('notificacao-rapida').checked;
         
         if (!descricao) {
-            mostrarPopup('Por favor, insira uma descrição para a conta');
+            mostrarPopup('Por favor, insira uma descrição para a conta.');
             return;
         }
         
         const dadosConta = {
-            id: Date.now().toString(),
+            userId: user.uid, // Associa a conta ao usuário logado
             banco: estado.bancoSelecionado.nome,
             codigoBanco: estado.bancoSelecionado.codigo,
             corBanco: estado.bancoSelecionado.cor,
@@ -304,18 +313,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Dados da conta a ser salva:', dadosConta);
         
-        // Adiciona a nova conta ao array
-        contasSalvas.push(dadosConta);
-        
-        // Salva no localStorage
-        localStorage.setItem('contasBancarias', JSON.stringify(contasSalvas));
-        console.log('Conta salva com sucesso no localStorage');
-        
-        // Popup de sucesso com nome dinâmico
-        mostrarPopup(`Conta ${descricao} salva com sucesso!`, function() {
-            resetarFormulario();
-            window.location.href = "../Home/home.html";
-        });
+        db.collection('contasBancarias').add(dadosConta)
+            .then((docRef) => {
+                console.log('Conta salva com sucesso no Firestore com ID: ', docRef.id);
+                mostrarPopup(`Conta "${descricao}" salva com sucesso!`, function() {
+                    window.location.href = "../Home/home.html";
+                });
+            })
+            .catch((error) => {
+                console.error("Erro ao salvar conta: ", error);
+                mostrarPopup('Ocorreu um erro ao salvar a conta.');
+            });
     }
 
     function resetarFormulario() {
