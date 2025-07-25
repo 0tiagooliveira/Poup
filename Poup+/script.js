@@ -27,6 +27,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // --- Função para mostrar o popup customizado ---
+    function mostrarPopup(mensagem, callback) {
+        const popup = document.getElementById('popup-mensagem');
+        const popupTexto = document.getElementById('popup-texto');
+        const popupBotao = document.getElementById('popup-botao');
+
+        if (!popup || !popupTexto || !popupBotao) return;
+
+        popupTexto.textContent = mensagem;
+        popup.style.display = 'flex';
+
+        popupBotao.onclick = function() {
+            popup.style.display = 'none';
+            if (callback) callback();
+        };
+    }
+
     // --- Conexão com Firebase Authentication ---
     const auth = firebase.auth();
 
@@ -41,8 +58,21 @@ document.addEventListener('DOMContentLoaded', function() {
             auth.createUserWithEmailAndPassword(email, senha)
                 .then((userCredential) => {
                     console.log('Conta criada com sucesso:', userCredential.user);
-                    alert('Conta criada com sucesso! Redirecionando...');
-                    window.location.href = './Home/home.html';
+                    
+                    // Usa o novo popup em vez do alert
+                    mostrarPopup('Conta criada com sucesso! Agora faça o login para continuar.', () => {
+                        // Preenche o e-mail no formulário de login
+                        document.getElementById('email-login').value = email;
+
+                        // Alterna para a aba de login
+                        document.querySelector('.tab[data-tab="criar-conta"]').classList.remove('active');
+                        document.querySelector('.tab[data-tab="login"]').classList.add('active');
+                        document.getElementById('criar-conta').classList.remove('active');
+                        document.getElementById('login').classList.add('active');
+
+                        // Foca no campo de senha para facilitar
+                        document.getElementById('senha-login').focus();
+                    });
                 })
                 .catch((error) => {
                     console.error('Erro ao criar conta:', error.message);
@@ -54,7 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (error.code === 'auth/invalid-email') {
                         mensagemErro = 'O formato do e-mail é inválido.';
                     }
-                    alert(mensagemErro);
+                    // Usa o popup para erros também
+                    mostrarPopup(mensagemErro);
                 });
         });
     }
@@ -70,11 +101,13 @@ document.addEventListener('DOMContentLoaded', function() {
             auth.signInWithEmailAndPassword(email, senha)
                 .then((userCredential) => {
                     console.log('Login realizado com sucesso:', userCredential.user);
+                    // Redireciona diretamente para a home, sem alertas.
                     window.location.href = './Home/home.html';
                 })
                 .catch((error) => {
                     console.error('Erro no login:', error.message);
-                    alert('E-mail ou senha incorretos. Por favor, tente novamente.');
+                    // Usa o popup para erros de login
+                    mostrarPopup('E-mail ou senha incorretos. Por favor, tente novamente.');
                 });
         });
     }
@@ -91,11 +124,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             auth.sendPasswordResetEmail(email)
                 .then(() => {
-                    alert('E-mail de redefinição de senha enviado para ' + email);
+                    mostrarPopup('E-mail de redefinição de senha enviado para ' + email);
                 })
                 .catch((error) => {
                     console.error('Erro ao enviar e-mail de redefinição:', error);
-                    alert('Não foi possível enviar o e-mail de redefinição. Verifique se o e-mail está correto.');
+                    mostrarPopup('Não foi possível enviar o e-mail de redefinição. Verifique se o e-mail está correto.');
                 });
         });
     }

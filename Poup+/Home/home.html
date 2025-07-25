@@ -12,16 +12,34 @@
     <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 </head>
 <body>
-    <div class="container-app">
+    <!-- Tela de Carregamento -->
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <p style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; color: #333;">Carregando...</p>
+    </div>
+
+    <div class="container-app" style="display: none;"> <!-- Conteúdo principal escondido por padrão -->
         <header class="cabecalho">
             <div class="cabecalho-conteudo">
-                <div class="usuario-info">
-                    <div class="avatar-usuario">
-                        <span class="material-icons-round">account_circle</span>
+                <div class="usuario-info-container"> <!-- Container para posicionamento -->
+                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;">
+                        <div class="avatar-usuario">
+                            <span class="material-icons-round">account_circle</span>
+                        </div>
+                        <div class="usuario-saudacao">
+                            <p class="saudacao">Bem-vindo de volta,</p>
+                            <p class="nome-usuario">Usuário</p> <!-- Será atualizado via JS -->
+                        </div>
                     </div>
-                    <div class="usuario-saudacao">
-                        <p class="saudacao">Bem-vindo de volta,</p>
-                        <p class="nome-usuario">Rhayra</p>
+                    <!-- Menu Dropdown do Usuário -->
+                    <div class="menu-usuario" id="menu-usuario">
+                        <a href="#" class="item-menu" id="config-usuario-btn">
+                            <span class="material-icons-round">settings</span>
+                            <span>Configurações</span>
+                        </a>
+                        <a href="#" class="item-menu" id="sair-btn">
+                            <span class="material-icons-round">logout</span>
+                            <span>Sair</span>
+                        </a>
                     </div>
                 </div>
                 <button class="botao-notificacao">

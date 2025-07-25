@@ -1309,3 +1309,46 @@ body {
         font-size: 1rem;
     }
 }
+
+/* Estilos para o menu do usuário */
+.usuario-info-container {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-usuario {
+    display: none; /* Escondido por padrão */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    width: 200px;
+    padding: 8px 0;
+    margin-top: 8px;
+}
+
+.menu-usuario.mostrar {
+    display: block; /* Mostra o menu */
+}
+
+.item-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #333;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+}
+
+.item-menu:hover {
+    background-color: #f5f5f5;
+}
+
+.item-menu .material-icons-round {
+    color: #666;
+}
