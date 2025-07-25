@@ -1,0 +1,1311 @@
+:root {
+    --primaria: #21C25E;
+    --primaria-suave: #e8f5ee;
+    --primaria-escura: #1a9d4d;
+    --secundaria: #21C25E;
+    --texto: #2b2d42;
+    --texto-secundario: #6c757d;
+    --texto-terciario: #adb5bd;
+    --fundo: #f8fbf9;
+    --fundo-card: #ffffff;
+    --borda: #e0e7e3;
+    --sucesso: #21C25E;
+    --sucesso-suave: #d4f3e0;
+    --erro: #ef233c;
+    --erro-suave: #fee7ea;
+    --aviso: #ffd166;
+    --sombra: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --sombra-card: 0 4px 12px rgba(0, 0, 0, 0.04);
+    --sombra-elevada: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --borda-arredondada: 16px;
+    --borda-arredondada-pequena: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--fundo);
+    color: var(--texto);
+    -webkit-font-smoothing: antialiased;
+}
+
+.container-app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Cabeçalho */
+.cabecalho {
+    background-color: var(--fundo-card);
+    padding: 16px 20px 8px;
+    box-shadow: var(--sombra);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.cabecalho-conteudo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-usuario {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primaria-suave);
+    color: var(--primaria);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.avatar-usuario:hover {
+    transform: scale(1.05);
+}
+
+.avatar-usuario .material-icons-round {
+    font-size: 24px;
+}
+
+.usuario-saudacao .saudacao {
+    font-size: 0.85rem;
+    color: var(--texto-secundario);
+}
+
+.usuario-saudacao .nome-usuario {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.botao-notificacao {
+    position: relative;
+    background: none;
+    border: none;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.botao-notificacao:hover {
+    background-color: var(--fundo);
+    color: var(--primaria);
+}
+
+.notificacao-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: var(--erro);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Conteúdo principal */
+.conteudo-principal {
+    flex: 1;
+    padding: 20px 16px 88px;
+    background-color: var(--fundo);
+}
+
+.area-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Cartão de saldo */
+.cartao-saldo-mensal {
+    background-color: var(--fundo-card);
+    border-radius: var(--borda-arredondada);
+    padding: 24px 16px;
+    text-align: center;
+    box-shadow: var(--sombra-card);
+    border: 1px solid var(--borda);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cartao-saldo-mensal:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-elevada);
+}
+
+.seletor-mes-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.botao-mes {
+    background: var(--fundo);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--texto-secundario);
+    transition: all 0.2s ease;
+}
+
+.botao-mes:hover {
+    background: var(--primaria-suave);
+    color: var(--primaria);
+}
+
+.seletor-mes {
+    background-color: transparent;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--texto);
+    text-align: center;
+    cursor: pointer;
+    appearance: none;
+    padding: 4px 8px;
+    border-radius: var(--borda-arredondada-pequena);
+    transition: all 0.2s ease;
+}
+
+.seletor-mes:hover {
+    background-color: var(--fundo);
+}
+
+.seletor-mes:focus {
+    outline: none;
+    background-color: var(--fundo);
+}
+
+.rotulo-saldo {
+    font-size: 0.95rem;
+    color: var(--texto-secundario);
+    margin-bottom: 4px;
+}
+
+.valor-saldo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.indicador-saldo {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--sucesso);
+    background-color: var(--sucesso-suave);
+    padding: 6px 10px;
+    border-radius: 12px;
+}
+
+.indicador-saldo .material-icons-round {
+    font-size: 1rem;
+}
+
+/* Cartões de receitas e despesas */
+.linha-receitas-despesas {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    width: 100%;
+}
+
+.linha-receitas-despesas > .cartao {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.cartao {
+    background-color: var(--fundo-card);
+    border-radius: var(--borda-arredondada);
+    padding: 18px;
+    box-shadow: var(--sombra-card);
+    border: 1px solid var(--borda);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--texto);
+}
+
+.cartao:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sombra-elevada);
+}
+
+.cartao-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.cartao-cabecalho h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--texto-secundario);
+}
+
+.cartao-cabecalho .material-icons-round {
+    font-size: 1.2rem;
+    color: var(--texto-terciario);
+    transition: transform 0.2s ease;
+}
+
+.cartao:hover .cartao-cabecalho .material-icons-round {
+    transform: translateX(2px);
+}
+
+.cartao-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icone-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.cartao:hover .icone-container {
+    transform: scale(1.1);
+}
+
+.icone-container.receita {
+    background-color: var(--sucesso-suave);
+    color: var(--sucesso);
+}
+
+.icone-container.despesa {
+    background-color: var(--erro-suave);
+    color: var(--erro);
+}
+
+.icone-container .material-icons-round {
+    font-size: 1.5rem;
+}
+
+.valor-receitas {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--sucesso);
+    transition: transform 0.2s ease;
+}
+
+.cartao:hover .valor-receitas {
+    transform: scale(1.03);
+}
+
+.valor-despesas {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--erro);
+    transition: transform 0.2s ease;
+}
+
+.cartao:hover .valor-despesas {
+    transform: scale(1.03);
+}
+
+/* Seções */
+.secao {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.secao-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.titulo-secao {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 1.15rem;
+    color: var(--texto);
+}
+
+.botao-secao {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--primaria);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--borda-arredondada-pequena);
+    transition: all 0.2s ease;
+}
+
+.botao-secao:hover {
+    background-color: var(--primaria-suave);
+}
+
+.botao-secao .material-icons-round {
+    font-size: 1.1rem;
+}
+
+/* Cartão de estado vazio */
+.cartao-estado-vazio {
+    background-color: var(--fundo-card);
+    border-radius: var(--borda-arredondada);
+    padding: 32px 16px;
+    box-shadow: var(--sombra-card);
+    border: 1px dashed var(--borda);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.cartao-estado-vazio:hover {
+    border-color: var(--primaria);
+    background-color: var(--primaria-suave);
+}
+
+.icone-vazio {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--fundo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--texto-terciario);
+    margin-bottom: 8px;
+    transition: transform 0.3s ease;
+}
+
+.cartao-estado-vazio:hover .icone-vazio {
+    transform: scale(1.1);
+    color: var(--primaria);
+}
+
+.icone-vazio .material-icons-round {
+    font-size: 2rem;
+}
+
+.cartao-estado-vazio p {
+    font-size: 0.95rem;
+    color: var(--texto-secundario);
+    max-width: 240px;
+    line-height: 1.4;
+}
+
+/* Cartão de estado com itens */
+.cartao-estado-ativas {
+    background-color: var(--fundo-card);
+    border-radius: var(--borda-arredondada);
+    padding: 20px;
+    box-shadow: var(--sombra-card);
+    border: 1px solid var(--borda);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cartao-estado-ativas .botao-primario {
+    margin-top: 0;
+    margin-bottom: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    max-width: 100%;
+    width: auto;
+    box-shadow: 0 2px 8px rgba(33, 194, 94, 0.15);
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.conta-home-card {
+    background: var(--fundo-card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(33,194,94,0.05);
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    transition: all 0.3s ease;
+    border: 1px solid var(--borda);
+}
+
+.conta-home-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33,194,94,0.1);
+    border-color: var(--primaria-suave);
+}
+
+.conta-home-card .material-icons-round {
+    font-size: 2rem;
+    color: var(--primaria);
+    transition: transform 0.3s ease;
+}
+
+.conta-home-card:hover .material-icons-round {
+    transform: scale(1.1);
+}
+
+.conta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-grow: 1;
+}
+
+.conta-nome {
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--texto);
+}
+
+.conta-tipo {
+    font-size: 0.85rem;
+    color: var(--texto-secundario);
+}
+
+.conta-saldo {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--sucesso);
+    margin-left: auto;
+}
+
+.btn-excluir-conta {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+}
+
+.btn-excluir-conta:hover {
+    transform: scale(1.1);
+}
+
+.btn-excluir-conta .material-icons-round {
+    color: var(--erro);
+    font-size: 1.5rem;
+}
+
+.botao-primario {
+    --altura-botao: 3rem;
+    --padding-horizontal: 1.5rem;
+    
+    position: relative;
+    background: linear-gradient(90deg, var(--primaria) 0%, color-mix(in srgb, var(--primaria), white 15%) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--borda-arredondada-pequena);
+    padding: 0 var(--padding-horizontal);
+    height: var(--altura-botao);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(33, 194, 94, 0.15);
+    overflow: hidden;
+    min-width: 160px;
+    letter-spacing: 0.3px;
+}
+
+/* Ícone dentro do botão */
+.botao-primario .material-icons-round {
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+}
+
+/* Efeitos de interação */
+.botao-primario:hover {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--primaria), black 10%) 0%, var(--primaria) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 194, 94, 0.25);
+}
+
+.botao-primario:hover .material-icons-round {
+    transform: rotate(90deg);
+}
+
+.botao-primario:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(33, 194, 94, 0.2);
+}
+
+/* Barra de navegação inferior */
+.barra-navegacao-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background-color: var(--fundo-card);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--borda);
+    padding: 0 16px;
+    z-index: 100;
+}
+
+.item-navegacao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--texto-secundario);
+    font-size: 0.7rem;
+    gap: 4px;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: var(--borda-arredondada-pequena);
+    transition: all 0.2s ease;
+}
+
+.item-navegacao .material-icons-round {
+    font-size: 1.6rem;
+    transition: transform 0.2s ease;
+}
+
+.item-navegacao:hover {
+    color: var(--primaria);
+    background-color: var(--primaria-suave);
+}
+
+.item-navegacao:hover .material-icons-round {
+    transform: scale(1.1);
+}
+
+.item-navegacao.ativo {
+    color: var(--primaria);
+    background-color: var(--primaria-suave);
+}
+
+.botao-adicionar {
+    width: 60px;
+    height: 60px;
+    background-color: var(--primaria);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    margin-top: -30px;
+    box-shadow: 0 4px 12px rgba(33, 194, 94, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.botao-adicionar:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(33, 194, 94, 0.4);
+}
+
+.botao-adicionar .material-icons-round {
+    font-size: 2rem;
+}
+
+/* Botão Adicionar Nova Conta */
+.botao-adicionar-conta {
+    background-color: var(--primaria);
+    color: white;
+    border: none;
+    border-radius: var(--borda-arredondada-pequena);
+    padding: 8px 12px; /* Reduzido para telas grandes */
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem; /* Ajustado para ser menor */
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Reduzido o espaçamento entre ícone e texto */
+    box-shadow: var(--sombra);
+    max-width: 200px; /* Limite de largura */
+}
+
+.botao-adicionar-conta:hover {
+    background-color: var(--primaria-escura);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-elevada);
+}
+
+.botao-adicionar-conta:active {
+    transform: translateY(0);
+    box-shadow: var(--sombra);
+}
+
+/* Responsividade para telas grandes */
+@media (min-width: 1024px) {
+    .botao-adicionar-conta {
+        padding: 6px 10px; /* Ajuste adicional para telas grandes */
+        font-size: 0.85rem; /* Fonte menor para telas grandes */
+    }
+}
+
+/* Popup styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.popup-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.popup {
+    background-color: var(--fundo-card);
+    border-radius: var(--borda-arredondada);
+    box-shadow: var(--sombra-elevada);
+    padding: 24px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.popup h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--texto);
+    margin-bottom: 16px;
+}
+
+.popup button {
+    background-color: var(--primaria);
+    color: white;
+    border: none;
+    border-radius: var(--borda-arredondada-pequena);
+    padding: 10px 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.popup button:hover {
+    background-color: var(--primaria-escura);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra);
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .conteudo-principal {
+        padding: 16px 12px 88px;
+    }
+
+    .linha-receitas-despesas {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .linha-receitas-despesas > .cartao {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .valor-saldo {
+        font-size: 2rem;
+    }
+
+    .cartao-cabecalho h3 {
+        font-size: 0.95rem;
+    }
+
+    .valor-receitas, .valor-despesas {
+        font-size: 1.3rem;
+    }
+
+    .icone-container {
+        width: 44px;
+        height: 44px;
+    }
+
+    .barra-navegacao-inferior {
+        height: 76px;
+    }
+
+    .item-navegacao .material-icons-round {
+        font-size: 1.5rem;
+    }
+
+    .botao-adicionar {
+        width: 56px;
+        height: 56px;
+    }
+
+    .cartao-estado-vazio {
+        padding: 24px 16px;
+    }
+}
+
+@media (max-width: 430px) {
+    html, body {
+        min-height: 100vh;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    .container-app {
+        min-height: 100vh;
+        height: auto;
+        padding-bottom: 100px;
+    }
+    .conteudo-principal {
+        padding-bottom: 120px !important;
+    }
+    .barra-navegacao-inferior {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 80px;
+        z-index: 100;
+        background-color: var(--fundo-card);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid var(--borda);
+        padding: 0 16px;
+    }
+    .botao-adicionar {
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        min-height: 60px !important;
+        max-width: 60px !important;
+        max-height: 60px !important;
+        border-radius: 50% !important;
+        margin-top: -30px;
+        box-shadow: 0 4px 12px rgba(33, 194, 94, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primaria);
+        color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .botao-adicionar .material-icons-round {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .cabecalho {
+        padding: 12px 16px 8px;
+    }
+    
+    .usuario-saudacao .nome-usuario {
+        font-size: 0.95rem;
+    }
+    
+    .cartao-saldo-mensal {
+        padding: 20px 12px;
+    }
+    
+    .seletor-mes {
+        font-size: 1rem;
+    }
+    
+    .valor-saldo {
+        font-size: 1.8rem;
+    }
+
+    .botao-adicionar-conta-ux {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+    }
+
+    /* Garante que todos os itens do menu inferior fiquem visíveis mesmo em telas muito pequenas */
+    .barra-navegacao-inferior {
+        height: 80px;
+        padding: 0 4px;
+        font-size: 0.8rem;
+    }
+    .item-navegacao {
+        min-width: 48px;
+        padding: 6px 2px;
+        font-size: 0.65rem;
+        gap: 2px;
+    }
+    .item-navegacao .material-icons-round {
+        font-size: 1.3rem;
+    }
+    .botao-adicionar {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        max-width: 48px !important;
+        max-height: 48px !important;
+        border-radius: 50% !important;
+        margin-top: -24px;
+    }
+}
+
+.icone-conta-custom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    font-weight: bold;
+    color: var(--primaria, #21C25E);
+    background: #e8f5ee;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Filtros de categoria */
+.filtros-categoria {
+    display: flex;
+    gap: 8px;
+}
+
+.botao-filtro {
+    background: var(--fundo);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.botao-filtro:hover {
+    background: var(--primaria-suave);
+    color: var(--primaria);
+    border-color: var(--primaria);
+}
+
+.botao-filtro.ativo {
+    background: var(--primaria);
+    color: white;
+    border-color: var(--primaria);
+}
+
+/* Filtros de receita por categoria */
+.botao-filtro-receita {
+    background: var(--fundo);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.botao-filtro-receita:hover {
+    background: var(--sucesso-suave);
+    color: var(--sucesso);
+    border-color: var(--sucesso);
+}
+
+.botao-filtro-receita.ativo {
+    background: var(--sucesso);
+    color: white;
+    border-color: var(--sucesso);
+}
+
+/* Gráfico de despesas por categoria */
+.cartao-estado-ativo-categorias {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%);
+    border-radius: var(--borda-arredondada);
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 
+                0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--borda);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cartao-estado-ativo-categorias::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--erro), transparent);
+    opacity: 0.6;
+}
+
+.grafico-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.grafico-wrapper {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1));
+}
+
+.grafico-wrapper canvas {
+    transition: transform 0.3s ease;
+}
+
+.grafico-wrapper:hover canvas {
+    transform: scale(1.05);
+}
+
+/* Atualização das cores do gráfico de despesas */
+.cor-categoria {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+}
+
+.cor-categoria[data-cor="azul"] {
+    background-color: #4A90E2; /* Azul */
+}
+
+.cor-categoria[data-cor="vermelho"] {
+    background-color: #EF233C; /* Vermelho */
+}
+
+.cor-categoria[data-cor="amarelo"] {
+    background-color: #FFD166; /* Amarelo */
+}
+
+.cor-categoria[data-cor="verde"] {
+    background-color: #21C25E; /* Verde */
+}
+
+.cor-categoria[data-cor="laranja"] {
+    background-color: #F2994A; /* Laranja */
+}
+
+.total-centro {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--borda);
+}
+
+.valor-total {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--erro) 0%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+}
+
+.label-total {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--texto-secundario);
+    margin-top: 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Gráfico de receitas por categoria com estilo 3D */
+.cartao-estado-ativo-receitas {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    border-radius: var(--borda-arredondada);
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 
+                0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--borda);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cartao-estado-ativo-receitas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--sucesso), transparent);
+    opacity: 0.6;
+}
+
+.cartao-estado-ativo-receitas .valor-total {
+    background: linear-gradient(135deg, var(--sucesso) 0%, #48bb78 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Legenda das categorias com estilo 3D */
+.legenda-categorias {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.item-legenda {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.item-legenda::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--categoria-cor, var(--primaria));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.item-legenda:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-color: var(--primaria);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.item-legenda:hover::before {
+    opacity: 1;
+}
+
+.categoria-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.cor-categoria {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+}
+
+.cor-categoria[data-cor="azul"] {
+    background-color: #4A90E2; /* Azul */
+}
+
+.cor-categoria[data-cor="vermelho"] {
+    background-color: #EF233C; /* Vermelho */
+}
+
+.cor-categoria[data-cor="Laranja-forte"] {
+    background-color: #ff6600; /* Laranja forte */
+}
+
+.cor-categoria[data-cor="verde"] {
+    background-color: #21C25E; /* Verde */
+}
+
+.cor-categoria[data-cor="laranja"] {
+    background-color: #F2994A; /* Laranja */
+}
+
+.nome-categoria {
+    font-weight: 600;
+    color: var(--texto);
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.valor-categoria {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: var(--texto);
+    font-size: 1rem;
+    letter-spacing: -0.3px;
+}
+
+.porcentagem-categoria {
+    font-size: 0.85rem;
+    color: var(--texto-secundario);
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* Responsividade para gráficos 3D */
+@media (max-width: 600px) {
+    .grafico-wrapper {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .total-centro {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .valor-total {
+        font-size: 1.1rem;
+    }
+    
+    .label-total {
+        font-size: 0.7rem;
+    }
+    
+    .cartao-estado-ativo-categorias,
+    .cartao-estado-ativo-receitas {
+        padding: 20px 16px;
+    }
+    
+    .item-legenda {
+        padding: 12px 14px;
+    }
+    
+    .cor-categoria {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .nome-categoria {
+        font-size: 0.9rem;
+    }
+    
+    .valor-categoria {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .grafico-wrapper {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .total-centro {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .valor-total {
+        font-size: 1rem;
+    }
+}
