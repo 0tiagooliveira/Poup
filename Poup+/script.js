@@ -1,22 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Alternar entre abas
+    // --- Lógica para alternar abas ---
     const tabs = document.querySelectorAll('.tab');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            // Remover classe active de todas as abas
             tabs.forEach(t => t.classList.remove('active'));
             tabPanes.forEach(pane => pane.classList.remove('active'));
             
-            // Adicionar classe active à aba clicada
             this.classList.add('active');
             const tabId = this.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
         });
     });
 
-    // Alternar visibilidade da senha
+    // --- Lógica para mostrar/esconder senha ---
     const togglePasswordButtons = document.querySelectorAll('.toggle-password');
     togglePasswordButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -24,17 +22,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
             input.setAttribute('type', type);
             
-            // Alternar ícone
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
     });
 
-    // Verificar se é Android para esconder botão Apple
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (isAndroid) {
-        document.body.classList.add('android');
-    }
+    // --- Conexão com Firebase Authentication ---
+    const auth = firebase.auth();
 
     // Formulário de Criar Conta
     const formCriarConta = document.getElementById('form-criar-conta');
@@ -44,9 +38,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = document.getElementById('email-criar').value;
             const senha = document.getElementById('senha-criar').value;
             
-            // Aqui você pode adicionar a lógica para criar conta
-            console.log('Criar conta:', email, senha);
-            alert('Conta criada com sucesso!');
+            auth.createUserWithEmailAndPassword(email, senha)
+                .then((userCredential) => {
+                    console.log('Conta criada com sucesso:', userCredential.user);
+                    alert('Conta criada com sucesso! Redirecionando...');
+                    window.location.href = './Home/home.html';
+                })
+                .catch((error) => {
+                    console.error('Erro ao criar conta:', error.message);
+                    let mensagemErro = 'Ocorreu um erro. Tente novamente.';
+                    if (error.code === 'auth/email-already-in-use') {
+                        mensagemErro = 'Este e-mail já está em uso.';
+                    } else if (error.code === 'auth/weak-password') {
+                        mensagemErro = 'A senha é muito fraca. Use pelo menos 6 caracteres.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        mensagemErro = 'O formato do e-mail é inválido.';
+                    }
+                    alert(mensagemErro);
+                });
         });
     }
 
@@ -58,37 +67,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = document.getElementById('email-login').value;
             const senha = document.getElementById('senha-login').value;
             
-            // Aqui você pode adicionar a lógica para login
-            console.log('Login:', email, senha);
-            alert('Login realizado com sucesso!');
-        });
-    }
-
-    // Botões de login social
-    const btnGoogle = document.querySelector('.btn-social.google');
-    if (btnGoogle) {
-        btnGoogle.addEventListener('click', function() {
-            // Lógica para login com Google
-            console.log('Login com Google');
-            alert('Redirecionando para login com Google');
-        });
-    }
-
-    const btnApple = document.getElementById('btn-apple');
-    if (btnApple) {
-        btnApple.addEventListener('click', function() {
-            // Lógica para login com Apple
-            console.log('Login com Apple');
-            alert('Redirecionando para login com Apple');
-        });
-    }
-
-    const btnAppleLogin = document.getElementById('btn-apple-login');
-    if (btnAppleLogin) {
-        btnAppleLogin.addEventListener('click', function() {
-            // Lógica para login com Apple
-            console.log('Login com Apple');
-            alert('Redirecionando para login com Apple');
+            auth.signInWithEmailAndPassword(email, senha)
+                .then((userCredential) => {
+                    console.log('Login realizado com sucesso:', userCredential.user);
+                    window.location.href = './Home/home.html';
+                })
+                .catch((error) => {
+                    console.error('Erro no login:', error.message);
+                    alert('E-mail ou senha incorretos. Por favor, tente novamente.');
+                });
         });
     }
 
@@ -96,9 +83,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnEsqueceuSenha = document.querySelector('.btn-link');
     if (btnEsqueceuSenha) {
         btnEsqueceuSenha.addEventListener('click', function() {
-            // Lógica para recuperar senha
-            console.log('Esqueceu a senha');
-            alert('Redirecionando para recuperação de senha');
+            const email = document.getElementById('email-login').value;
+            if (!email) {
+                alert('Por favor, digite seu e-mail no campo correspondente antes de pedir a redefinição de senha.');
+                return;
+            }
+
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    alert('E-mail de redefinição de senha enviado para ' + email);
+                })
+                .catch((error) => {
+                    console.error('Erro ao enviar e-mail de redefinição:', error);
+                    alert('Não foi possível enviar o e-mail de redefinição. Verifique se o e-mail está correto.');
+                });
         });
     }
 });
