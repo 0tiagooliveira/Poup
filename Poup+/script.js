@@ -1,3 +1,5 @@
+// NÃO inicialize o Firebase aqui! Ele já está inicializado no index.html.
+
 document.addEventListener('DOMContentLoaded', function() {
     // --- Lógica para alternar abas ---
     const tabs = document.querySelectorAll('.tab');
@@ -58,19 +60,12 @@ document.addEventListener('DOMContentLoaded', function() {
             auth.createUserWithEmailAndPassword(email, senha)
                 .then((userCredential) => {
                     console.log('Conta criada com sucesso:', userCredential.user);
-                    
-                    // Usa o novo popup em vez do alert
                     mostrarPopup('Conta criada com sucesso! Agora faça o login para continuar.', () => {
-                        // Preenche o e-mail no formulário de login
                         document.getElementById('email-login').value = email;
-
-                        // Alterna para a aba de login
                         document.querySelector('.tab[data-tab="criar-conta"]').classList.remove('active');
                         document.querySelector('.tab[data-tab="login"]').classList.add('active');
                         document.getElementById('criar-conta').classList.remove('active');
                         document.getElementById('login').classList.add('active');
-
-                        // Foca no campo de senha para facilitar
                         document.getElementById('senha-login').focus();
                     });
                 })
@@ -84,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (error.code === 'auth/invalid-email') {
                         mensagemErro = 'O formato do e-mail é inválido.';
                     }
-                    // Usa o popup para erros também
                     mostrarPopup(mensagemErro);
                 });
         });
@@ -101,34 +95,19 @@ document.addEventListener('DOMContentLoaded', function() {
             auth.signInWithEmailAndPassword(email, senha)
                 .then((userCredential) => {
                     console.log('Login realizado com sucesso:', userCredential.user);
-                    // Redireciona diretamente para a home, sem alertas.
-                    window.location.href = './Home/home.html';
+                    // Aguarde o onAuthStateChanged antes de redirecionar
+                    auth.onAuthStateChanged(function(user) {
+                        if (user) {
+                            window.location.href = './Home/home.html';
+                        } else {
+                            mostrarPopup('Erro ao autenticar. Tente novamente.');
+                            console.log('Falha ao autenticar após login.');
+                        }
+                    });
                 })
                 .catch((error) => {
                     console.error('Erro no login:', error.message);
-                    // Usa o popup para erros de login
                     mostrarPopup('E-mail ou senha incorretos. Por favor, tente novamente.');
-                });
-        });
-    }
-
-    // Botão de esqueceu a senha
-    const btnEsqueceuSenha = document.querySelector('.btn-link');
-    if (btnEsqueceuSenha) {
-        btnEsqueceuSenha.addEventListener('click', function() {
-            const email = document.getElementById('email-login').value;
-            if (!email) {
-                alert('Por favor, digite seu e-mail no campo correspondente antes de pedir a redefinição de senha.');
-                return;
-            }
-
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    mostrarPopup('E-mail de redefinição de senha enviado para ' + email);
-                })
-                .catch((error) => {
-                    console.error('Erro ao enviar e-mail de redefinição:', error);
-                    mostrarPopup('Não foi possível enviar o e-mail de redefinição. Verifique se o e-mail está correto.');
                 });
         });
     }

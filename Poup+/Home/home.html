@@ -261,25 +261,20 @@
     </div>
     
     <!-- INÍCIO: Configuração do Firebase -->
-    <!-- Adicione os scripts do Firebase SDK aqui, antes do seu script.js -->
-    <!-- Você pode encontrar esses scripts nas configurações do seu projeto no Console do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
     <script>
-      // A configuração do seu app da web do Firebase
-      // Para obter isso, vá em: Configurações do Projeto > Seus apps > App da Web
+      // Use a MESMA configuração do index.html
       const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "SEU_AUTH_DOMAIN",
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
         projectId: "poup-beta",
-        storageBucket: "SEU_STORAGE_BUCKET",
-        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-        appId: "SUA_APP_ID"
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
       };
-
-      // Inicializa o Firebase
       if (!firebase.apps.length) {
          firebase.initializeApp(firebaseConfig);
       }
@@ -308,6 +303,11 @@
         <div style="display:flex; gap:16px; justify-content:center;">
             <button id="popup-excluir-conta-nao" style="padding:12px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Não</button>
             <button id="popup-excluir-conta-sim" style="padding:12px 24px; background-color:#ef233c; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Sim</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
         </div>
     </div>
 </div>

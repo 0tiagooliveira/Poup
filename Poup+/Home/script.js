@@ -1,3 +1,20 @@
+// NÃO inicialize o Firebase aqui! Ele já está inicializado no home.html.
+// --- DEBUG: Firebase inicialização ---
+console.log('--- DEBUG INÍCIO HOME ---');
+console.log('firebase.apps:', firebase.apps);
+console.log('firebase.auth().currentUser:', firebase.auth().currentUser);
+
+// Verifique se a configuração do Firebase está igual à da index.html
+if (!firebase.apps.length) {
+    console.log('Firebase não inicializado na Home.'); // Isso não deveria acontecer
+} else {
+    console.log('Firebase já estava inicializado na Home.');
+}
+
+// Verifique cookies e localStorage
+console.log('localStorage:', window.localStorage);
+console.log('document.cookie:', document.cookie);
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Página Home carregada. Verificando autenticação...');
 
@@ -7,24 +24,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loading-overlay');
     const containerApp = document.querySelector('.container-app');
 
-    // PONTO DE ENTRADA PRINCIPAL DA PÁGINA
-    // Nada acontece antes que esta função dê uma resposta.
     auth.onAuthStateChanged(function(user) {
+        console.log("Resultado do onAuthStateChanged:", user);
         if (user) {
-            // RESPOSTA: Sim, o usuário está logado.
-            console.log("Usuário autenticado:", user.uid);
-            
-            // Agora podemos mostrar o aplicativo e esconder o "Carregando..."
+            console.log('Usuário autenticado:', user.uid);
             if(loadingOverlay) loadingOverlay.style.display = 'none';
             if(containerApp) containerApp.style.display = 'block';
-            
-            // E então, inicializamos todos os componentes da página.
             inicializarComponentes(user);
-
         } else {
-            // RESPOSTA: Não, o usuário não está logado.
-            console.log("Nenhum usuário logado, redirecionando para o login.");
-            window.location.href = '../index.html';
+            console.log('Usuário não autenticado. Permanece na página Home.');
+            console.log('firebase.auth().currentUser dentro do onAuthStateChanged:', firebase.auth().currentUser);
+            // Feedback visual usando popup
+            if (typeof mostrarPopup === 'function') {
+                mostrarPopup('Você não está autenticado. Faça login para acessar seus dados.');
+            } else {
+                alert('Você não está autenticado. Faça login para acessar seus dados.');
+            }
+            if(loadingOverlay) loadingOverlay.style.display = 'none';
+            if(containerApp) containerApp.style.display = 'none';
         }
     });
 
@@ -88,101 +105,234 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function carregarDadosDaHome(userId) {
         console.log(`Buscando dados da home para o usuário: ${userId}`);
-        
-        // Aqui você chamará as funções para carregar os dados do Firestore,
-        // passando o userId para filtrar os resultados.
-        // Exemplo:
-        // carregarContas(userId);
-        // carregarGraficoReceitas(userId);
-        // carregarGraficoDespesas(userId);
-        // atualizarSaldoTotal(userId);
+
         carregarContas(userId);
+        carregarCartoes(userId);
+        carregarReceitas(userId);
+        carregarDespesas(userId);
+        carregarReceitasPorCategoria(userId);
+        carregarDespesasPorCategoria(userId);
+        calcularSaldoTotal(userId);
     }
 
-    // Carregar contas do Firestore
+    // Buscar contas
     function carregarContas(userId) {
-        const containerContas = document.getElementById('container-contas-home');
-        const cartaoVazio = document.getElementById('cartao-estado-vazio-contas');
-
-        if (!containerContas || !cartaoVazio) return;
-
-        db.collection('contasBancarias').where('userId', '==', userId).get().then(querySnapshot => {
-            containerContas.innerHTML = ''; // Limpa o container
-            
-            if (querySnapshot.empty) {
-                cartaoVazio.style.display = 'block';
-            } else {
-                cartaoVazio.style.display = 'none';
-                const cartaoAtivas = document.createElement('div');
-                cartaoAtivas.className = 'cartao-estado-ativas';
-
-                querySnapshot.forEach(doc => {
-                    const conta = { id: doc.id, ...doc.data() };
-                    const nomeConta = conta.descricao || 'Conta sem nome';
-                    const tipoConta = conta.tipo || '';
-                    const saldoConta = conta.saldo ? 'R$ ' + conta.saldo : 'R$ 0,00';
-                    let iconeHtml = `<span class="icone-conta-custom" style="background-color:${conta.corBanco || '#ccc'}">${conta.iconeBanco || '?'}</span>`;
-
-                    const contaDiv = document.createElement('div');
-                    contaDiv.className = 'conta-home-card';
-                    contaDiv.setAttribute('data-id', conta.id);
-                    contaDiv.innerHTML = `
-                        ${iconeHtml}
-                        <div class="conta-info">
-                            <span class="conta-nome">${nomeConta}</span>
-                            <span class="conta-tipo">${tipoConta}</span>
-                        </div>
-                        <span class="conta-saldo">${saldoConta}</span>
-                        <button class="btn-excluir-conta" title="Excluir conta">
-                            <span class="material-icons-round">delete</span>
-                        </button>
-                    `;
-                    contaDiv.querySelector('.btn-excluir-conta').onclick = (e) => {
-                        e.stopPropagation();
-                        mostrarPopupExcluirConta(conta.id, nomeConta, userId);
-                    };
-                    cartaoAtivas.appendChild(contaDiv);
-                });
-
-                // Botão "Adicionar nova conta"
-                const divCentral = document.createElement('div');
-                divCentral.style.cssText = "display:flex; justify-content:center; align-items:center; margin-top:24px;";
-                divCentral.innerHTML = `<a href="../Nova-conta/Nova-conta.html" class="botao-primario">Adicionar nova conta</a>`;
-                cartaoAtivas.appendChild(divCentral);
-
-                containerContas.appendChild(cartaoAtivas);
-            }
-        }).catch(error => {
-            console.error("Erro ao carregar contas: ", error);
-        });
+        firebase.firestore().collection('contas')
+            .where('userId', '==', userId)
+            .get()
+            .then(snapshot => {
+                // Atualize o DOM com as contas
+                console.log('Contas:', snapshot.docs.map(doc => doc.data()));
+                // ...atualize container-contas-home...
+            });
     }
 
-    function mostrarPopupExcluirConta(id, nomeConta, userId) {
-        const popup = document.getElementById('popup-excluir-conta-custom');
-        const msg = document.getElementById('popup-excluir-conta-msg');
-        const btnSim = document.getElementById('popup-excluir-conta-sim');
-        const btnNao = document.getElementById('popup-excluir-conta-nao');
-
-        if (!popup || !msg || !btnSim || !btnNao) return;
-
-        msg.textContent = `Você tem certeza que quer excluir "${nomeConta}"?`;
-        popup.style.display = 'flex';
-
-        btnSim.onclick = () => {
-            excluirConta(id, userId);
-            popup.style.display = 'none';
-        };
-        btnNao.onclick = () => {
-            popup.style.display = 'none';
-        };
+    // Buscar cartões de crédito
+    function carregarCartoes(userId) {
+        firebase.firestore().collection('cartoes')
+            .where('userId', '==', userId)
+            .get()
+            .then(snapshot => {
+                console.log('Cartões de crédito:', snapshot.docs.map(doc => doc.data()));
+                // ...atualize DOM...
+            });
     }
 
-    function excluirConta(id, userId) {
-        db.collection('contasBancarias').doc(id).delete().then(() => {
-            console.log("Conta excluída com sucesso!");
-            carregarContas(userId); // Recarrega a lista de contas
-        }).catch((error) => {
-            console.error("Erro ao excluir conta: ", error);
-        });
+    // Buscar receitas
+    function carregarReceitas(userId) {
+        firebase.firestore().collection('receitas')
+            .where('userId', '==', userId)
+            .get()
+            .then(snapshot => {
+                const receitas = snapshot.docs.map(doc => doc.data());
+                console.log('Receitas do usuário:', userId, receitas);
+
+                // Atualize o valor total das receitas
+                const totalReceitas = receitas.reduce((sum, r) => sum + (Number(r.valor) || 0), 0);
+                const receitasEl = document.querySelector('.valor-receitas');
+                if (receitasEl) receitasEl.textContent = `R$ ${totalReceitas.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+
+                // Exiba as receitas em uma lista na tela
+                const container = document.getElementById('container-receitas-home');
+                if (container) {
+                    if (receitas.length === 0) {
+                        container.innerHTML = '<p>Nenhuma receita encontrada.</p>';
+                    } else {
+                        container.innerHTML = receitas.map(r => `
+                            <div class="receita-item">
+                                <strong>${r.categoria || 'Sem categoria'}</strong> - 
+                                ${r.descricao || ''} 
+                                <span style="float:right;">R$ ${Number(r.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar receitas:', error);
+                // Feedback visual se necessário
+                const container = document.getElementById('container-receitas-home');
+                if (container) container.innerHTML = '<p>Erro ao carregar receitas.</p>';
+            });
+    }
+
+    // Buscar despesas
+    function carregarDespesas(userId) {
+        firebase.firestore().collection('despesas')
+            .where('userId', '==', userId)
+            .get()
+            .then(snapshot => {
+                console.log('Despesas:', snapshot.docs.map(doc => doc.data()));
+                // ...atualize DOM...
+            });
+    }
+
+    // Seleciona o mês atual ao carregar
+    const seletorMes = document.querySelector('.seletor-mes');
+    if (seletorMes) {
+        const hoje = new Date();
+        seletorMes.selectedIndex = hoje.getMonth();
     }
 });
+
+// Função para receitas por categoria com gráfico
+function carregarReceitasPorCategoria(userId) {
+    firebase.firestore().collection('receitas')
+        .where('userId', '==', userId)
+        .get()
+        .then(snapshot => {
+            const receitas = snapshot.docs.map(doc => doc.data());
+            // Filtra pelo mês atual
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth() + 1;
+            const anoAtual = hoje.getFullYear();
+            const receitasMes = receitas.filter(r => {
+                if (!r.data) return false;
+                const [dia, mes, ano] = r.data.split('/');
+                return Number(mes) === mesAtual && Number(ano) === anoAtual;
+            });
+
+            // Agrupa por categoria
+            const categorias = {};
+            receitasMes.forEach(r => {
+                const cat = r.categoria || 'Sem categoria';
+                categorias[cat] = (categorias[cat] || 0) + (Number(r.valor) || 0);
+            });
+
+            // Dados para o gráfico
+            const labels = Object.keys(categorias);
+            const valores = Object.values(categorias);
+
+            // Atualiza gráfico se houver dados
+            const graficoEl = document.getElementById('grafico-receitas-categoria');
+            if (graficoEl && labels.length > 0) {
+                graficoEl.style.display = 'block';
+                new Chart(graficoEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: valores,
+                            backgroundColor: [
+                                '#21C25E', '#FFB800', '#FF5A5F', '#007AFF', '#A259FF', '#FF7A00'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: { display: false }
+                    }
+                });
+                document.getElementById('cartao-estado-ativo-receitas').style.display = 'block';
+                document.getElementById('cartao-estado-vazio-receitas').style.display = 'none';
+                // Atualiza total
+                const total = valores.reduce((a, b) => a + b, 0);
+                const totalEl = document.getElementById('valor-total-receitas');
+                if (totalEl) totalEl.textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            } else {
+                document.getElementById('cartao-estado-ativo-receitas').style.display = 'none';
+                document.getElementById('cartao-estado-vazio-receitas').style.display = 'block';
+            }
+        });
+}
+
+// Função para despesas por categoria com gráfico
+function carregarDespesasPorCategoria(userId) {
+    firebase.firestore().collection('despesas')
+        .where('userId', '==', userId)
+        .get()
+        .then(snapshot => {
+            const despesas = snapshot.docs.map(doc => doc.data());
+            // Filtra pelo mês atual
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth() + 1;
+            const anoAtual = hoje.getFullYear();
+            const despesasMes = despesas.filter(d => {
+                if (!d.data) return false;
+                const [dia, mes, ano] = d.data.split('/');
+                return Number(mes) === mesAtual && Number(ano) === anoAtual;
+            });
+
+            // Agrupa por categoria
+            const categorias = {};
+            despesasMes.forEach(d => {
+                const cat = d.categoria || 'Sem categoria';
+                categorias[cat] = (categorias[cat] || 0) + (Number(d.valor) || 0);
+            });
+
+            // Dados para o gráfico
+            const labels = Object.keys(categorias);
+            const valores = Object.values(categorias);
+
+            // Atualiza gráfico se houver dados
+            const graficoEl = document.getElementById('grafico-despesas-categoria');
+            if (graficoEl && labels.length > 0) {
+                graficoEl.style.display = 'block';
+                new Chart(graficoEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: valores,
+                            backgroundColor: [
+                                '#FF5A5F', '#FFB800', '#21C25E', '#007AFF', '#A259FF', '#FF7A00'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: { display: false }
+                    }
+                });
+                document.getElementById('cartao-estado-ativo-categorias').style.display = 'block';
+                document.getElementById('cartao-estado-vazio-categorias').style.display = 'none';
+                // Atualiza total
+                const total = valores.reduce((a, b) => a + b, 0);
+                const totalEl = document.getElementById('valor-total-despesas');
+                if (totalEl) totalEl.textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            } else {
+                document.getElementById('cartao-estado-ativo-categorias').style.display = 'none';
+                document.getElementById('cartao-estado-vazio-categorias').style.display = 'block';
+            }
+        });
+}
+
+// Calcular saldo total
+function calcularSaldoTotal(userId) {
+    Promise.all([
+        firebase.firestore().collection('receitas').where('userId', '==', userId).get(),
+        firebase.firestore().collection('despesas').where('userId', '==', userId).get()
+    ]).then(([receitasSnap, despesasSnap]) => {
+        const receitas = receitasSnap.docs.map(doc => doc.data());
+        const despesas = despesasSnap.docs.map(doc => doc.data());
+        const totalReceitas = receitas.reduce((sum, r) => sum + (Number(r.valor) || 0), 0);
+        const totalDespesas = despesas.reduce((sum, d) => sum + (Number(d.valor) || 0), 0);
+        const saldo = totalReceitas - totalDespesas;
+        console.log('Saldo total:', saldo);
+
+        // Atualize o DOM
+        const saldoEl = document.querySelector('.valor-saldo');
+        if (saldoEl) saldoEl.textContent = `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+    });
+}
+console.log('--- DEBUG FIM HOME ---');

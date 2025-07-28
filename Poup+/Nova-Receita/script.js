@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado - Iniciando aplicação...');
-    
+
     // Elementos do DOM
     const elementos = {
         botaoVoltar: document.querySelector('.botao-voltar'),
@@ -51,18 +51,35 @@ document.addEventListener('DOMContentLoaded', function() {
         iconeSelecionado: 'paid'
     };
 
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Inicialize a aplicação SOMENTE após garantir o usuário logado
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            console.log('Usuário autenticado:', user.uid);
+            inicializar(user);
+        } else {
+            console.log('Nenhum usuário logado.');
+            mostrarPopup('Você precisa estar logado para acessar esta página.');
+            // Opcional: desabilite botões ou campos
+            if (elementos.botaoSalvar) elementos.botaoSalvar.disabled = true;
+        }
+    });
+
     // Inicialização
-    function inicializar() {
+    function inicializar(usuarioLogado) {
         console.log('Inicializando aplicação...');
-        configurarEventos();
+        configurarEventos(usuarioLogado);
         atualizarDataSelecionada();
-        carregarCarteiras();
+        carregarCarteiras(usuarioLogado); // Passe o usuário logado
         carregarCategorias();
         console.log('Aplicação inicializada com sucesso');
     }
 
     // Configurar eventos
-    function configurarEventos() {
+    function configurarEventos(usuarioLogado) {
         console.log('Configurando eventos...');
         
         // Botão voltar
@@ -115,24 +132,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Categorias
-        elementos.opcaoSelecionadaCategoria.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Abrindo seletor de categorias');
-            elementos.opcoesCategoria.classList.toggle('mostrar');
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!elementos.seletorCategoria.contains(e.target)) {
-                elementos.opcoesCategoria.classList.remove('mostrar');
-            }
-        });
+        const seletorCategoria = document.getElementById('seletor-categoria');
+        const opcaoSelecionadaCategoria = seletorCategoria ? seletorCategoria.querySelector('.opcao-selecionada') : null;
+        const opcoesCategoria = seletorCategoria ? seletorCategoria.querySelector('.opcoes-categoria') : null;
 
         // Carteiras
-        elementos.opcaoSelecionadaCarteira.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Abrindo seletor de carteiras');
-            elementos.opcoesCarteira.classList.toggle('mostrar');
+        const seletorCarteira = document.getElementById('seletor-carteira');
+        const opcaoSelecionadaCarteira = seletorCarteira ? seletorCarteira.querySelector('.opcao-selecionada') : null;
+        const opcoesCarteira = seletorCarteira ? seletorCarteira.querySelector('.opcoes-carteira') : null;
+
+        if (opcaoSelecionadaCategoria && opcoesCategoria) {
+            opcaoSelecionadaCategoria.addEventListener('click', function (e) {
+                e.stopPropagation();
+                console.log('Abrindo seletor de categorias');
+                fecharTodosOsSeletores(); // Fecha outros seletores antes de abrir este
+                opcoesCategoria.classList.toggle('mostrar');
+                console.log('Estado do seletor de categorias:', opcoesCategoria.classList.contains('mostrar') ? 'Visível' : 'Oculto');
+            });
+        }
+
+        if (opcaoSelecionadaCarteira && opcoesCarteira) {
+            opcaoSelecionadaCarteira.addEventListener('click', function (e) {
+                e.stopPropagation();
+                console.log('Abrindo seletor de carteiras');
+                fecharTodosOsSeletores(); // Fecha outros seletores antes de abrir este
+                opcoesCarteira.classList.toggle('mostrar');
+                console.log('Estado do seletor de carteiras:', opcoesCarteira.classList.contains('mostrar') ? 'Visível' : 'Oculto');
+            });
+        }
+
+        document.addEventListener('click', function () {
+            fecharTodosOsSeletores(); // Fecha todos os seletores ao clicar fora
         });
+
+        function fecharTodosOsSeletores() {
+            if (opcoesCategoria) opcoesCategoria.classList.remove('mostrar');
+            if (opcoesCarteira) opcoesCarteira.classList.remove('mostrar');
+        }
 
         // Anexo
         elementos.botaoAnexo.addEventListener('click', function() {
@@ -148,7 +184,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Salvar receita
-        elementos.botaoSalvar.addEventListener('click', salvarReceita);
+        elementos.botaoSalvar.addEventListener('click', function() {
+            salvarReceita(usuarioLogado);
+        });
 
         // Modal de categoria
         elementos.salvarCategoriaBtn.addEventListener('click', salvarCategoriaPersonalizada);
@@ -171,17 +209,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Função para salvar a receita no Firestore
-    function salvarReceita() {
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const user = auth.currentUser;
-
-        if (!user) {
+    function salvarReceita(usuarioLogado) {
+        const descricao = elementos.inputDescricao.value.trim();
+        if (!usuarioLogado) {
             mostrarPopup('Você precisa estar logado para salvar uma receita.');
             return;
         }
-
-        const descricao = elementos.inputDescricao.value.trim();
         if (!descricao) {
             mostrarPopup('Por favor, insira uma descrição para a receita.');
             return;
@@ -192,26 +225,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const novaReceita = {
-            userId: user.uid,
+            userId: usuarioLogado.uid,
             valor: elementos.valorReceita.textContent,
             descricao: descricao,
             recebido: elementos.checkboxRecebido.checked,
             data: elementos.dataSelecionada.textContent,
             categoria: estado.categoriaSelecionada,
             carteira: estado.carteiraSelecionada,
-            // Adicione outros campos se necessário
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         db.collection('receitas').add(novaReceita)
             .then(docRef => {
-                console.log('Receita salva com sucesso no Firestore com ID: ', docRef.id);
                 mostrarPopup('Receita salva com sucesso!', () => {
                     window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
                 });
             })
             .catch(error => {
-                console.error('Erro ao salvar receita: ', error);
                 mostrarPopup('Ocorreu um erro ao salvar a receita.');
             });
     }
@@ -448,66 +478,64 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Funções para carteiras
-    function carregarCarteiras() {
+    function carregarCarteiras(usuarioLogado) {
+        if (!usuarioLogado) return; // Não tente buscar carteiras sem usuário
         console.log('Carregando carteiras...');
         const opcoesCarteira = elementos.opcoesCarteira;
         opcoesCarteira.innerHTML = '';
 
-        let carteiras = [];
-        try {
-            carteiras = JSON.parse(localStorage.getItem('contasBancarias')) || [];
-            console.log(`Carteiras encontradas: ${carteiras.length}`);
-        } catch (e) {
-            console.error('Erro ao carregar contas:', e);
-        }
-
-        if (carteiras.length === 0) {
-            console.log('Nenhuma carteira encontrada - mostrando opção para criar');
-            opcoesCarteira.innerHTML = `
-                <div class="opcao-carteira" id="criar-nova-carteira">
-                    <span class="icone-carteira">➕</span>
-                    <div class="detalhes-carteira">
-                        <span class="nome-carteira">Criar nova conta</span>
-                    </div>
-                </div>
-            `;
-            document.getElementById('criar-nova-carteira').addEventListener('click', function() {
-                console.log('Redirecionando para criar nova conta');
-                window.location.href = "../Nova-conta/Nova-conta.html";
-            });
-        } else {
-            carteiras.forEach(carteira => {
-                if (carteira && carteira.id) {
-                    // Use o campo correto para o nome da conta
-                    const nomeCarteira = carteira.nome || carteira.descricao || carteira.banco || carteira.nomeConta || 'Conta sem nome';
-                    const tipoCarteira = carteira.tipo || carteira.codigoBanco || 'Conta';
-                    const iconeCarteira = carteira.iconeBanco || '🏦';
-                    const saldoCarteira = carteira.saldo ? parseFloat(carteira.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
-
-                    const opcao = document.createElement('div');
-                    opcao.classList.add('opcao-carteira');
-                    opcao.setAttribute('data-value', carteira.id);
-                    opcao.innerHTML = `
-                        <span class="icone-carteira">${iconeCarteira}</span>
-                        <div class="detalhes-carteira">
-                            <span class="nome-carteira">${nomeCarteira}</span>
-                            <span>${tipoCarteira}</span>
+        // Exemplo: buscar contas do usuário autenticado no Firestore
+        db.collection('contas')
+            .where('userId', '==', usuarioLogado.uid)
+            .get()
+            .then(snapshot => {
+                const carteiras = snapshot.docs.map(doc => doc.data());
+                console.log(`Carteiras encontradas: ${carteiras.length}`);
+                if (carteiras.length === 0) {
+                    opcoesCarteira.innerHTML = `
+                        <div class="opcao-carteira" id="criar-nova-carteira">
+                            <span class="icone-carteira">➕</span>
+                            <div class="detalhes-carteira">
+                                <span class="nome-carteira">Criar nova conta</span>
+                            </div>
                         </div>
-                        <span class="saldo-carteira">${saldoCarteira}</span>
                     `;
-                    opcao.addEventListener('click', function() {
-                        console.log(`Carteira selecionada: ${nomeCarteira}`);
-                        estado.carteiraSelecionada = carteira.id;
-                        elementos.opcaoSelecionadaCarteira.innerHTML = `
-                            <span class="icone-carteira">${iconeCarteira}</span>
-                            <span>${nomeCarteira}</span>
-                        `;
-                        opcoesCarteira.classList.remove('mostrar');
+                    document.getElementById('criar-nova-carteira').addEventListener('click', function() {
+                        window.location.href = "../Nova-conta/Nova-conta.html";
                     });
-                    opcoesCarteira.appendChild(opcao);
+                } else {
+                    carteiras.forEach(carteira => {
+                        const nomeCarteira = carteira.nome || carteira.descricao || carteira.banco || carteira.nomeConta || 'Conta sem nome';
+                        const tipoCarteira = carteira.tipo || carteira.codigoBanco || 'Conta';
+                        const iconeCarteira = carteira.iconeBanco || '🏦';
+                        const saldoCarteira = carteira.saldo ? parseFloat(carteira.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+
+                        const opcao = document.createElement('div');
+                        opcao.classList.add('opcao-carteira');
+                        opcao.setAttribute('data-value', carteira.id);
+                        opcao.innerHTML = `
+                            <span class="icone-carteira">${iconeCarteira}</span>
+                            <div class="detalhes-carteira">
+                                <span class="nome-carteira">${nomeCarteira}</span>
+                                <span>${tipoCarteira}</span>
+                            </div>
+                            <span class="saldo-carteira">${saldoCarteira}</span>
+                        `;
+                        opcao.addEventListener('click', function() {
+                            estado.carteiraSelecionada = carteira.id;
+                            elementos.opcaoSelecionadaCarteira.innerHTML = `
+                                <span class="icone-carteira">${iconeCarteira}</span>
+                                <span>${nomeCarteira}</span>
+                            `;
+                            opcoesCarteira.classList.remove('mostrar');
+                        });
+                        opcoesCarteira.appendChild(opcao);
+                    });
                 }
+            })
+            .catch(e => {
+                console.error('Erro ao carregar contas:', e);
             });
-        }
     }
 
     // Função para salvar a receita
@@ -801,3 +829,51 @@ function atualizarCorPreview() {
     // Função de stub para evitar erro. Implemente a lógica conforme necessário.
     console.log('Função atualizarCorPreview chamada (stub).');
 }
+
+let debounceTimeout;
+let debounceActive = false;
+
+function configurarEventosCalculadora() {
+    const botoesCalculadora = document.querySelectorAll('.calculadora-botoes button');
+    const displayCalculadora = document.getElementById('calculadora-display');
+
+    if (botoesCalculadora && displayCalculadora) {
+        botoesCalculadora.forEach(botao => {
+            // Remova qualquer evento duplicado antes de adicionar um novo
+            botao.replaceWith(botao.cloneNode(true));
+        });
+
+        const botoesAtualizados = document.querySelectorAll('.calculadora-botoes button');
+        botoesAtualizados.forEach(botao => {
+            botao.addEventListener('click', function () {
+                const valorBotao = this.textContent.trim();
+                console.log(`Botão da calculadora pressionado: ${valorBotao}`);
+                processarEntradaCalculadora(valorBotao, displayCalculadora);
+            });
+        });
+    }
+}
+
+function processarEntradaCalculadora(valor, display) {
+    let valorAtual = display.value || '';
+    if (!isNaN(valor) || valor === ',') {
+        valorAtual += valor;
+    } else if (valor === 'X') {
+        valorAtual = valorAtual.slice(0, -1); // Apagar último caractere
+    } else if (valor === '=') {
+        try {
+            valorAtual = eval(valorAtual.replace(',', '.')).toString().replace('.', ','); // Avaliar expressão
+        } catch (e) {
+            console.error('Erro ao avaliar expressão:', e);
+            valorAtual = 'Erro';
+        }
+    }
+    display.value = valorAtual;
+    console.log(`Valor atual: ${valorAtual}`);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM carregado - Iniciando aplicação...');
+    configurarEventosCalculadora();
+    // ...existing code...
+});

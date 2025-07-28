@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Nova Receita</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+      /* Garante que os popups fiquem visíveis quando .mostrar for adicionada */
+      .opcoes-categoria, .opcoes-carteira {
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        padding: 8px 0;
+        min-width: 180px;
+        max-height: 320px;
+        overflow-y: auto;
+        top: 40px; /* Adicionado para garantir que o popup apareça abaixo do campo */
+        left: 0;
+      }
+      .opcoes-categoria.mostrar, .opcoes-carteira.mostrar {
+        display: block;
+      }
+      /* Adicione position: relative nos pais */
+      .seletor-categoria, .seletor-carteira {
+        position: relative;
+      }
+    </style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link
@@ -35,7 +59,7 @@
                 <div class="linha-campo">
                     <span class="material-icons icone-campo">paid</span>
                     <span>Recebido</span>
-                    <label class="alternador">
+                    <label class="alternador" for="recebido">
                         <input type="checkbox" id="recebido" checked>
                         <span class="controle-alternador"></span>
                     </label>
@@ -53,7 +77,10 @@
             <div class="campo-formulario">
                 <div class="linha-campo">
                     <span class="material-icons icone-campo">description</span>
-                    <input type="text" id="descricao" placeholder="Descrição da receita">
+                    <!-- Corrija o atributo 'for' para corresponder ao 'id' -->
+                    <label for="descricao">
+                        <input type="text" id="descricao" placeholder="Descrição da receita">
+                    </label>
                 </div>
             </div>
 
@@ -183,7 +210,7 @@
                 <div class="linha-campo" id="linha-repetir">
                     <span class="material-icons icone-campo">repeat</span>
                     <span>Repetir</span>
-                    <label class="alternador">
+                    <label class="alternador" for="toggle-repetir">
                         <input type="checkbox" id="toggle-repetir" onchange="gerenciarToggles('repetir')">
                         <span class="controle-alternador"></span>
                     </label>
@@ -213,7 +240,7 @@
                 <div class="linha-campo" id="linha-receita-fixa">
                     <span class="material-icons icone-campo">autorenew</span>
                     <span>Receita Fixa</span>
-                    <label class="alternador">
+                    <label class="alternador" for="toggle-receita-fixa">
                         <input type="checkbox" id="toggle-receita-fixa" onchange="gerenciarToggles('fixa')">
                         <span class="controle-alternador"></span>
                     </label>
@@ -305,28 +332,28 @@
             </div>
         </div>
     </div>
-    <script src="script.js" defer></script>
-
+    
     <!-- INÍCIO: Configuração do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>
-      // A configuração do seu app da web do Firebase
-      // Lembre-se de substituir pelas suas chaves reais
+      // Use a MESMA configuração do index.html e home.html
       const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "SEU_AUTH_DOMAIN",
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
         projectId: "poup-beta",
-        storageBucket: "SEU_STORAGE_BUCKET",
-        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-        appId: "SUA_APP_ID"
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
       };
-      // Inicializa o Firebase
       if (!firebase.apps.length) {
          firebase.initializeApp(firebaseConfig);
       }
     </script>
     <!-- FIM: Configuração do Firebase -->
+
+    <script src="script.js" defer></script>
 </body>
 </html>
