@@ -69,18 +69,16 @@
         </section>
 
         <!-- Lista de Receitas -->
-        <main class="lista-receitas" id="lista-receitas">
-            <div id="receitas-list">
-                <!-- Receitas serão carregadas dinamicamente aqui -->
-            </div>
+        <main class="lista-receitas" id="receitas-list">
+            <!-- Receitas serão carregadas dinamicamente aqui -->
         </main>
 
         <!-- Botão Nova Receita -->
-        <button id="botao-nova-receita" class="botao-primario" onclick="console.log('Botão Nova Receita clicado');">
+        <button id="botao-nova-receita" class="botao-primario" onclick="window.location.href='../Nova-Receita/Nova-Receita.html';">
             <span class="material-icons">add</span> Nova Receita
         </button>
 
-        <!-- ÚNICO Popup de confirmação para exclusão -->
+        <!-- Popup de confirmação para exclusão de receita -->
         <div class="popup-confirmacao" id="popup-confirmacao" style="display: none;">
             <div class="popup-confirmacao-conteudo">
                 <span class="popup-confirmacao-texto">Tem certeza que deseja excluir esta receita?</span>
@@ -92,12 +90,12 @@
         </div>
     </div>
 
+    <script src="script.js"></script>
     <!-- INÍCIO: Configuração do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>
-      // Use a MESMA configuração do index.html e home.html
       const firebaseConfig = {
         apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
         authDomain: "poup-beta.firebaseapp.com",
@@ -109,10 +107,10 @@
       };
       if (!firebase.apps.length) {
          firebase.initializeApp(firebaseConfig);
+      } else {
+         firebase.app();
       }
     </script>
     <!-- FIM: Configuração do Firebase -->
-
-    <script src="script.js"></script>
 </body>
 </html>
