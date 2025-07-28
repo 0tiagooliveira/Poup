@@ -68,6 +68,29 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+.botao-cabecalho-direita {
+    background-color: white;
+    color: var(--cor-primaria);
+    border: none;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: var(--sombra);
+    transition: all 0.2s;
+}
+
+.botao-cabecalho-direita:hover {
+    background-color: var(--cor-primaria-escura);
+    color: white;
+    transform: translateY(-1px);
+}
+
 /* Container Principal */
 .container-principal {
     padding: 20px;
@@ -248,24 +271,36 @@ body {
 .despesa-acoes {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    margin-left: 10px;
 }
 
-.botao-excluir {
+.botao-editar, .botao-excluir {
     background: none;
     border: none;
-    color: #ff4444;
     cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
+    transition: background 0.2s;
 }
 
+.botao-editar .material-icons-round {
+    color: #D32F2F;
+    font-size: 1.2rem;
+}
+.botao-editar:hover {
+    background: #ffebee;
+}
+
+.botao-excluir .material-icons-round {
+    color: #ef233c;
+    font-size: 1.2rem;
+}
 .botao-excluir:hover {
-    background-color: rgba(255, 68, 68, 0.1);
+    background: #fee7ea;
 }
 
 /* Popups */
