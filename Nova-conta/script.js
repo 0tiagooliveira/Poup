@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then((docRef) => {
                 console.log('Conta salva no Firestore:', novaConta, 'ID:', docRef.id);
                 mostrarPopup('Conta salva com sucesso!', () => {
-                    window.location.href = '../Contas/contas.html'; // Redirecionado para a lista de contas
+                    window.location.href = '../home.html'; // Redireciona para home.html
                 });
                 // Salvar também no localStorage com o ID do Firestore
                 novaConta.id = docRef.id;
