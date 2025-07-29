@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Contas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="cabecalho">
+        <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+            <span class="material-icons">arrow_back</span>
+        </button>
+        <h1>Minhas Contas</h1>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="container-principal">
+        <!-- Resumo -->
+        <section class="secao-resumo">
+            <div class="card-resumo">
+                <div class="resumo-icon">
+                    <span class="material-icons-round">account_balance</span>
+                </div>
+                <div class="resumo-content">
+                    <span class="titulo-resumo">Total em Contas</span>
+                    <span class="valor-resumo" id="total-contas">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="card-resumo">
+                <div class="resumo-icon">
+                    <span class="material-icons-round">savings</span>
+                </div>
+                <div class="resumo-content">
+                    <span class="titulo-resumo">Contas Vinculadas</span>
+                    <span class="valor-resumo" id="total-contas-vinculadas">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Contas -->
+        <main class="lista-contas" id="lista-contas">
+            <div id="contas-list">
+                <!-- Contas serão carregadas dinamicamente aqui -->
+            </div>
+        </main>
+
+        <!-- Botão Nova Conta -->
+        <button id="botao-nova-conta" class="botao-primario">
+            <span class="material-icons">add</span> Nova Conta
+        </button>
+
+        <!-- Popup de confirmação para exclusão -->
+        <div class="popup-confirmacao" id="popup-confirmacao" style="display: none;">
+            <div class="popup-confirmacao-conteudo">
+                <span class="popup-confirmacao-texto">Tem certeza que deseja excluir esta conta?</span>
+                <div class="popup-confirmacao-botoes">
+                    <button class="popup-confirmacao-botao popup-confirmacao-cancelar" id="popup-cancelar">Cancelar</button>
+                    <button class="popup-confirmacao-botao popup-confirmacao-excluir" id="popup-excluir">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

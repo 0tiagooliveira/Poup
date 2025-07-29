@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Login/Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="./Icon/LogoPoup.svg">
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="./Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <div class="auth-card">
+                <!-- Abas -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="criar-conta">Criar conta</div>
+                    <div class="tab" data-tab="login">Login</div>
+                </div>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content">
+                    <!-- Criar Conta -->
+                    <div class="tab-pane active" id="criar-conta">
+                        <div class="form-container">
+                            <h2>Criando conta</h2>
+                            <p class="subtitle">Vamos começar preenchendo o formulário abaixo.</p>
+
+                            <form id="form-criar-conta">
+                                <div class="form-group">
+                                    <label for="email-criar">Email</label>
+                                    <input type="email" id="email-criar" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-criar">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-criar" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Começar</button>
+
+                                <div class="divider">
+                                    <span>Ou cadastre-se com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Login -->
+                    <div class="tab-pane" id="login">
+                        <div class="form-container">
+                            <h2>Bem-vindo de volta!</h2>
+                            <p class="subtitle">Preencha as informações abaixo para acessar sua conta.</p>
+
+                            <form id="form-login">
+                                <div class="form-group">
+                                    <label for="email-login">E-mail</label>
+                                    <input type="email" id="email-login" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-login">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-login" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Entrar</button>
+
+                                <div class="divider">
+                                    <span>Ou entre com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple-login">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+
+                                <button type="button" class="btn-link">Esqueceu sua senha?</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Popup customizado para mensagens -->
+    <div id="popup-mensagem" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2000; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div style="background:#fff; border-radius:12px; padding:32px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-width:280px; max-width:90vw; text-align:center;">
+            <span id="popup-texto" style="display:block; font-size:1.1rem; color:#333; margin-bottom:24px;"></span>
+            <button id="popup-botao" style="padding:12px 32px; background-color:#21C25E; color:#fff; border:none; border-radius:8px; font-size:1rem; cursor:pointer; font-weight: 600;">OK</button>
+        </div>
+    </div>
+
+    <!-- INÍCIO: Configuração do Firebase (VERSÃO COMPATÍVEL) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      // Sua configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      // Inicializa o Firebase
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+
+    <script src="script.js"></script>
+</body>
+</html>
