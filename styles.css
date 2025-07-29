@@ -256,10 +256,9 @@ a {
 
 /* Bolinha vermelha para despesas */
 .icon-circle.despesas {
-    background-color: #ffebee !important; /* fundo vermelho claro */
-    border: 2px solid #ff1744 !important; /* borda vermelha */
-    color: #ff1744 !important; /* ícone vermelho */
-    box-shadow: 0 0 8px 0 #ff174433 !important; /* sombra vermelha suave */
+    background-color: #ffebee; /* tom claro para fundo */
+    border: 2px solid #ff1744; /* vermelho */
+    color: #ff1744; /* ícone vermelho */
 }
 
 /* Responsivo */
