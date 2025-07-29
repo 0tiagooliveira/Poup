@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Contas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="aplicativo">
+        <!-- Cabeçalho -->
+        <header class="cabecalho">
+            <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Minhas Contas</h1>
+        </header>
+
+        <!-- Container Principal -->
+        <main class="container-principal">
+            <div id="lista-contas" class="lista-contas">
+                <!-- As contas serão carregadas aqui pelo script.js -->
+            </div>
+        </main>
+
+        <!-- Botão Nova Conta -->
+        <button id="botao-nova-conta" class="botao-flutuante">
+            <span class="material-icons">add</span>
+        </button>
+    </div>
+
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+
+    <script src="script.js"></script>
+</body>
+</html>
