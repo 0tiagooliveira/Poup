@@ -3,19 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poup+ - Login/Cadastro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
-
-    <!-- Firebase scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <title>Poup+ - Controle Financeiro</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+            authDomain: "poup-beta.firebaseapp.com",
+            projectId: "poup-beta",
+            storageBucket: "poup-beta.appspot.com",
+            messagingSenderId: "954695915981",
+            appId: "1:954695915981:web:d31b216f79eac178094c84",
+            measurementId: "G-LP9BDVD3KJ"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
+    <div class="aplicativo">
         <!-- Logo -->
         <div class="logo-container">
             <img src="logo.svg" alt="Logo Poup+" class="logo">
@@ -117,8 +135,93 @@
         <div class="icon-circle despesas" style="background-color: #ffebee; border: 2px solid #ff1744; color: #ff1744;">
             <i class="fa fa-shopping-cart"></i>
         </div>
+
+        <!-- Loading indicator -->
+        <div id="loading-indicator" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;">
+            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+                <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #21C25E; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                <p style="color: #333; font-family: 'Poppins', sans-serif;">Carregando...</p>
+            </div>
+        </div>
+        
+        <!-- Error message -->
+        <div id="error-message" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #ff4444; color: white; padding: 12px 20px; border-radius: 8px; font-family: 'Poppins', sans-serif;">
+            <span id="error-text"></span>
+        </div>
     </div>
 
-    <script src="script.js" defer></script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Ensure proper loading state */
+        .aplicativo {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Fix for hosting environment */
+        .aplicativo.loading {
+            pointer-events: none;
+        }
+        
+        .aplicativo.loading::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+        }
+    </style>
+
+    <script src="./script.js"></script>
+    
+    <script>
+        // Add hosting-specific initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Poup+ carregado no Firebase Hosting');
+            
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+            
+            // Initialize application
+            setTimeout(() => {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+                
+                // Check if main script loaded correctly
+                if (typeof inicializarAplicativo === 'function') {
+                    inicializarAplicativo();
+                } else {
+                    console.log('Aplicativo inicializado com configuração básica');
+                }
+            }, 1000);
+            
+            // Error handling for hosting
+            window.addEventListener('error', function(event) {
+                console.error('Erro na aplicação:', event.error);
+                const errorMessage = document.getElementById('error-message');
+                const errorText = document.getElementById('error-text');
+                
+                if (errorMessage && errorText) {
+                    errorText.textContent = 'Erro ao carregar a aplicação. Recarregue a página.';
+                    errorMessage.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 5000);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
