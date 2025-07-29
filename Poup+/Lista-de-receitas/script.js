@@ -171,11 +171,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="material-icons-round">${iconeCategoria}</span>
                 </div>
                 <div class="receita-info">
-                    <span class="receita-nome">${categoria}</span>
+                    <span class="receita-nome">${receita.categoria}</span>
                     <div class="receita-detalhes">
                         <span>${receita.descricao ? receita.descricao : '-'}</span>
                         <span class="receita-data">${data}</span>
-                        <span style="color:#21C25E;font-weight:500;">${carteira}</span>
+                        <span style="color:#21C25E;font-weight:500;">${receita.carteira}</span>
                     </div>
                 </div>
                 <span class="receita-valor">${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>

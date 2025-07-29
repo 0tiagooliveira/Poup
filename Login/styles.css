@@ -254,6 +254,13 @@ a {
     padding: 10px 32px;
 }
 
+/* Bolinha vermelha para despesas */
+.icon-circle.despesas {
+    background-color: #ffebee; /* tom claro para fundo */
+    border: 2px solid #ff1744; /* vermelho */
+    color: #ff1744; /* ícone vermelho */
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
     .auth-card {

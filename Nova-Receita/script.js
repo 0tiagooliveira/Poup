@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado - Iniciando aplicação...');
     
-    // Elementos do DOM
+    // Cache de elementos DOM para evitar consultas repetidas
     const elementos = {
         botaoVoltar: document.querySelector('.botao-voltar'),
         secaoValor: document.getElementById('secao-valor'),
@@ -48,892 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
         dataSelecionada: new Date(),
         categoriaSelecionada: null,
         carteiraSelecionada: null,
-        iconeSelecionado: 'paid'
+        iconeSelecionado: 'paid',
+        eventListeners: new Map() // Cache para event listeners
     };
 
-    // Inicialização
-    function inicializar() {
-        console.log('Inicializando aplicação...');
-        configurarEventos();
-        atualizarDataSelecionada();
-        carregarCarteiras();
-        carregarCategorias();
-        console.log('Aplicação inicializada com sucesso');
-    }
-
-    // Configurar eventos
-    function configurarEventos() {
-        console.log('Configurando eventos...');
-        
-        // Botão voltar
-        elementos.botaoVoltar.addEventListener('click', function() {
-            console.log('Botão voltar clicado');
-            window.history.back();
-        });
-
-        // Calculadora
-        elementos.secaoValor.addEventListener('click', abrirCalculadora);
-        elementos.calculadoraContainer.addEventListener('click', function(e) {
-            if (e.target === elementos.calculadoraContainer) {
-                console.log('Clicou fora da calculadora - fechando');
-                fecharCalculadora();
-            }
-        });
-        
-        elementos.calculadoraBotoes.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON') {
-                const valor = e.target.textContent.trim();
-                console.log(`Botão da calculadora pressionado: ${valor}`);
-                
-                if (valor.match(/[0-9]/)) {
-                    adicionarNumero(valor);
-                } else if (valor === ',') {
-                    adicionarNumero('.');
-                } else if (valor === '=') {
-                    confirmarCalculadora();
-                }
-            }
-        });
-        
-        elementos.botaoApagar.addEventListener('click', apagarInput);
-        elementos.btnCancelarCalculadora.addEventListener('click', cancelarCalculadora);
-        elementos.btnConfirmarCalculadora.addEventListener('click', confirmarCalculadora);
-
-        // Calendário
-        elementos.campoData.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Abrindo calendário');
-            elementos.calendario.classList.add('mostrar');
-        });
-        
-        renderizarCalendario();
-        
-        document.addEventListener('click', function(e) {
-            if (!elementos.calendario.contains(e.target) && e.target !== elementos.campoData) {
-                elementos.calendario.classList.remove('mostrar');
-            }
-        });
-
-        // Categorias
-        elementos.opcaoSelecionadaCategoria.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Abrindo seletor de categorias');
-            elementos.opcoesCategoria.classList.toggle('mostrar');
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!elementos.seletorCategoria.contains(e.target)) {
-                elementos.opcoesCategoria.classList.remove('mostrar');
-            }
-        });
-
-        // Carteiras
-        elementos.opcaoSelecionadaCarteira.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Abrindo seletor de carteiras');
-            elementos.opcoesCarteira.classList.toggle('mostrar');
-        });
-
-        // Anexo
-        elementos.botaoAnexo.addEventListener('click', function() {
-            console.log('Abrindo seletor de arquivos');
-            elementos.inputAnexo.click();
-        });
-        
-        elementos.inputAnexo.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                console.log('Arquivo selecionado:', this.files[0].name);
-                elementos.nomeArquivo.textContent = this.files[0].name;
-            }
-        });
-
-        // Salvar receita
-        elementos.botaoSalvar.addEventListener('click', salvarReceita);
-
-        // Modal de categoria
-        elementos.salvarCategoriaBtn.addEventListener('click', salvarCategoriaPersonalizada);
-        elementos.cancelarCategoriaBtn.addEventListener('click', fecharModalCategoria);
-        elementos.corCategoriaInput.addEventListener('input', atualizarCorPreview);
-
-        // Toggle de repetição
-        elementos.toggleRepetir.addEventListener('change', function() {
-            console.log('Toggle de repetição alterado:', this.checked);
-            elementos.camposRepetir.style.display = this.checked ? 'block' : 'none';
-        });
-
-        // Ícone selecionado - abrir galeria
-        const iconePreview = document.getElementById('icone-selecionado-preview');
-        if (iconePreview) {
-            iconePreview.addEventListener('click', function() {
-                abrirGaleriaIcones(iconePreview);
-            });
-        }
-
-        // Adiciona evento para "+ Criar categoria"
-        const selectCategoria = document.getElementById('categoria-receita');
-        const popupCriarCategoria = document.getElementById('popup-criar-categoria');
-        const btnCancelar = document.getElementById('popup-criar-categoria-cancelar');
-        const btnSalvar = document.getElementById('popup-criar-categoria-salvar');
-        const inputNome = document.getElementById('nova-categoria-nome');
-        const selectIcone = document.getElementById('nova-categoria-icone');
-
-        if (selectCategoria) {
-            selectCategoria.addEventListener('change', function() {
-                if (this.value === 'criar-categoria') {
-                    popupCriarCategoria.style.display = 'flex';
-                    inputNome.value = '';
-                    selectIcone.value = 'category';
-                }
-            });
-        }
-        if (btnCancelar) {
-            btnCancelar.onclick = function() {
-                popupCriarCategoria.style.display = 'none';
-                if (selectCategoria) selectCategoria.value = '-';
-            };
-        }
-        if (btnSalvar) {
-            btnSalvar.onclick = function() {
-                const nome = inputNome.value.trim();
-                const icone = selectIcone.value;
-                if (!nome) {
-                    inputNome.style.borderColor = '#ef233c';
-                    inputNome.focus();
-                    return;
-                }
-                // Adiciona nova categoria ao select e seleciona
-                const option = document.createElement('option');
-                option.value = nome;
-                option.textContent = nome;
-                option.setAttribute('data-icone', icone);
-                selectCategoria.appendChild(option);
-                selectCategoria.value = nome;
-                popupCriarCategoria.style.display = 'none';
-            };
-        }
-    }
-
-    // Função para salvar a receita no Firestore
-    function salvarReceita() {
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const user = auth.currentUser;
-
-        if (!user) {
-            mostrarPopup('Você precisa estar logado para salvar uma receita.');
-            return;
-        }
-
-        const descricao = elementos.inputDescricao.value.trim();
-        if (!descricao) {
-            mostrarPopup('Por favor, insira uma descrição para a receita.');
-            return;
-        }
-        if (estado.valorAtual === '0') {
-            mostrarPopup('Por favor, insira um valor para a receita.');
-            return;
-        }
-
-        const novaReceita = {
-            userId: user.uid,
-            valor: elementos.valorReceita.textContent,
-            descricao: descricao,
-            recebido: elementos.checkboxRecebido.checked,
-            data: elementos.dataSelecionada.textContent,
-            categoria: estado.categoriaSelecionada,
-            carteira: estado.carteiraSelecionada,
-            // Adicione outros campos se necessário
-            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        db.collection('receitas').add(novaReceita)
-            .then(docRef => {
-                console.log('Receita salva com sucesso no Firestore com ID: ', docRef.id);
-                mostrarPopup('Receita salva com sucesso!', () => {
-                    window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao salvar receita: ', error);
-                mostrarPopup('Ocorreu um erro ao salvar a receita.');
-            });
-    }
-
-    // Funções da calculadora
-    function abrirCalculadora() {
-        console.log('Abrindo calculadora...');
-        elementos.calculadoraContainer.style.display = 'block';
-        estado.valorAtual = elementos.valorReceita.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-        estado.digitandoValor = false;
-    }
-
-    function fecharCalculadora() {
-        console.log('Fechando calculadora');
-        elementos.calculadoraContainer.style.display = 'none';
-    }
-
-    function cancelarCalculadora() {
-        console.log('Calculadora cancelada');
-        fecharCalculadora();
-    }
-
-    function confirmarCalculadora() {
-        const valorFormatado = formatarMoeda(estado.valorAtual);
-        console.log('Valor confirmado na calculadora:', valorFormatado);
-        elementos.valorReceita.textContent = `R$ ${valorFormatado}`;
-        fecharCalculadora();
-    }
-
-    function adicionarNumero(numero) {
-        if (!estado.digitandoValor) {
-            estado.valorAtual = '0';
-            estado.digitandoValor = true;
-        }
-        
-        if (estado.valorAtual === '0' && numero !== '.') {
-            estado.valorAtual = numero;
-        } else {
-            if (estado.valorAtual.includes('.') && estado.valorAtual.split('.')[1].length >= 2) {
-                console.log('Limite de casas decimais atingido');
-                return;
-            }
-            estado.valorAtual += numero;
-        }
-        
-        console.log('Valor atual:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function apagarInput() {
-        if (estado.valorAtual.length > 1) {
-            estado.valorAtual = estado.valorAtual.slice(0, -1);
-        } else {
-            estado.valorAtual = '0';
-            estado.digitandoValor = false;
-        }
-        console.log('Apagando valor - novo valor:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function formatarValor(valor) {
-        if (valor.includes('.')) {
-            const partes = valor.split('.');
-            return `${partes[0]},${partes[1].substring(0, 2)}`;
-        }
-        return valor.replace('.', ',');
-    }
-
-    function formatarMoeda(valor) {
-        const numero = parseFloat(valor);
-        return numero.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    }
-
-    // Funções do calendário
-    function renderizarCalendario() {
-        console.log('Renderizando calendário...');
-        const ano = estado.dataSelecionada.getFullYear();
-        const mes = estado.dataSelecionada.getMonth();
-
-        const primeiroDiaMes = new Date(ano, mes, 1);
-        const ultimoDiaMes = new Date(ano, mes + 1, 0);
-        const diasNoMes = ultimoDiaMes.getDate();
-        const primeiroDiaSemana = primeiroDiaMes.getDay();
-
-        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-        let html = `
-            <div class="cabecalho-calendario">
-                <button class="botao-mes" id="mes-anterior">&lt;</button>
-                <h3>${nomesMeses[mes]} ${ano}</h3>
-                <button class="botao-mes" id="proximo-mes">&gt;</button>
-            </div>
-            <div class="dias-semana">
-        `;
-
-        for (let dia of nomesDias) {
-            html += `<div>${dia}</div>`;
-        }
-
-        html += `</div><div class="dias-calendario">`;
-
-        // Dias vazios no início
-        for (let i = 0; i < primeiroDiaSemana; i++) {
-            html += `<div class="dia-calendario outro-mes"></div>`;
-        }
-
-        // Dias do mês
-        for (let dia = 1; dia <= diasNoMes; dia++) {
-            const dataAtual = new Date(ano, mes, dia);
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-
-            const classeSelecionado = dataAtual.getTime() === estado.dataSelecionada.getTime() ? 'selecionado' : '';
-            const classeHoje = dataAtual.getTime() === hoje.getTime() ? 'hoje' : '';
-
-            html += `<div class="dia-calendario ${classeSelecionado} ${classeHoje}" data-dia="${dia}">${dia}</div>`;
-        }
-
-        html += `</div>`;
-        elementos.calendario.innerHTML = html;
-
-        // Eventos para os botões de mês
-        document.getElementById('mes-anterior').addEventListener('click', () => {
-            console.log('Mês anterior selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() - 1);
-            renderizarCalendario();
-        });
-
-        document.getElementById('proximo-mes').addEventListener('click', () => {
-            console.log('Próximo mês selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() + 1);
-            renderizarCalendario();
-        });
-
-        // Eventos para os dias
-        document.querySelectorAll('.dias-calendario .dia-calendario[data-dia]').forEach(dia => {
-            dia.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const diaSelecionado = parseInt(this.getAttribute('data-dia'));
-                console.log(`Dia selecionado: ${diaSelecionado}`);
-                estado.dataSelecionada = new Date(ano, mes, diaSelecionado);
-                atualizarDataSelecionada();
-                elementos.calendario.classList.remove('mostrar');
-            });
-        });
-    }
-
-    function atualizarDataSelecionada() {
-        const dia = String(estado.dataSelecionada.getDate()).padStart(2, '0');
-        const mes = String(estado.dataSelecionada.getMonth() + 1).padStart(2, '0');
-        const ano = estado.dataSelecionada.getFullYear();
-        const dataFormatada = `${dia}/${mes}/${ano}`;
-        console.log('Data selecionada atualizada:', dataFormatada);
-        elementos.dataSelecionada.textContent = dataFormatada;
-    }
-
-    // Função para exibir popups
-    function mostrarPopup(mensagem, callback) {
-        elementos.popupTexto.textContent = mensagem;
-        elementos.popupMensagem.style.display = 'flex';
-        elementos.popupBotao.onclick = function() {
-            elementos.popupMensagem.style.display = 'none';
-            if (callback) callback();
-        };
-    }
-
-    // Funções para categorias
-    // Categorias padrão com ícones
-    // (Removido duplicada - mantenha apenas uma declaração de categoriasPadrao)
-
-    // Adiciona a opção "+ Criar categoria" ao final da lista visual de categorias
-    function carregarCategorias() {
-        const seletorCategoria = document.getElementById('seletor-categoria').querySelector('.opcoes-categoria');
-        seletorCategoria.innerHTML = ''; // Limpar categorias existentes
-
-        categoriasPadrao.forEach(categoria => {
-            const opcao = document.createElement('div');
-            opcao.classList.add('opcao-categoria');
-            opcao.setAttribute('data-value', categoria.nome.toLowerCase().replace(/\s+/g, '-'));
-            opcao.innerHTML = `
-                <span class="material-symbols-outlined">${categoria.icone}</span>
-                <span>${categoria.nome}</span>
-            `;
-            if (categoria.nome === 'Adicionar categoria') {
-                opcao.style.color = '#21c25e';
-                opcao.style.fontWeight = '600';
-                opcao.addEventListener('click', function () {
-                    // Abre o modal para criar categoria personalizada
-                    if (elementos.modalCategoria) {
-                        elementos.modalCategoria.style.display = 'flex';
-                        elementos.nomeCategoriaInput.value = '';
-                        elementos.corCategoriaInput.value = '#21c25e';
-                        elementos.iconeSelecionadoPreview.innerHTML = '<span class="material-symbols-outlined" style="color:#21c25e;">category</span>';
-                    }
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
-            } else {
-                opcao.addEventListener('click', function () {
-                    const selecionada = document.querySelector('.opcao-selecionada');
-                    selecionada.innerHTML = `
-                        <span class="material-symbols-outlined">${categoria.icone}</span>
-                        <span>${categoria.nome}</span>
-                    `;
-                    estado.categoriaSelecionada = categoria.nome;
-                    estado.iconeSelecionado = categoria.icone;
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
-            }
-            seletorCategoria.appendChild(opcao);
-        });
-    }
-
-    // Função para salvar a receita no Firestore
-    function salvarReceita() {
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const user = auth.currentUser;
-
-        if (!user) {
-            mostrarPopup('Você precisa estar logado para salvar uma receita.');
-            return;
-        }
-
-        const descricao = elementos.inputDescricao.value.trim();
-        if (!descricao) {
-            mostrarPopup('Por favor, insira uma descrição para a receita.');
-            return;
-        }
-        if (estado.valorAtual === '0') {
-            mostrarPopup('Por favor, insira um valor para a receita.');
-            return;
-        }
-
-        const novaReceita = {
-            userId: user.uid,
-            valor: elementos.valorReceita.textContent,
-            descricao: descricao,
-            recebido: elementos.checkboxRecebido.checked,
-            data: elementos.dataSelecionada.textContent,
-            categoria: estado.categoriaSelecionada,
-            carteira: estado.carteiraSelecionada,
-            // Adicione outros campos se necessário
-            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        db.collection('receitas').add(novaReceita)
-            .then(docRef => {
-                console.log('Receita salva com sucesso no Firestore com ID: ', docRef.id);
-                mostrarPopup('Receita salva com sucesso!', () => {
-                    window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao salvar receita: ', error);
-                mostrarPopup('Ocorreu um erro ao salvar a receita.');
-            });
-    }
-
-    // Funções da calculadora
-    function abrirCalculadora() {
-        console.log('Abrindo calculadora...');
-        elementos.calculadoraContainer.style.display = 'block';
-        estado.valorAtual = elementos.valorReceita.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-        estado.digitandoValor = false;
-    }
-
-    function fecharCalculadora() {
-        console.log('Fechando calculadora');
-        elementos.calculadoraContainer.style.display = 'none';
-    }
-
-    function cancelarCalculadora() {
-        console.log('Calculadora cancelada');
-        fecharCalculadora();
-    }
-
-    function confirmarCalculadora() {
-        const valorFormatado = formatarMoeda(estado.valorAtual);
-        console.log('Valor confirmado na calculadora:', valorFormatado);
-        elementos.valorReceita.textContent = `R$ ${valorFormatado}`;
-        fecharCalculadora();
-    }
-
-    function adicionarNumero(numero) {
-        if (!estado.digitandoValor) {
-            estado.valorAtual = '0';
-            estado.digitandoValor = true;
-        }
-        
-        if (estado.valorAtual === '0' && numero !== '.') {
-            estado.valorAtual = numero;
-        } else {
-            if (estado.valorAtual.includes('.') && estado.valorAtual.split('.')[1].length >= 2) {
-                console.log('Limite de casas decimais atingido');
-                return;
-            }
-            estado.valorAtual += numero;
-        }
-        
-        console.log('Valor atual:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function apagarInput() {
-        if (estado.valorAtual.length > 1) {
-            estado.valorAtual = estado.valorAtual.slice(0, -1);
-        } else {
-            estado.valorAtual = '0';
-            estado.digitandoValor = false;
-        }
-        console.log('Apagando valor - novo valor:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function formatarValor(valor) {
-        if (valor.includes('.')) {
-            const partes = valor.split('.');
-            return `${partes[0]},${partes[1].substring(0, 2)}`;
-        }
-        return valor.replace('.', ',');
-    }
-
-    function formatarMoeda(valor) {
-        const numero = parseFloat(valor);
-        return numero.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    }
-
-    // Funções do calendário
-    function renderizarCalendario() {
-        console.log('Renderizando calendário...');
-        const ano = estado.dataSelecionada.getFullYear();
-        const mes = estado.dataSelecionada.getMonth();
-
-        const primeiroDiaMes = new Date(ano, mes, 1);
-        const ultimoDiaMes = new Date(ano, mes + 1, 0);
-        const diasNoMes = ultimoDiaMes.getDate();
-        const primeiroDiaSemana = primeiroDiaMes.getDay();
-
-        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-        let html = `
-            <div class="cabecalho-calendario">
-                <button class="botao-mes" id="mes-anterior">&lt;</button>
-                <h3>${nomesMeses[mes]} ${ano}</h3>
-                <button class="botao-mes" id="proximo-mes">&gt;</button>
-            </div>
-            <div class="dias-semana">
-        `;
-
-        for (let dia of nomesDias) {
-            html += `<div>${dia}</div>`;
-        }
-
-        html += `</div><div class="dias-calendario">`;
-
-        // Dias vazios no início
-        for (let i = 0; i < primeiroDiaSemana; i++) {
-            html += `<div class="dia-calendario outro-mes"></div>`;
-        }
-
-        // Dias do mês
-        for (let dia = 1; dia <= diasNoMes; dia++) {
-            const dataAtual = new Date(ano, mes, dia);
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-
-            const classeSelecionado = dataAtual.getTime() === estado.dataSelecionada.getTime() ? 'selecionado' : '';
-            const classeHoje = dataAtual.getTime() === hoje.getTime() ? 'hoje' : '';
-
-            html += `<div class="dia-calendario ${classeSelecionado} ${classeHoje}" data-dia="${dia}">${dia}</div>`;
-        }
-
-        html += `</div>`;
-        elementos.calendario.innerHTML = html;
-
-        // Eventos para os botões de mês
-        document.getElementById('mes-anterior').addEventListener('click', () => {
-            console.log('Mês anterior selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() - 1);
-            renderizarCalendario();
-        });
-
-        document.getElementById('proximo-mes').addEventListener('click', () => {
-            console.log('Próximo mês selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() + 1);
-            renderizarCalendario();
-        });
-
-        // Eventos para os dias
-        document.querySelectorAll('.dias-calendario .dia-calendario[data-dia]').forEach(dia => {
-            dia.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const diaSelecionado = parseInt(this.getAttribute('data-dia'));
-                console.log(`Dia selecionado: ${diaSelecionado}`);
-                estado.dataSelecionada = new Date(ano, mes, diaSelecionado);
-                atualizarDataSelecionada();
-                elementos.calendario.classList.remove('mostrar');
-            });
-        });
-    }
-
-    function atualizarDataSelecionada() {
-        const dia = String(estado.dataSelecionada.getDate()).padStart(2, '0');
-        const mes = String(estado.dataSelecionada.getMonth() + 1).padStart(2, '0');
-        const ano = estado.dataSelecionada.getFullYear();
-        const dataFormatada = `${dia}/${mes}/${ano}`;
-        console.log('Data selecionada atualizada:', dataFormatada);
-        elementos.dataSelecionada.textContent = dataFormatada;
-    }
-
-    // Função para exibir popups
-    function mostrarPopup(mensagem, callback) {
-        elementos.popupTexto.textContent = mensagem;
-        elementos.popupMensagem.style.display = 'flex';
-        elementos.popupBotao.onclick = function() {
-            elementos.popupMensagem.style.display = 'none';
-            if (callback) callback();
-        };
-    }
-
-
-    // Adiciona a opção "+ Criar categoria" ao final da lista visual de categorias
-    function carregarCategorias() {
-        const seletorCategoria = document.getElementById('seletor-categoria').querySelector('.opcoes-categoria');
-        seletorCategoria.innerHTML = ''; // Limpar categorias existentes
-
-        categoriasPadrao.forEach(categoria => {
-            const opcao = document.createElement('div');
-            opcao.classList.add('opcao-categoria');
-            opcao.setAttribute('data-value', categoria.nome.toLowerCase().replace(/\s+/g, '-'));
-            opcao.innerHTML = `
-                <span class="material-symbols-outlined">${categoria.icone}</span>
-                <span>${categoria.nome}</span>
-            `;
-            if (categoria.nome === 'Adicionar categoria') {
-                opcao.style.color = '#21c25e';
-                opcao.style.fontWeight = '600';
-                opcao.addEventListener('click', function () {
-                    // Abre o modal para criar categoria personalizada
-                    if (elementos.modalCategoria) {
-                        elementos.modalCategoria.style.display = 'flex';
-                        elementos.nomeCategoriaInput.value = '';
-                        elementos.corCategoriaInput.value = '#21c25e';
-                        elementos.iconeSelecionadoPreview.innerHTML = '<span class="material-symbols-outlined" style="color:#21c25e;">category</span>';
-                    }
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
-            } else {
-                opcao.addEventListener('click', function () {
-                    const selecionada = document.querySelector('.opcao-selecionada');
-                    selecionada.innerHTML = `
-                        <span class="material-symbols-outlined">${categoria.icone}</span>
-                        <span>${categoria.nome}</span>
-                    `;
-                    estado.categoriaSelecionada = categoria.nome;
-                    estado.iconeSelecionado = categoria.icone;
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
-            }
-            seletorCategoria.appendChild(opcao);
-        });
-    }
-
-    // Função para salvar a receita no Firestore
-    function salvarReceita() {
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const user = auth.currentUser;
-
-        if (!user) {
-            mostrarPopup('Você precisa estar logado para salvar uma receita.');
-            return;
-        }
-
-        const descricao = elementos.inputDescricao.value.trim();
-        if (!descricao) {
-            mostrarPopup('Por favor, insira uma descrição para a receita.');
-            return;
-        }
-        if (estado.valorAtual === '0') {
-            mostrarPopup('Por favor, insira um valor para a receita.');
-            return;
-        }
-
-        const novaReceita = {
-            userId: user.uid,
-            valor: elementos.valorReceita.textContent,
-            descricao: descricao,
-            recebido: elementos.checkboxRecebido.checked,
-            data: elementos.dataSelecionada.textContent,
-            categoria: estado.categoriaSelecionada,
-            carteira: estado.carteiraSelecionada,
-            // Adicione outros campos se necessário
-            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        db.collection('receitas').add(novaReceita)
-            .then(docRef => {
-                console.log('Receita salva com sucesso no Firestore com ID: ', docRef.id);
-                mostrarPopup('Receita salva com sucesso!', () => {
-                    window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao salvar receita: ', error);
-                mostrarPopup('Ocorreu um erro ao salvar a receita.');
-            });
-    }
-
-    // Funções da calculadora
-    function abrirCalculadora() {
-        console.log('Abrindo calculadora...');
-        elementos.calculadoraContainer.style.display = 'block';
-        estado.valorAtual = elementos.valorReceita.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-        estado.digitandoValor = false;
-    }
-
-    function fecharCalculadora() {
-        console.log('Fechando calculadora');
-        elementos.calculadoraContainer.style.display = 'none';
-    }
-
-    function cancelarCalculadora() {
-        console.log('Calculadora cancelada');
-        fecharCalculadora();
-    }
-
-    function confirmarCalculadora() {
-        const valorFormatado = formatarMoeda(estado.valorAtual);
-        console.log('Valor confirmado na calculadora:', valorFormatado);
-        elementos.valorReceita.textContent = `R$ ${valorFormatado}`;
-        fecharCalculadora();
-    }
-
-    function adicionarNumero(numero) {
-        if (!estado.digitandoValor) {
-            estado.valorAtual = '0';
-            estado.digitandoValor = true;
-        }
-        
-        if (estado.valorAtual === '0' && numero !== '.') {
-            estado.valorAtual = numero;
-        } else {
-            if (estado.valorAtual.includes('.') && estado.valorAtual.split('.')[1].length >= 2) {
-                console.log('Limite de casas decimais atingido');
-                return;
-            }
-            estado.valorAtual += numero;
-        }
-        
-        console.log('Valor atual:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function apagarInput() {
-        if (estado.valorAtual.length > 1) {
-            estado.valorAtual = estado.valorAtual.slice(0, -1);
-        } else {
-            estado.valorAtual = '0';
-            estado.digitandoValor = false;
-        }
-        console.log('Apagando valor - novo valor:', estado.valorAtual);
-        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
-    }
-
-    function formatarValor(valor) {
-        if (valor.includes('.')) {
-            const partes = valor.split('.');
-            return `${partes[0]},${partes[1].substring(0, 2)}`;
-        }
-        return valor.replace('.', ',');
-    }
-
-    function formatarMoeda(valor) {
-        const numero = parseFloat(valor);
-        return numero.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    }
-
-    // Funções do calendário
-    function renderizarCalendario() {
-        console.log('Renderizando calendário...');
-        const ano = estado.dataSelecionada.getFullYear();
-        const mes = estado.dataSelecionada.getMonth();
-
-        const primeiroDiaMes = new Date(ano, mes, 1);
-        const ultimoDiaMes = new Date(ano, mes + 1, 0);
-        const diasNoMes = ultimoDiaMes.getDate();
-        const primeiroDiaSemana = primeiroDiaMes.getDay();
-
-        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-        let html = `
-            <div class="cabecalho-calendario">
-                <button class="botao-mes" id="mes-anterior">&lt;</button>
-                <h3>${nomesMeses[mes]} ${ano}</h3>
-                <button class="botao-mes" id="proximo-mes">&gt;</button>
-            </div>
-            <div class="dias-semana">
-        `;
-
-        for (let dia of nomesDias) {
-            html += `<div>${dia}</div>`;
-        }
-
-        html += `</div><div class="dias-calendario">`;
-
-        // Dias vazios no início
-        for (let i = 0; i < primeiroDiaSemana; i++) {
-            html += `<div class="dia-calendario outro-mes"></div>`;
-        }
-
-        // Dias do mês
-        for (let dia = 1; dia <= diasNoMes; dia++) {
-            const dataAtual = new Date(ano, mes, dia);
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-
-            const classeSelecionado = dataAtual.getTime() === estado.dataSelecionada.getTime() ? 'selecionado' : '';
-            const classeHoje = dataAtual.getTime() === hoje.getTime() ? 'hoje' : '';
-
-            html += `<div class="dia-calendario ${classeSelecionado} ${classeHoje}" data-dia="${dia}">${dia}</div>`;
-        }
-
-        html += `</div>`;
-        elementos.calendario.innerHTML = html;
-
-        // Eventos para os botões de mês
-        document.getElementById('mes-anterior').addEventListener('click', () => {
-            console.log('Mês anterior selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() - 1);
-            renderizarCalendario();
-        });
-
-        document.getElementById('proximo-mes').addEventListener('click', () => {
-            console.log('Próximo mês selecionado');
-            estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() + 1);
-            renderizarCalendario();
-        });
-
-        // Eventos para os dias
-        document.querySelectorAll('.dias-calendario .dia-calendario[data-dia]').forEach(dia => {
-            dia.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const diaSelecionado = parseInt(this.getAttribute('data-dia'));
-                console.log(`Dia selecionado: ${diaSelecionado}`);
-                estado.dataSelecionada = new Date(ano, mes, diaSelecionado);
-                atualizarDataSelecionada();
-                elementos.calendario.classList.remove('mostrar');
-            });
-        });
-    }
-
-    function atualizarDataSelecionada() {
-        const dia = String(estado.dataSelecionada.getDate()).padStart(2, '0');
-        const mes = String(estado.dataSelecionada.getMonth() + 1).padStart(2, '0');
-        const ano = estado.dataSelecionada.getFullYear();
-        const dataFormatada = `${dia}/${mes}/${ano}`;
-        console.log('Data selecionada atualizada:', dataFormatada);
-        elementos.dataSelecionada.textContent = dataFormatada;
-    }
-
-    // Função para exibir popups
-    function mostrarPopup(mensagem, callback) {
-        elementos.popupTexto.textContent = mensagem;
-        elementos.popupMensagem.style.display = 'flex';
-        elementos.popupBotao.onclick = function() {
-            elementos.popupMensagem.style.display = 'none';
-            if (callback) callback();
-        };
-    }
-
-    // Funções para categorias
-    // Categorias padrão com ícones
+    // Categorias padrão com lazy loading
     const categoriasPadrao = [
         { nome: 'Salário', icone: 'attach_money' },
         { nome: 'Freelance', icone: 'work' },
@@ -967,263 +86,293 @@ document.addEventListener('DOMContentLoaded', function() {
         { nome: 'Adicionar categoria', icone: 'add' }
     ];
 
-    // Adiciona a opção "+ Criar categoria" ao final da lista visual de categorias
-    function carregarCategorias() {
-        const seletorCategoria = document.getElementById('seletor-categoria').querySelector('.opcoes-categoria');
-        seletorCategoria.innerHTML = ''; // Limpar categorias existentes
+    // Função otimizada para adicionar event listeners
+    function addEventListenerOnce(element, event, handler, key) {
+        if (!element || estado.eventListeners.has(key)) return;
+        
+        element.addEventListener(event, handler);
+        estado.eventListeners.set(key, { element, event, handler });
+    }
 
-        categoriasPadrao.forEach(categoria => {
-            const opcao = document.createElement('div');
-            opcao.classList.add('opcao-categoria');
-            opcao.setAttribute('data-value', categoria.nome.toLowerCase().replace(/\s+/g, '-'));
-            opcao.innerHTML = `
-                <span class="material-symbols-outlined">${categoria.icone}</span>
-                <span>${categoria.nome}</span>
-            `;
-            if (categoria.nome === 'Adicionar categoria') {
-                opcao.style.color = '#21c25e';
-                opcao.style.fontWeight = '600';
-                opcao.addEventListener('click', function () {
-                    // Abre o modal para criar categoria personalizada
-                    if (elementos.modalCategoria) {
-                        elementos.modalCategoria.style.display = 'flex';
-                        elementos.nomeCategoriaInput.value = '';
-                        elementos.corCategoriaInput.value = '#21c25e';
-                        elementos.iconeSelecionadoPreview.innerHTML = '<span class="material-symbols-outlined" style="color:#21c25e;">category</span>';
-                    }
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
-            } else {
-                opcao.addEventListener('click', function () {
-                    const selecionada = document.querySelector('.opcao-selecionada');
-                    selecionada.innerHTML = `
-                        <span class="material-symbols-outlined">${categoria.icone}</span>
-                        <span>${categoria.nome}</span>
-                    `;
-                    estado.categoriaSelecionada = categoria.nome;
-                    estado.iconeSelecionado = categoria.icone;
-                    elementos.opcoesCategoria.classList.remove('mostrar');
-                });
+    // Inicialização otimizada
+    function inicializar() {
+        console.log('Inicializando aplicação...');
+        configurarEventos();
+        atualizarDataSelecionada();
+        
+        // Carregamento lazy de dados pesados
+        requestIdleCallback(() => {
+            carregarCarteiras();
+            carregarCategorias();
+        });
+        
+        console.log('Aplicação inicializada com sucesso');
+    }
+
+    // Configurar eventos otimizado
+    function configurarEventos() {
+        console.log('Configurando eventos...');
+        
+        // Botão voltar
+        addEventListenerOnce(elementos.botaoVoltar, 'click', function() {
+            console.log('Botão voltar clicado');
+            window.history.back();
+        }, 'botao-voltar');
+
+        // Calculadora com debounce
+        let calculadoraTimeout;
+        addEventListenerOnce(elementos.secaoValor, 'click', function() {
+            clearTimeout(calculadoraTimeout);
+            calculadoraTimeout = setTimeout(abrirCalculadora, 100);
+        }, 'secao-valor');
+        
+        addEventListenerOnce(elementos.calculadoraContainer, 'click', function(e) {
+            if (e.target === elementos.calculadoraContainer) {
+                console.log('Clicou fora da calculadora - fechando');
+                fecharCalculadora();
             }
-            seletorCategoria.appendChild(opcao);
-        });
-    }
-
-    // Função para salvar categoria personalizada
-    function salvarCategoriaPersonalizada() {
-        const nome = elementos.nomeCategoriaInput.value.trim();
-        const cor = elementos.corCategoriaInput.value;
-        // Extrai o nome do ícone do preview
-        const iconeSpan = elementos.iconeSelecionadoPreview.querySelector('.material-symbols-outlined');
-        const icone = iconeSpan ? iconeSpan.textContent : 'category';
-
-        if (!nome || nome.length < 2) {
-            document.getElementById('erro-nome-categoria').style.display = 'block';
-            elementos.nomeCategoriaInput.focus();
-            return;
-        }
-        document.getElementById('erro-nome-categoria').style.display = 'none';
-
-        // Adiciona nova categoria à lista visual
-        const seletorCategoria = document.getElementById('seletor-categoria').querySelector('.opcoes-categoria');
-        const opcao = document.createElement('div');
-        opcao.classList.add('opcao-categoria');
-        opcao.setAttribute('data-value', nome.toLowerCase().replace(/\s+/g, '-'));
-        opcao.innerHTML = `
-            <span class="material-symbols-outlined" style="color:${cor};">${icone}</span>
-            <span>${nome}</span>
-        `;
-        opcao.addEventListener('click', function () {
-            const selecionada = document.querySelector('.opcao-selecionada');
-            selecionada.innerHTML = `
-                <span class="material-symbols-outlined" style="color:${cor};">${icone}</span>
-                <span>${nome}</span>
-            `;
-            estado.categoriaSelecionada = nome;
-            estado.iconeSelecionado = icone;
-            elementos.opcoesCategoria.classList.remove('mostrar');
-        });
-        // Insere antes da opção "Adicionar categoria"
-        const addCategoriaOpcao = seletorCategoria.querySelector('[data-value="adicionar-categoria"]');
-        if (addCategoriaOpcao) {
-            seletorCategoria.insertBefore(opcao, addCategoriaOpcao);
-        } else {
-            seletorCategoria.appendChild(opcao);
-        }
-
-        // Fecha modal
-        elementos.modalCategoria.style.display = 'none';
-    }
-
-    // Função para fechar modal de categoria
-    function fecharModalCategoria() {
-        elementos.modalCategoria.style.display = 'none';
-    }
-
-    // Função para atualizar cor do preview
-    function atualizarCorPreview() {
-        elementos.corCategoriaInput = document.getElementById('cor-categoria');
-        elementos.iconeSelecionadoPreview = document.getElementById('icone-selecionado-preview');
-        const cor = elementos.corCategoriaInput.value;
-        const iconeSpan = elementos.iconeSelecionadoPreview.querySelector('.material-symbols-outlined');
-        if (iconeSpan) {
-            iconeSpan.style.color = cor;
-        }
-        document.getElementById('cor-preview').style.backgroundColor = cor;
-    }
-
-    // Inicializar categorias ao carregar a página
-    document.addEventListener('DOMContentLoaded', function () {
-        carregarCategorias();
-    });
-
-    // Funções para carteiras
-    function carregarCarteiras() {
-        console.log('Carregando carteiras...');
-        const opcoesCarteira = elementos.opcoesCarteira;
-        opcoesCarteira.innerHTML = '';
-
-        let carteiras = [];
-        try {
-            carteiras = JSON.parse(localStorage.getItem('contasBancarias')) || [];
-            console.log(`Carteiras encontradas: ${carteiras.length}`);
-        } catch (e) {
-            console.error('Erro ao carregar contas:', e);
-        }
-
-        if (carteiras.length === 0) {
-            console.log('Nenhuma carteira encontrada - mostrando opção para criar');
-            opcoesCarteira.innerHTML = `
-                <div class="opcao-carteira" id="criar-nova-carteira">
-                    <span class="icone-carteira">➕</span>
-                    <div class="detalhes-carteira">
-                        <span class="nome-carteira">Criar nova conta</span>
-                    </div>
-                </div>
-            `;
-            document.getElementById('criar-nova-carteira').addEventListener('click', function() {
-                console.log('Redirecionando para criar nova conta');
-                window.location.href = "../Nova-conta/Nova-conta.html";
-            });
-        } else {
-            carteiras.forEach(carteira => {
-                if (carteira && carteira.id) {
-                    // Use o campo correto para o nome da conta
-                    const nomeCarteira = carteira.nome || carteira.descricao || carteira.banco || carteira.nomeConta || 'Conta sem nome';
-                    const tipoCarteira = carteira.tipo || carteira.codigoBanco || 'Conta';
-                    const iconeCarteira = carteira.iconeBanco || '🏦';
-                    const saldoCarteira = carteira.saldo ? parseFloat(carteira.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
-
-                    const opcao = document.createElement('div');
-                    opcao.classList.add('opcao-carteira');
-                    opcao.setAttribute('data-value', carteira.id);
-                    opcao.innerHTML = `
-                        <span class="icone-carteira">${iconeCarteira}</span>
-                        <div class="detalhes-carteira">
-                            <span class="nome-carteira">${nomeCarteira}</span>
-                            <span>${tipoCarteira}</span>
-                        </div>
-                        <span class="saldo-carteira">${saldoCarteira}</span>
-                    `;
-                    opcao.addEventListener('click', function() {
-                        console.log(`Carteira selecionada: ${nomeCarteira}`);
-                        estado.carteiraSelecionada = carteira.id;
-                        elementos.opcaoSelecionadaCarteira.innerHTML = `
-                            <span class="icone-carteira">${iconeCarteira}</span>
-                            <span>${nomeCarteira}</span>
-                        `;
-                        opcoesCarteira.classList.remove('mostrar');
-                    });
-                    opcoesCarteira.appendChild(opcao);
+        }, 'calculadora-container');
+        
+        // Event delegation para botões da calculadora
+        addEventListenerOnce(elementos.calculadoraBotoes, 'click', function(e) {
+            if (e.target.tagName === 'BUTTON') {
+                const valor = e.target.textContent.trim();
+                console.log(`Botão da calculadora pressionado: ${valor}`);
+                
+                if (valor.match(/[0-9]/)) {
+                    adicionarNumero(valor);
+                } else if (valor === ',') {
+                    adicionarNumero('.');
+                } else if (valor === '=') {
+                    confirmarCalculadora();
                 }
-            });
+            }
+        }, 'calculadora-botoes');
+        
+        addEventListenerOnce(elementos.botaoApagar, 'click', apagarInput, 'botao-apagar');
+        addEventListenerOnce(elementos.btnCancelarCalculadora, 'click', cancelarCalculadora, 'btn-cancelar');
+        addEventListenerOnce(elementos.btnConfirmarCalculadora, 'click', confirmarCalculadora, 'btn-confirmar');
+
+        // Calendário otimizado
+        addEventListenerOnce(elementos.campoData, 'click', function(e) {
+            e.stopPropagation();
+            console.log('Abrindo calendário');
+            elementos.calendario.classList.add('mostrar');
+        }, 'campo-data');
+        
+        // Lazy render do calendário
+        renderizarCalendario();
+        
+        // Event delegation para clicks globais
+        addEventListenerOnce(document, 'click', function(e) {
+            // Fechar calendário
+            if (!elementos.calendario.contains(e.target) && e.target !== elementos.campoData) {
+                elementos.calendario.classList.remove('mostrar');
+            }
+            
+            // Fechar seletores
+            if (!elementos.seletorCategoria.contains(e.target)) {
+                elementos.opcoesCategoria.classList.remove('mostrar');
+            }
+        }, 'document-clicks');
+
+        // Categorias
+        addEventListenerOnce(elementos.opcaoSelecionadaCategoria, 'click', function(e) {
+            e.stopPropagation();
+            console.log('Abrindo seletor de categorias');
+            elementos.opcoesCategoria.classList.toggle('mostrar');
+        }, 'opcao-categoria');
+
+        // Carteiras
+        addEventListenerOnce(elementos.opcaoSelecionadaCarteira, 'click', function(e) {
+            e.stopPropagation();
+            console.log('Abrindo seletor de carteiras');
+            elementos.opcoesCarteira.classList.toggle('mostrar');
+        }, 'opcao-carteira');
+
+        // Anexo
+        addEventListenerOnce(elementos.botaoAnexo, 'click', function() {
+            console.log('Abrindo seletor de arquivos');
+            elementos.inputAnexo.click();
+        }, 'botao-anexo');
+        
+        addEventListenerOnce(elementos.inputAnexo, 'change', function() {
+            if (this.files && this.files[0]) {
+                console.log('Arquivo selecionado:', this.files[0].name);
+                elementos.nomeArquivo.textContent = this.files[0].name;
+            }
+        }, 'input-anexo');
+
+        // Salvar receita
+        addEventListenerOnce(elementos.botaoSalvar, 'click', salvarReceita, 'botao-salvar');
+
+        // Modal de categoria
+        if (elementos.salvarCategoriaBtn) {
+            addEventListenerOnce(elementos.salvarCategoriaBtn, 'click', salvarCategoriaPersonalizada, 'salvar-categoria');
+        }
+        if (elementos.cancelarCategoriaBtn) {
+            addEventListenerOnce(elementos.cancelarCategoriaBtn, 'click', fecharModalCategoria, 'cancelar-categoria');
+        }
+        if (elementos.corCategoriaInput) {
+            addEventListenerOnce(elementos.corCategoriaInput, 'input', atualizarCorPreview, 'cor-categoria');
+        }
+
+        // Toggle de repetição
+        addEventListenerOnce(elementos.toggleRepetir, 'change', function() {
+            console.log('Toggle de repetição alterado:', this.checked);
+            elementos.camposRepetir.style.display = this.checked ? 'block' : 'none';
+        }, 'toggle-repetir');
+
+        // Configurar eventos de categoria personalizada
+        configurarEventosCategoriaPersonalizada();
+    }
+
+    // Função otimizada para configurar eventos de categoria personalizada
+    function configurarEventosCategoriaPersonalizada() {
+        const selectCategoria = document.getElementById('categoria-receita');
+        const popupCriarCategoria = document.getElementById('popup-criar-categoria');
+        const btnCancelar = document.getElementById('popup-criar-categoria-cancelar');
+        const btnSalvar = document.getElementById('popup-criar-categoria-salvar');
+        const inputNome = document.getElementById('nova-categoria-nome');
+        const selectIcone = document.getElementById('nova-categoria-icone');
+
+        if (selectCategoria) {
+            addEventListenerOnce(selectCategoria, 'change', function() {
+                if (this.value === 'criar-categoria') {
+                    popupCriarCategoria.style.display = 'flex';
+                    inputNome.value = '';
+                    selectIcone.value = 'category';
+                }
+            }, 'select-categoria');
+        }
+        
+        if (btnCancelar) {
+            addEventListenerOnce(btnCancelar, 'click', function() {
+                popupCriarCategoria.style.display = 'none';
+                if (selectCategoria) selectCategoria.value = '-';
+            }, 'btn-cancelar-categoria');
+        }
+        
+        if (btnSalvar) {
+            addEventListenerOnce(btnSalvar, 'click', function() {
+                const nome = inputNome.value.trim();
+                const icone = selectIcone.value;
+                if (!nome) {
+                    inputNome.style.borderColor = '#ef233c';
+                    inputNome.focus();
+                    return;
+                }
+                
+                // Adiciona nova categoria de forma otimizada
+                const option = document.createElement('option');
+                option.value = nome;
+                option.textContent = nome;
+                option.setAttribute('data-icone', icone);
+                selectCategoria.appendChild(option);
+                selectCategoria.value = nome;
+                popupCriarCategoria.style.display = 'none';
+            }, 'btn-salvar-categoria');
         }
     }
 
-    // Função para salvar a receita
+    // Função de salvar receita consolidada e otimizada
     function salvarReceita() {
         console.log('Iniciando processo de salvar receita...');
         
-        // Validação dos campos
-        if (elementos.valorReceita.textContent === 'R$ 0,00') {
-            console.log('Valor não informado');
-            mostrarPopup('Por favor, insira um valor para a receita');
-            return;
+        // Validação com early return
+        const validacoes = [
+            { condicao: elementos.valorReceita.textContent === 'R$ 0,00', mensagem: 'Por favor, insira um valor para a receita.' },
+            { condicao: !elementos.inputDescricao.value.trim(), mensagem: 'Por favor, insira uma descrição para a receita.' },
+            { condicao: !estado.categoriaSelecionada, mensagem: 'Por favor, selecione uma categoria.' },
+            { condicao: !estado.carteiraSelecionada, mensagem: 'Por favor, selecione uma conta.' }
+        ];
+
+        for (const validacao of validacoes) {
+            if (validacao.condicao) {
+                console.log('Validação falhou:', validacao.mensagem);
+                mostrarPopup(validacao.mensagem);
+                return;
+            }
         }
 
-        if (!elementos.inputDescricao.value.trim()) {
-            console.log('Descrição não informada');
-            mostrarPopup('Por favor, insira uma descrição para a receita');
-            return;
-        }
-
-        if (!estado.categoriaSelecionada) {
-            console.log('Categoria não selecionada');
-            mostrarPopup('Por favor, selecione uma categoria');
-            return;
-        }
-
-        if (!estado.carteiraSelecionada) {
-            console.log('Carteira não selecionada');
-            mostrarPopup('Por favor, selecione uma conta');
-            return;
-        }
-
-        // Obtenha os campos de repetição e receita fixa
+        // Coleta dados de forma otimizada
         const repetir = elementos.toggleRepetir.checked;
-        const receitaFixa = document.getElementById('toggle-receita-fixa').checked;
-        const quantidadeRepeticoes = repetir ? document.getElementById('quantidade-repeticoes').value : null;
-        const frequenciaRepeticoes = repetir ? document.getElementById('frequencia-repeticoes').value : null;
-
-        // Criar objeto com os dados da receita
+        const receitaFixa = document.getElementById('toggle-receita-fixa')?.checked || false;
+        
         const novaReceita = {
             valor: elementos.valorReceita.textContent,
             recebido: elementos.checkboxRecebido.checked,
             data: elementos.dataSelecionada.textContent,
-            descricao: elementos.inputDescricao.value,
+            descricao: elementos.inputDescricao.value.trim(),
             categoria: estado.categoriaSelecionada,
             carteira: estado.carteiraSelecionada,
             anexo: elementos.inputAnexo.files.length > 0 ? elementos.inputAnexo.files[0].name : null,
             repetir: repetir,
-            quantidadeRepeticoes: quantidadeRepeticoes,
-            frequenciaRepeticoes: frequenciaRepeticoes,
-            receitaFixa: receitaFixa
+            quantidadeRepeticoes: repetir ? document.getElementById('quantidade-repeticoes')?.value : null,
+            frequenciaRepeticoes: repetir ? document.getElementById('frequencia-repeticoes')?.value : null,
+            receitaFixa: receitaFixa,
+            timestamp: Date.now()
         };
 
         console.log('Nova receita a ser salva:', novaReceita);
 
-        // Salvar em JSON no localStorage
-        let receitas = [];
-        try {
-            receitas = JSON.parse(localStorage.getItem('receitas')) || [];
-        } catch (e) {
-            receitas = [];
-        }
-        receitas.push(novaReceita);
-        localStorage.setItem('receitas', JSON.stringify(receitas));
-        console.log('Receita salva com sucesso no localStorage');
+        // Salvar em lote para melhor performance
+        Promise.all([
+            salvarLocalStorage(novaReceita),
+            salvarFirestore(novaReceita)
+        ]).then(() => {
+            mostrarPopup('Receita salva com sucesso!', () => {
+                limparFormulario();
+                window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
+            });
+        }).catch(error => {
+            console.error('Erro ao salvar:', error);
+            mostrarPopup('Ocorreu um erro ao salvar a receita.');
+        });
+    }
 
-        // Salvar no Firestore
-        if (firebase && firebase.auth && firebase.firestore) {
-            const user = firebase.auth().currentUser;
-            if (user) {
-                const receitaFirestore = {
-                    ...novaReceita,
-                    userId: user.uid
-                };
-                firebase.firestore().collection('receitas').add(receitaFirestore)
-                    .then(() => {
-                        console.log('Receita salva no Firestore!');
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao salvar receita no Firestore:', error);
-                    });
+    // Função otimizada para salvar no localStorage
+    function salvarLocalStorage(receita) {
+        return new Promise((resolve) => {
+            try {
+                let receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
+                receitas.push(receita);
+                localStorage.setItem('receitas', JSON.stringify(receitas));
+                console.log('Receita salva no localStorage');
+                resolve();
+            } catch (e) {
+                console.error('Erro ao salvar no localStorage:', e);
+                resolve(); // Não falha se localStorage der erro
             }
-        }
+        });
+    }
 
-        mostrarPopup('Receita salva com sucesso!');
+    // Função otimizada para salvar no Firestore
+    function salvarFirestore(receita) {
+        return new Promise((resolve, reject) => {
+            if (!firebase?.auth || !firebase?.firestore) {
+                resolve(); // Firebase não disponível
+                return;
+            }
 
-        // Limpar formulário
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                resolve(); // Usuário não logado
+                return;
+            }
+
+            const receitaFirestore = { ...receita, userId: user.uid };
+            firebase.firestore().collection('receitas').add(receitaFirestore)
+                .then(() => {
+                    console.log('Receita salva no Firestore!');
+                    resolve();
+                })
+                .catch(reject);
+        });
+    }
+
+    // Função otimizada para limpar formulário
+    function limparFormulario() {
         elementos.valorReceita.textContent = 'R$ 0,00';
         elementos.checkboxRecebido.checked = true;
         elementos.inputDescricao.value = '';
@@ -1233,198 +382,520 @@ document.addEventListener('DOMContentLoaded', function() {
         elementos.inputAnexo.value = '';
         elementos.toggleRepetir.checked = false;
         elementos.camposRepetir.style.display = 'none';
+        
         estado.categoriaSelecionada = null;
         estado.carteiraSelecionada = null;
-
-        // Resetar data para hoje
         estado.dataSelecionada = new Date();
+        
         atualizarDataSelecionada();
-
-        // Redirecionar para Lista de receitas.html após salvar e fechar popup
-        elementos.popupBotao.onclick = function() {
-            console.log('Popup fechado');
-            elementos.popupMensagem.style.display = 'none';
-            window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
-        };
     }
 
-    // Função para mostrar popup
-    function mostrarPopup(mensagem) {
-        console.log('Mostrando popup:', mensagem);
+    // Funções da calculadora otimizadas
+    function abrirCalculadora() {
+        console.log('Abrindo calculadora...');
+        elementos.calculadoraContainer.style.display = 'block';
+        const valorTexto = elementos.valorReceita.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+        estado.valorAtual = valorTexto || '0';
+        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
+        estado.digitandoValor = false;
+    }
+
+    function fecharCalculadora() {
+        console.log('Fechando calculadora');
+        elementos.calculadoraContainer.style.display = 'none';
+    }
+
+    function cancelarCalculadora() {
+        console.log('Calculadora cancelada');
+        fecharCalculadora();
+    }
+
+    function confirmarCalculadora() {
+        const valorFormatado = formatarMoeda(estado.valorAtual);
+        console.log('Valor confirmado na calculadora:', valorFormatado);
+        elementos.valorReceita.textContent = `R$ ${valorFormatado}`;
+        fecharCalculadora();
+    }
+
+    function adicionarNumero(numero) {
+        if (!estado.digitandoValor) {
+            estado.valorAtual = '0';
+            estado.digitandoValor = true;
+        }
+        
+        if (estado.valorAtual === '0' && numero !== '.') {
+            estado.valorAtual = numero;
+        } else {
+            if (estado.valorAtual.includes('.') && estado.valorAtual.split('.')[1].length >= 2) {
+                console.log('Limite de casas decimais atingido');
+                return;
+            }
+            estado.valorAtual += numero;
+        }
+        
+        console.log('Valor atual:', estado.valorAtual);
+        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
+    }
+
+    function apagarInput() {
+        if (estado.valorAtual.length > 1) {
+            estado.valorAtual = estado.valorAtual.slice(0, -1);
+        } else {
+            estado.valorAtual = '0';
+            estado.digitandoValor = false;
+        }
+        console.log('Apagando valor - novo valor:', estado.valorAtual);
+        elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
+    }
+
+    function formatarValor(valor) {
+        if (valor.includes('.')) {
+            const partes = valor.split('.');
+            return `${partes[0]},${partes[1].substring(0, 2)}`;
+        }
+        return valor.replace('.', ',');
+    }
+
+    function formatarMoeda(valor) {
+        const numero = parseFloat(valor);
+        return numero.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    }
+
+    // Função de calendário otimizada com fragments
+    function renderizarCalendario() {
+        console.log('Renderizando calendário...');
+        const ano = estado.dataSelecionada.getFullYear();
+        const mes = estado.dataSelecionada.getMonth();
+
+        const primeiroDiaMes = new Date(ano, mes, 1);
+        const ultimoDiaMes = new Date(ano, mes + 1, 0);
+        const diasNoMes = ultimoDiaMes.getDate();
+        const primeiroDiaSemana = primeiroDiaMes.getDay();
+
+        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        // Usar DocumentFragment para melhor performance
+        const fragment = document.createDocumentFragment();
+        
+        const cabecalho = document.createElement('div');
+        cabecalho.className = 'cabecalho-calendario';
+        cabecalho.innerHTML = `
+            <button class="botao-mes" id="mes-anterior">&lt;</button>
+            <h3>${nomesMeses[mes]} ${ano}</h3>
+            <button class="botao-mes" id="proximo-mes">&gt;</button>
+        `;
+        fragment.appendChild(cabecalho);
+
+        const diasSemana = document.createElement('div');
+        diasSemana.className = 'dias-semana';
+        nomesDias.forEach(dia => {
+            const divDia = document.createElement('div');
+            divDia.textContent = dia;
+            diasSemana.appendChild(divDia);
+        });
+        fragment.appendChild(diasSemana);
+
+        const diasCalendario = document.createElement('div');
+        diasCalendario.className = 'dias-calendario';
+
+        // Dias vazios no início
+        for (let i = 0; i < primeiroDiaSemana; i++) {
+            const divVazio = document.createElement('div');
+            divVazio.className = 'dia-calendario outro-mes';
+            diasCalendario.appendChild(divVazio);
+        }
+
+        // Dias do mês em lote
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        for (let dia = 1; dia <= diasNoMes; dia++) {
+            const dataAtual = new Date(ano, mes, dia);
+            const divDia = document.createElement('div');
+            
+            const classeSelecionado = dataAtual.getTime() === estado.dataSelecionada.getTime() ? 'selecionado' : '';
+            const classeHoje = dataAtual.getTime() === hoje.getTime() ? 'hoje' : '';
+            
+            divDia.className = `dia-calendario ${classeSelecionado} ${classeHoje}`;
+            divDia.setAttribute('data-dia', dia);
+            divDia.textContent = dia;
+            
+            diasCalendario.appendChild(divDia);
+        }
+
+        fragment.appendChild(diasCalendario);
+        elementos.calendario.innerHTML = '';
+        elementos.calendario.appendChild(fragment);
+
+        // Event listeners otimizados
+        configurarEventosCalendario(ano, mes);
+    }
+
+    function configurarEventosCalendario(ano, mes) {
+        // Event delegation para botões de mês
+        const mesAnterior = document.getElementById('mes-anterior');
+        const proximoMes = document.getElementById('proximo-mes');
+        
+        if (mesAnterior) {
+            mesAnterior.addEventListener('click', () => {
+                console.log('Mês anterior selecionado');
+                estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() - 1);
+                renderizarCalendario();
+            });
+        }
+
+        if (proximoMes) {
+            proximoMes.addEventListener('click', () => {
+                console.log('Próximo mês selecionado');
+                estado.dataSelecionada.setMonth(estado.dataSelecionada.getMonth() + 1);
+                renderizarCalendario();
+            });
+        }
+
+        // Event delegation para dias
+        const diasCalendario = elementos.calendario.querySelector('.dias-calendario');
+        if (diasCalendario) {
+            diasCalendario.addEventListener('click', function(e) {
+                const diaElement = e.target.closest('.dia-calendario[data-dia]');
+                if (diaElement) {
+                    e.stopPropagation();
+                    const diaSelecionado = parseInt(diaElement.getAttribute('data-dia'));
+                    console.log(`Dia selecionado: ${diaSelecionado}`);
+                    estado.dataSelecionada = new Date(ano, mes, diaSelecionado);
+                    atualizarDataSelecionada();
+                    elementos.calendario.classList.remove('mostrar');
+                }
+            });
+        }
+    }
+
+    function atualizarDataSelecionada() {
+        const dia = String(estado.dataSelecionada.getDate()).padStart(2, '0');
+        const mes = String(estado.dataSelecionada.getMonth() + 1).padStart(2, '0');
+        const ano = estado.dataSelecionada.getFullYear();
+        const dataFormatada = `${dia}/${mes}/${ano}`;
+        console.log('Data selecionada atualizada:', dataFormatada);
+        elementos.dataSelecionada.textContent = dataFormatada;
+    }
+
+    // Função para exibir popups otimizada
+    function mostrarPopup(mensagem, callback) {
         elementos.popupTexto.textContent = mensagem;
         elementos.popupMensagem.style.display = 'flex';
-        elementos.popupBotao.onclick = function() {
-            console.log('Popup fechado');
+        
+        // Remove listener anterior se existir
+        const oldHandler = estado.eventListeners.get('popup-botao');
+        if (oldHandler) {
+            oldHandler.element.removeEventListener(oldHandler.event, oldHandler.handler);
+        }
+        
+        const handler = function() {
             elementos.popupMensagem.style.display = 'none';
-        };
-    }
-
-    // Seção relevante: 393-428
-    // Certifique-se de que ao abrir o popup, o foco vá para o botão salvar/cancelar
-    function mostrarPopupMensagem(texto, callback) {
-        const popup = document.getElementById('popup-mensagem');
-        const popupTexto = document.getElementById('popup-texto');
-        const popupBotao = document.getElementById('popup-botao');
-        popupTexto.textContent = texto;
-        popup.style.display = 'flex';
-        popupBotao.focus(); // Garante que o botão fique visível e acessível
-
-        // Adiciona rolagem ao popup se necessário
-        popup.querySelector('div').style.overflowY = 'auto';
-        popup.querySelector('div').style.maxHeight = '80vh';
-
-        popupBotao.onclick = function() {
-            popup.style.display = 'none';
             if (callback) callback();
         };
+        
+        elementos.popupBotao.addEventListener('click', handler);
+        estado.eventListeners.set('popup-botao', { element: elementos.popupBotao, event: 'click', handler });
     }
 
-    // Torne gerenciarToggles global
+    // Carregamento otimizado de categorias com chunks
+    function carregarCategorias() {
+        const seletorCategoria = elementos.opcoesCategoria;
+        if (!seletorCategoria) return;
+        
+        seletorCategoria.innerHTML = '';
+
+        // Processar categorias em chunks para evitar bloqueio da UI
+        function processarChunk(startIndex = 0, chunkSize = 5) {
+            const endIndex = Math.min(startIndex + chunkSize, categoriasPadrao.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const categoria = categoriasPadrao[i];
+                const opcao = criarOpcaoCategoria(categoria);
+                seletorCategoria.appendChild(opcao);
+            }
+            
+            if (endIndex < categoriasPadrao.length) {
+                requestIdleCallback(() => processarChunk(endIndex, chunkSize));
+            }
+        }
+        
+        processarChunk();
+    }
+
+    function criarOpcaoCategoria(categoria) {
+        const opcao = document.createElement('div');
+        opcao.classList.add('opcao-categoria');
+        opcao.setAttribute('data-value', categoria.nome.toLowerCase().replace(/\s+/g, '-'));
+        opcao.innerHTML = `
+            <span class="material-symbols-outlined">${categoria.icone}</span>
+            <span>${categoria.nome}</span>
+        `;
+        
+        if (categoria.nome === 'Adicionar categoria') {
+            opcao.style.color = '#21c25e';
+            opcao.style.fontWeight = '600';
+            opcao.addEventListener('click', function() {
+                if (elementos.modalCategoria) {
+                    elementos.modalCategoria.style.display = 'flex';
+                    elementos.nomeCategoriaInput.value = '';
+                    elementos.corCategoriaInput.value = '#21c25e';
+                    if (elementos.iconeSelecionadoPreview) {
+                        elementos.iconeSelecionadoPreview.innerHTML = '<span class="material-symbols-outlined" style="color:#21c25e;">category</span>';
+                    }
+                }
+                elementos.opcoesCategoria.classList.remove('mostrar');
+            });
+        } else {
+            opcao.addEventListener('click', function() {
+                const selecionada = elementos.opcaoSelecionadaCategoria;
+                selecionada.innerHTML = `
+                    <span class="material-symbols-outlined">${categoria.icone}</span>
+                    <span>${categoria.nome}</span>
+                `;
+                estado.categoriaSelecionada = categoria.nome;
+                estado.iconeSelecionado = categoria.icone;
+                elementos.opcoesCategoria.classList.remove('mostrar');
+            });
+        }
+        
+        return opcao;
+    }
+
+    // Carregamento otimizado de carteiras
+    function carregarCarteiras() {
+        console.log('Carregando carteiras...');
+        const opcoesCarteira = elementos.opcoesCarteira;
+        if (!opcoesCarteira) return;
+        
+        opcoesCarteira.innerHTML = '';
+
+        let carteiras = [];
+        try {
+            carteiras = JSON.parse(localStorage.getItem('contasBancarias') || '[]');
+            console.log(`Carteiras encontradas: ${carteiras.length}`);
+        } catch (e) {
+            console.error('Erro ao carregar contas:', e);
+        }
+
+        if (carteiras.length === 0) {
+            const opcaoCrear = document.createElement('div');
+            opcaoCrear.className = 'opcao-carteira';
+            opcaoCrear.id = 'criar-nova-carteira';
+            opcaoCrear.innerHTML = `
+                <span class="icone-carteira">➕</span>
+                <div class="detalhes-carteira">
+                    <span class="nome-carteira">Criar nova conta</span>
+                </div>
+            `;
+            opcaoCrear.addEventListener('click', function() {
+                console.log('Redirecionando para criar nova conta');
+                window.location.href = "../Nova-conta/Nova-conta.html";
+            });
+            opcoesCarteira.appendChild(opcaoCrear);
+        } else {
+            // Processar carteiras em chunks
+            function processarCarteiras(startIndex = 0, chunkSize = 3) {
+                const endIndex = Math.min(startIndex + chunkSize, carteiras.length);
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const carteira = carteiras[i];
+                    if (carteira?.id) {
+                        const opcao = criarOpcaoCarteira(carteira);
+                        opcoesCarteira.appendChild(opcao);
+                    }
+                }
+                
+                if (endIndex < carteiras.length) {
+                    requestIdleCallback(() => processarCarteiras(endIndex, chunkSize));
+                }
+            }
+            
+            processarCarteiras();
+        }
+    }
+
+    function criarOpcaoCarteira(carteira) {
+        const nomeCarteira = carteira.nome || carteira.descricao || carteira.banco || carteira.nomeConta || 'Conta sem nome';
+        const tipoCarteira = carteira.tipo || carteira.codigoBanco || 'Conta';
+        const iconeCarteira = carteira.iconeBanco || '🏦';
+        const saldoCarteira = carteira.saldo ? parseFloat(carteira.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+
+        const opcao = document.createElement('div');
+        opcao.classList.add('opcao-carteira');
+        opcao.setAttribute('data-value', carteira.id);
+        opcao.innerHTML = `
+            <span class="icone-carteira">${iconeCarteira}</span>
+            <div class="detalhes-carteira">
+                <span class="nome-carteira">${nomeCarteira}</span>
+                <span>${tipoCarteira}</span>
+            </div>
+            <span class="saldo-carteira">${saldoCarteira}</span>
+        `;
+        
+        opcao.addEventListener('click', function() {
+            console.log(`Carteira selecionada: ${nomeCarteira}`);
+            estado.carteiraSelecionada = carteira.id;
+            elementos.opcaoSelecionadaCarteira.innerHTML = `
+                <span class="icone-carteira">${iconeCarteira}</span>
+                <span>${nomeCarteira}</span>
+            `;
+            elementos.opcoesCarteira.classList.remove('mostrar');
+        });
+        
+        return opcao;
+    }
+
+    // Funções para modal de categoria otimizadas
+    function salvarCategoriaPersonalizada() {
+        const nome = elementos.nomeCategoriaInput?.value.trim();
+        const cor = elementos.corCategoriaInput?.value;
+        
+        if (!nome || nome.length < 2) {
+            const erroElement = document.getElementById('erro-nome-categoria');
+            if (erroElement) erroElement.style.display = 'block';
+            elementos.nomeCategoriaInput?.focus();
+            return;
+        }
+        
+        const erroElement = document.getElementById('erro-nome-categoria');
+        if (erroElement) erroElement.style.display = 'none';
+
+        const iconeSpan = elementos.iconeSelecionadoPreview?.querySelector('.material-symbols-outlined');
+        const icone = iconeSpan ? iconeSpan.textContent : 'category';
+
+        // Adiciona nova categoria de forma otimizada
+        const opcao = criarOpcaoCategoria({ nome, icone, cor });
+        opcao.querySelector('.material-symbols-outlined').style.color = cor;
+        
+        const addCategoriaOpcao = elementos.opcoesCategoria.querySelector('[data-value="adicionar-categoria"]');
+        if (addCategoriaOpcao) {
+            elementos.opcoesCategoria.insertBefore(opcao, addCategoriaOpcao);
+        } else {
+            elementos.opcoesCategoria.appendChild(opcao);
+        }
+
+        fecharModalCategoria();
+    }
+
+    function fecharModalCategoria() {
+        if (elementos.modalCategoria) {
+            elementos.modalCategoria.style.display = 'none';
+        }
+    }
+
+    function atualizarCorPreview() {
+        const cor = elementos.corCategoriaInput?.value;
+        if (!cor) return;
+        
+        const iconeSpan = elementos.iconeSelecionadoPreview?.querySelector('.material-symbols-outlined');
+        if (iconeSpan) {
+            iconeSpan.style.color = cor;
+        }
+        
+        const corPreview = document.getElementById('cor-preview');
+        if (corPreview) {
+            corPreview.style.backgroundColor = cor;
+        }
+    }
+
+    // Funções globais otimizadas
     window.gerenciarToggles = function(tipo) {
         const toggleRepetir = document.getElementById('toggle-repetir');
         const toggleReceitaFixa = document.getElementById('toggle-receita-fixa');
         const camposRepetir = document.getElementById('campos-repetir');
 
+        if (!toggleRepetir || !toggleReceitaFixa || !camposRepetir) return;
+
         if (tipo === 'repetir') {
             if (toggleRepetir.checked) {
-                toggleReceitaFixa.checked = false; // Desativa Receita Fixa
-                camposRepetir.style.display = 'block'; // Exibe campos de Repetir
+                toggleReceitaFixa.checked = false;
+                camposRepetir.style.display = 'block';
             } else {
-                camposRepetir.style.display = 'none'; // Oculta campos de Repetir
+                camposRepetir.style.display = 'none';
             }
         } else if (tipo === 'fixa') {
             if (toggleReceitaFixa.checked) {
-                toggleRepetir.checked = false; // Desativa Repetir
-                camposRepetir.style.display = 'none'; // Oculta campos de Repetir
+                toggleRepetir.checked = false;
+                camposRepetir.style.display = 'none';
             }
         }
     };
 
-    // Torne alterarQuantidade global
     window.alterarQuantidade = function(delta) {
         const inputQuantidade = document.getElementById('quantidade-repeticoes');
+        if (!inputQuantidade) return;
+        
         const novaQuantidade = Math.max(1, parseInt(inputQuantidade.value || 1, 10) + delta);
         inputQuantidade.value = novaQuantidade;
     };
 
-    // Inicializar a aplicação
+    // Limpeza de memória ao sair da página
+    window.addEventListener('beforeunload', function() {
+        // Remove todos os event listeners registrados
+        estado.eventListeners.forEach(({ element, event, handler }) => {
+            element?.removeEventListener(event, handler);
+        });
+        estado.eventListeners.clear();
+    });
+
+    // Inicializar aplicação
     inicializar();
+
+    // Verificação de autenticação Firebase otimizada
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+            const botaoSalvar = elementos.botaoSalvar;
+            if (!botaoSalvar) return;
+            
+            if (user) {
+                console.log('Usuário autenticado:', user.uid);
+                botaoSalvar.disabled = false;
+                botaoSalvar.textContent = 'Salvar Receita';
+            } else {
+                console.warn('Nenhum usuário autenticado.');
+                botaoSalvar.textContent = 'Faça login para salvar';
+                botaoSalvar.style.backgroundColor = '#ccc';
+            }
+        });
+    }
 });
 
-// Função para abrir a galeria de ícones
+// Função otimizada para galeria de ícones com lazy loading
 function abrirGaleriaIcones(iconePreview) {
-    // Cria o modal se não existir
     let modal = document.getElementById('modal-galeria-icones');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'modal-galeria-icones';
         modal.className = 'modal';
         modal.style.display = 'none';
-        modal.innerHTML = `
-            <div class="modal-conteudo" style="max-width:400px;width:96vw;max-height:80vh;overflow-y:auto;">
-                <h3>Escolha um ícone</h3>
-                <div id="galeria-icones" class="galeria-icones" style="grid-template-columns: repeat(4, 1fr);">
-                    <div class="icone-item"><span class="material-symbols-outlined">paid</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">attach_money</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_exchange</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">wallet</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">savings</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">atm</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">account_balance</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">credit_card</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">account_balance_wallet</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">receipt_long</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">request_quote</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">payment</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cancel</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">balance</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">history</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">trending_up</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">trending_down</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">pie_chart</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">bar_chart</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">bar_chart_4_bars</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">query_stats</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">percent</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">account_tree</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">monetization_on</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">money_off</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">universal_currency_alt</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_bitcoin</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">receipt</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">add_card</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">payments</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">price_check</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">redeem</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">savings</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">trending_flat</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">euro_symbol</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_franc</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_pound</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_ruble</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">currency_yen</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">donut_large</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">donut_small</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">dataset</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">data_thresholding</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">contactless</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">calculate</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">description</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">barcode_scanner</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">qr_code_scanner</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">account_circle</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">group</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">groups</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">person</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">supervisor_account</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">work</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">business_center</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">domain</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">business</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">insert_chart</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">insert_chart_outlined</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">leaderboard</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">insights</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">fact_check</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">task_alt</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">done_all</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">check_circle</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">verified</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">gavel</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">handshake</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">lightbulb</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">note</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">note_alt</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">important_devices</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">developer_mode</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cloud</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cloud_done</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cloud_download</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cloud_sync</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">cloud_upload</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">folder</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">folder_open</span></div>
-                    <div class="icone-item"><span class="material-symbols-outlined">folder_zip</span></div>
-                </div>
-            </div>
-        `;
+        
+        // Criar estrutura básica
+        const modalConteudo = document.createElement('div');
+        modalConteudo.className = 'modal-conteudo';
+        modalConteudo.style.cssText = 'max-width:400px;width:96vw;max-height:80vh;overflow-y:auto;';
+        
+        const titulo = document.createElement('h3');
+        titulo.textContent = 'Escolha um ícone';
+        modalConteudo.appendChild(titulo);
+        
+        const galeria = document.createElement('div');
+        galeria.id = 'galeria-icones';
+        galeria.className = 'galeria-icones';
+        galeria.style.gridTemplateColumns = 'repeat(4, 1fr)';
+        modalConteudo.appendChild(galeria);
+        
+        modal.appendChild(modalConteudo);
         document.body.appendChild(modal);
+        
+        // Carregar ícones de forma lazy
+        carregarIconesLazy(galeria, iconePreview, modal);
     }
+    
     modal.style.display = 'flex';
-
-    // Adiciona evento para seleção de ícone
-    const galeria = modal.querySelector('#galeria-icones');
-    galeria.querySelectorAll('.icone-item').forEach(function(item) {
-        item.onclick = function() {
-            const span = item.querySelector('.material-symbols-outlined');
-            if (span) {
-                iconePreview.innerHTML = `<span class="material-symbols-outlined" style="color: #21c25e;">${span.textContent}</span>`;
-            }
-            modal.style.display = 'none';
-        };
-    });
-
-    // Fecha o modal ao clicar fora do conteúdo
+    
+    // Event listener para fechar modal
     modal.onclick = function(e) {
         if (e.target === modal) {
             modal.style.display = 'none';
@@ -1432,92 +903,44 @@ function abrirGaleriaIcones(iconePreview) {
     };
 }
 
-// Adicione uma função vazia para evitar o erro ReferenceError
-function salvarCategoriaPersonalizada() {
-    // Função de stub para evitar erro. Implemente a lógica conforme necessário.
-    console.log('Função salvarCategoriaPersonalizada chamada (stub).');
-}
-
-// Adicione uma função vazia para evitar o erro ReferenceError
-function fecharModalCategoria() {
-    // Função de stub para evitar erro. Implemente a lógica conforme necessário.
-    console.log('Função fecharModalCategoria chamada (stub).');
-}
-
-// Adicione uma função vazia para evitar o erro ReferenceError
-function atualizarCorPreview() {
-    // Função de stub para evitar erro. Implemente a lógica conforme necessário.
-    console.log('Função atualizarCorPreview chamada (stub).');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Mapeamento de elementos do formulário
-    const botaoSalvar = document.getElementById('botao-salvar');
-    const valorReceitaEl = document.getElementById('valor-receita');
-    const recebidoToggle = document.getElementById('recebido');
-    const dataSelecionadaEl = document.getElementById('data-selecionada');
-    const descricaoInput = document.getElementById('descricao');
-    const seletorCategoria = document.querySelector('#seletor-categoria .opcao-selecionada span');
-    const seletorCarteira = document.querySelector('#seletor-carteira .opcao-selecionada span');
-
-    // Desabilita o botão de salvar até que o status de autenticação seja verificado
-    if (botaoSalvar) {
-        botaoSalvar.disabled = true;
-        botaoSalvar.textContent = 'Verificando login...';
-    }
-
-    // Verifica o estado de autenticação do Firebase
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            // Usuário está logado
-            console.log('Usuário autenticado:', user.uid);
-            if (botaoSalvar) {
-                botaoSalvar.disabled = false;
-                botaoSalvar.textContent = 'Salvar Receita';
-                botaoSalvar.addEventListener('click', () => salvarReceita(user));
-            }
-        } else {
-            // Usuário não está logado
-            console.warn('Nenhum usuário autenticado.');
-            if (botaoSalvar) {
-                botaoSalvar.textContent = 'Faça login para salvar';
-                botaoSalvar.style.backgroundColor = '#ccc'; // Indica que está desabilitado
-            }
-            // Opcional: redirecionar para a página de login
-            // window.location.href = '../Login/login.html';
+// Carregamento lazy dos ícones
+function carregarIconesLazy(galeria, iconePreview, modal) {
+    const icones = [
+        'paid', 'attach_money', 'currency_exchange', 'wallet', 'savings', 'atm',
+        'account_balance', 'credit_card', 'account_balance_wallet', 'receipt_long',
+        'request_quote', 'payment', 'cancel', 'balance', 'history', 'trending_up',
+        'trending_down', 'pie_chart', 'bar_chart', 'bar_chart_4_bars', 'query_stats',
+        'percent', 'account_tree', 'monetization_on', 'money_off', 'universal_currency_alt',
+        'currency_bitcoin', 'receipt', 'add_card', 'payments', 'price_check',
+        'redeem', 'trending_flat', 'euro_symbol', 'currency_franc', 'currency_pound',
+        'currency_ruble', 'currency_yen', 'donut_large', 'donut_small', 'dataset'
+    ];
+    
+    // Carregar ícones em chunks
+    function carregarChunk(startIndex = 0, chunkSize = 8) {
+        const endIndex = Math.min(startIndex + chunkSize, icones.length);
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            const icone = icones[i];
+            const item = document.createElement('div');
+            item.className = 'icone-item';
+            item.innerHTML = `<span class="material-symbols-outlined">${icone}</span>`;
+            
+            item.onclick = function() {
+                iconePreview.innerHTML = `<span class="material-symbols-outlined" style="color: #21c25e;">${icone}</span>`;
+                modal.style.display = 'none';
+            };
+            
+            fragment.appendChild(item);
         }
-    });
-
-    function salvarReceita(user) {
-        console.log('Iniciando processo de salvar receita...');
-
-        const novaReceita = {
-            valor: valorReceitaEl.textContent || 'R$ 0,00',
-            recebido: recebidoToggle.checked,
-            data: dataSelecionadaEl.textContent,
-            descricao: descricaoInput.value,
-            categoria: seletorCategoria.textContent,
-            carteira: seletorCarteira.textContent,
-            tipo: 'receita'
-        };
-
-        // Salvar no Firestore
-        const db = firebase.firestore();
-        db.collection('receitas').add({
-            ...novaReceita,
-            userId: user.uid // Adiciona o ID do usuário logado
-        }).then((docRef) => {
-            console.log('Receita salva com SUCESSO no Firebase! ID:', docRef.id);
-            alert('Receita salva com sucesso!');
-            window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
-        }).catch(error => {
-            console.error('ERRO ao salvar receita no Firebase:', error);
-            alert('Ocorreu um erro ao salvar a receita online.');
-        });
+        
+        galeria.appendChild(fragment);
+        
+        if (endIndex < icones.length) {
+            requestIdleCallback(() => carregarChunk(endIndex, chunkSize));
+        }
     }
-
-    // Cole aqui o restante do seu código JS para a página (calculadora, calendário, etc.)
-    // Exemplo:
-    // inicializarCalculadora();
-    // inicializarCalendario();
-});
+    
+    carregarChunk();
+}

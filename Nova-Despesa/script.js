@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM carregado - Iniciando aplicação...');
+    console.log('DOM carregado - Iniciando aplicação de Despesa...');
     
-    // Elementos do DOM (ajustados para despesa)
+    // Elementos do DOM
     const elementos = {
         botaoVoltar: document.querySelector('.botao-voltar'),
         secaoValor: document.getElementById('secao-valor'),
@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
         popupTexto: document.getElementById('popup-texto'),
         popupBotao: document.getElementById('popup-botao'),
         toggleRepetir: document.getElementById('toggle-repetir'),
-        camposRepetir: document.getElementById('campos-repetir')
+        camposRepetir: document.getElementById('campos-repetir'),
+        toggleDespesaFixa: document.getElementById('toggle-despesa-fixa')
     };
 
     // Estado da aplicação
@@ -58,6 +59,27 @@ document.addEventListener('DOMContentLoaded', function() {
         atualizarDataSelecionada();
         carregarCarteiras();
         carregarCategorias();
+
+        // Verifica o estado de autenticação do Firebase
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                // Usuário está logado
+                console.log('Usuário autenticado:', user.uid);
+                if (elementos.botaoSalvar) {
+                    elementos.botaoSalvar.disabled = false;
+                    elementos.botaoSalvar.textContent = 'Salvar Despesa';
+                }
+            } else {
+                // Usuário não está logado
+                console.warn('Nenhum usuário autenticado.');
+                if (elementos.botaoSalvar) {
+                    elementos.botaoSalvar.disabled = true;
+                    elementos.botaoSalvar.textContent = 'Faça login para salvar';
+                    elementos.botaoSalvar.style.backgroundColor = '#ccc'; // Indica que está desabilitado
+                }
+            }
+        });
+
         console.log('Aplicação inicializada com sucesso');
     }
 
@@ -186,8 +208,16 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarPopup('Por favor, insira uma descrição para a despesa.');
             return;
         }
-        if (estado.valorAtual === '0') {
+        if (estado.valorAtual === '0' || elementos.valorDespesa.textContent === 'R$ 0,00') {
             mostrarPopup('Por favor, insira um valor para a despesa.');
+            return;
+        }
+        if (!estado.categoriaSelecionada) {
+            mostrarPopup('Por favor, selecione uma categoria.');
+            return;
+        }
+        if (!estado.carteiraSelecionada) {
+            mostrarPopup('Por favor, selecione uma conta/carteira.');
             return;
         }
 
@@ -199,15 +229,17 @@ document.addEventListener('DOMContentLoaded', function() {
             data: elementos.dataSelecionada.textContent,
             categoria: estado.categoriaSelecionada,
             carteira: estado.carteiraSelecionada,
+            repetir: elementos.toggleRepetir.checked,
+            quantidadeRepeticoes: elementos.toggleRepetir.checked ? document.getElementById('quantidade-repeticoes').value : null,
+            frequenciaRepeticoes: elementos.toggleRepetir.checked ? document.getElementById('frequencia-repeticoes').value : null,
+            despesaFixa: elementos.toggleDespesaFixa.checked,
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         db.collection('despesas').add(novaDespesa)
             .then(docRef => {
                 console.log('Despesa salva com sucesso no Firestore com ID: ', docRef.id);
-                mostrarPopup('Despesa salva com sucesso!', () => {
-                    window.location.href = '../Lista-de-despesas/Lista-de-despesas.html';
-                });
+                window.location.href = '../Lista-de-despesas/Lista-de-despesas.html';
             })
             .catch(error => {
                 console.error('Erro ao salvar despesa: ', error);
@@ -382,35 +414,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Funções para categorias
     // Categorias padrão com ícones
     const categoriasPadrao = [
-        { nome: 'Salário', icone: 'attach_money' },
-        { nome: 'Freelance', icone: 'work' },
-        { nome: 'Bônus', icone: 'card_giftcard' },
-        { nome: 'Comissões', icone: 'trending_up' },
-        { nome: 'Aluguel Recebido', icone: 'home' },
-        { nome: 'Rendimentos de Investimentos', icone: 'show_chart' },
-        { nome: 'Dividendos', icone: 'account_balance_wallet' },
-        { nome: 'Juros Recebidos', icone: 'percent' },
-        { nome: 'Cashback', icone: 'credit_card' },
-        { nome: 'Venda de Produtos', icone: 'shopping_cart' },
-        { nome: 'Venda de Serviços', icone: 'handshake' },
-        { nome: 'Reembolso', icone: 'receipt' },
-        { nome: 'Restituição de Imposto', icone: 'account_balance' },
-        { nome: 'Premiações', icone: 'emoji_events' },
-        { nome: 'Herança', icone: 'family_restroom' },
-        { nome: 'Aposentadoria', icone: 'elderly' },
-        { nome: 'Pensão', icone: 'child_care' },
-        { nome: 'Doações Recebidas', icone: 'volunteer_activism' },
-        { nome: 'Prêmios de Loteria', icone: 'casino' },
-        { nome: 'Transferência de Terceiros', icone: 'swap_horiz' },
-        { nome: 'Décimo Terceiro', icone: 'calendar_month' },
-        { nome: 'Resgate de Aplicações', icone: 'savings' },
-        { nome: 'Lucros de Empresa', icone: 'business' },
-        { nome: 'Aluguel de Equipamentos', icone: 'construction' },
-        { nome: 'Consultoria', icone: 'support_agent' },
-        { nome: 'Parcerias', icone: 'group' },
-        { nome: 'Royalties', icone: 'copyright' },
-        { nome: 'Licenciamento', icone: 'verified' },
-        { nome: 'Rendimentos de Direitos Autorais', icone: 'library_books' }
+        { nome: 'Moradia', icone: 'home' },
+        { nome: 'Alimentação', icone: 'restaurant' },
+        { nome: 'Transporte', icone: 'directions_car' },
+        { nome: 'Saúde', icone: 'local_hospital' },
+        { nome: 'Educação', icone: 'school' },
+        { nome: 'Lazer', icone: 'sports_esports' },
+        { nome: 'Compras', icone: 'shopping_bag' },
+        { nome: 'Contas', icone: 'receipt_long' },
+        { nome: 'Impostos', icone: 'account_balance' },
+        { nome: 'Viagens', icone: 'flight' },
+        { nome: 'Cuidados Pessoais', icone: 'content_cut' },
+        { nome: 'Assinaturas', icone: 'subscriptions' },
+        { nome: 'Dívidas', icone: 'credit_score' },
+        { nome: 'Investimentos', icone: 'trending_up' },
+        { nome: 'Doações', icone: 'volunteer_activism' },
+        { nome: 'Família/Filhos', icone: 'family_restroom' },
+        { nome: 'Animais de Estimação', icone: 'pets' },
+        { nome: 'Reparos/Manutenção', icone: 'build' },
+        { nome: 'Presentes', icone: 'card_giftcard' },
+        { nome: 'Outros', icone: 'more_horiz' }
     ];
 
     // Função para carregar categorias no seletor
@@ -422,13 +445,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const opcao = document.createElement('div');
             opcao.classList.add('opcao-categoria');
             opcao.setAttribute('data-value', categoria.nome.toLowerCase().replace(/\s+/g, '-'));
-            // Usa material-symbols-outlined para todos os ícones (funciona para todos os nomes de ícones do prompt)
+            // Usa material-symbols-outlined para todos os ícones
             opcao.innerHTML = `
                 <span class="material-symbols-outlined">${categoria.icone}</span>
                 <span>${categoria.nome}</span>
             `;
             opcao.addEventListener('click', function () {
-                const selecionada = document.querySelector('.opcao-selecionada');
+                const selecionada = document.querySelector('.seletor-categoria .opcao-selecionada');
                 selecionada.innerHTML = `
                     <span class="material-symbols-outlined">${categoria.icone}</span>
                     <span>${categoria.nome}</span>
@@ -439,6 +462,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             seletorCategoria.appendChild(opcao);
         });
+
+        // Adicionar opção "Criar nova categoria"
+        const opcaoCriar = document.createElement('div');
+        opcaoCriar.classList.add('opcao-categoria');
+        opcaoCriar.innerHTML = `
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Criar nova categoria</span>
+        `;
+        opcaoCriar.addEventListener('click', abrirModalCategoria);
+        seletorCategoria.appendChild(opcaoCriar);
     }
 
     // Inicializar categorias ao carregar a página
@@ -590,7 +623,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        mostrarPopup('Despesa salva com sucesso!');
+        mostrarPopup('Despesa salva com sucesso!', () => {
+             window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
+        });
 
         // Limpar formulário
         elementos.valorDespesa.textContent = 'R$ 0,00';
@@ -656,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (tipo === 'repetir') {
             if (toggleRepetir.checked) {
-                toggleDespesaFixa.checked = false; // Desativa Receita Fixa
+                toggleDespesaFixa.checked = false; // Desativa Despesa Fixa
                 camposRepetir.style.display = 'block'; // Exibe campos de Repetir
             } else {
                 camposRepetir.style.display = 'none'; // Oculta campos de Repetir
@@ -787,7 +822,7 @@ function abrirGaleriaIcones(iconePreview) {
         item.onclick = function() {
             const span = item.querySelector('.material-symbols-outlined');
             if (span) {
-                iconePreview.innerHTML = `<span class="material-symbols-outlined" style="color: #21c25e;">${span.textContent}</span>`;
+                iconePreview.innerHTML = `<span class="material-symbols-outlined" style="color: #D32F2F;">${span.textContent}</span>`;
             }
             modal.style.display = 'none';
         };
@@ -801,6 +836,18 @@ function abrirGaleriaIcones(iconePreview) {
     };
 }
 
+// Função para abrir modal de categoria
+function abrirModalCategoria() {
+    const modal = document.getElementById('modal-categoria');
+    const opcoesCategoria = document.querySelector('.seletor-categoria .opcoes-categoria');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    if (opcoesCategoria) {
+        opcoesCategoria.classList.remove('mostrar');
+    }
+}
+
 // Adicione uma função vazia para evitar o erro ReferenceError
 function salvarCategoriaPersonalizada() {
     // Função de stub para evitar erro. Implemente a lógica conforme necessário.
@@ -809,8 +856,11 @@ function salvarCategoriaPersonalizada() {
 
 // Adicione uma função vazia para evitar o erro ReferenceError
 function fecharModalCategoria() {
-    // Função de stub para evitar erro. Implemente a lógica conforme necessário.
-    console.log('Função fecharModalCategoria chamada (stub).');
+    const modal = document.getElementById('modal-categoria');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    console.log('Função fecharModalCategoria chamada.');
 }
 
 // Adicione uma função vazia para evitar o erro ReferenceError
@@ -818,75 +868,3 @@ function atualizarCorPreview() {
     // Função de stub para evitar erro. Implemente a lógica conforme necessário.
     console.log('Função atualizarCorPreview chamada (stub).');
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Mapeamento de elementos do formulário
-    const botaoSalvar = document.getElementById('botao-salvar');
-    const valorDespesaEl = document.getElementById('valor-despesa');
-    const pagoToggle = document.getElementById('pago');
-    const dataSelecionadaEl = document.getElementById('data-selecionada');
-    const descricaoInput = document.getElementById('descricao');
-    const seletorCategoria = document.querySelector('#seletor-categoria .opcao-selecionada span');
-    const seletorCarteira = document.querySelector('#seletor-carteira .opcao-selecionada span');
-
-    // Desabilita o botão de salvar até que o status de autenticação seja verificado
-    if (botaoSalvar) {
-        botaoSalvar.disabled = true;
-        botaoSalvar.textContent = 'Verificando login...';
-    }
-
-    // Verifica o estado de autenticação do Firebase
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            // Usuário está logado
-            console.log('Usuário autenticado:', user.uid);
-            if (botaoSalvar) {
-                botaoSalvar.disabled = false;
-                botaoSalvar.textContent = 'Salvar Despesa';
-                botaoSalvar.addEventListener('click', () => salvarDespesa(user));
-            }
-        } else {
-            // Usuário não está logado
-            console.warn('Nenhum usuário autenticado.');
-            if (botaoSalvar) {
-                botaoSalvar.textContent = 'Faça login para salvar';
-                botaoSalvar.style.backgroundColor = '#ccc'; // Indica que está desabilitado
-            }
-            // Opcional: redirecionar para a página de login
-            // window.location.href = '../Login/login.html';
-        }
-    });
-
-    function salvarDespesa(user) {
-        console.log('Iniciando processo de salvar despesa...');
-
-        const novaDespesa = {
-            valor: valorDespesaEl.textContent || 'R$ 0,00',
-            pago: pagoToggle.checked,
-            data: dataSelecionadaEl.textContent,
-            descricao: descricaoInput.value,
-            categoria: seletorCategoria.textContent,
-            carteira: seletorCarteira.textContent,
-            tipo: 'despesa'
-        };
-
-        // Salvar no Firestore
-        const db = firebase.firestore();
-        db.collection('despesas').add({
-            ...novaDespesa,
-            userId: user.uid // Adiciona o ID do usuário logado
-        }).then((docRef) => {
-            console.log('Despesa salva com SUCESSO no Firebase! ID:', docRef.id);
-            alert('Despesa salva com sucesso!');
-            window.location.href = '../Lista-de-despesas/Lista-de-despesas.html';
-        }).catch(error => {
-            console.error('ERRO ao salvar despesa no Firebase:', error);
-            alert('Ocorreu um erro ao salvar a despesa online.');
-        });
-    }
-
-    // Cole aqui o restante do seu código JS para a página (calculadora, calendário, etc.)
-    // Exemplo:
-    // inicializarCalculadora();
-    // inicializarCalendario();
-});

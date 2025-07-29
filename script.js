@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             auth.signInWithEmailAndPassword(email, senha)
                 .then(userCredential => {
-                    alert('Login realizado com sucesso!');
                     window.location.href = '../Home/home.html';
                 })
                 .catch(error => {

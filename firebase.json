@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "Poup+",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,8 +8,8 @@
     ],
     "rewrites": [
       {
-        "source": "/",
-        "destination": "/Login/login.html"
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   }
