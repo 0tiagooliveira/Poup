@@ -3,12 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Bancos disponíveis
     const bancosDisponiveis = [
-        { nome: 'Nubank', codigo: '260', cor: '#820AD1', icone: 'Nu' },
-        { nome: 'Banco do Brasil', codigo: '001', cor: '#FFA500', icone: 'BB' },
-        { nome: 'Bradesco', codigo: '237', cor: '#CC092F', icone: 'Br' },
-        { nome: 'Itaú', codigo: '341', cor: '#EC7000', icone: 'It' },
-        { nome: 'Santander', codigo: '033', cor: '#EC0000', icone: 'St' },
-        { nome: 'Caixa', codigo: '104', cor: '#0060A9', icone: 'Cx' }
+        { nome: 'Nubank', codigo: '260', cor: '#820AD1', icone: '../Icon/Nubank.svg' },
+        { nome: 'Banco do Brasil', codigo: '001', cor: '#FBB900', icone: '../Icon/banco-do-brasil.svg' },
+        { nome: 'Bradesco', codigo: '237', cor: '#CC092F', icone: '../Icon/bradesco.svg' },
+        { nome: 'Itaú', codigo: '341', cor: '#EC7000', icone: '../Icon/itau.svg' },
+        { nome: 'Santander', codigo: '033', cor: '#EC0000', icone: '../Icon/santander.svg' },
+        { nome: 'Caixa', codigo: '104', cor: '#0060A9', icone: '../Icon/caixa.svg' },
+        { nome: 'PicPay', codigo: '380', cor: '#11C76F', icone: '../Icon/picpay.svg' }
     ];
 
     // Tipos de conta disponíveis
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let estado = {
         valorAtual: '0',
         digitandoValor: false,
-        bancoSelecionado: { nome: 'Nubank', codigo: '260', cor: '#820AD1', icone: 'Nu' },
+        bancoSelecionado: { nome: 'Nubank', codigo: '260', cor: '#820AD1', icone: '../Icon/Nubank.svg' },
         tipoContaSelecionado: 'Conta corrente',
         contaEditando: null
     };
@@ -237,7 +238,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemBanco = document.createElement('div');
             itemBanco.className = 'item-banco';
             itemBanco.innerHTML = `
-                <div class="icone-banco" style="background-color: ${banco.cor}">${banco.icone}</div>
+                <div class="icone-banco-container">
+                    <div class="icone-banco-circulo" style="background-color: ${banco.cor}">
+                        <img src="${banco.icone}" alt="${banco.nome}" class="icone-banco-img">
+                    </div>
+                </div>
                 <div class="info-banco">
                     <h3>${banco.nome}</h3>
                     <p>Banco ${banco.codigo}</p>
@@ -254,8 +259,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const iconeBanco = document.querySelector('.icone-banco');
         const infoBanco = document.querySelector('.info-banco');
         
+        // Atualizar o ícone principal com a nova estrutura
         iconeBanco.style.backgroundColor = banco.cor;
-        iconeBanco.textContent = banco.icone;
+        iconeBanco.innerHTML = `<img src="${banco.icone}" alt="${banco.nome}" style="width: 32px; height: 32px; object-fit: contain;">`;
         
         infoBanco.innerHTML = `
             <h3>${banco.nome}</h3>
@@ -295,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const auth = firebase.auth();
     const db   = firebase.firestore();
 
-    function salvarConta(user) { // A função agora recebe o usuário como parâmetro
+    function salvarConta(user) {
         console.log('Iniciando processo de salvar conta');
         
         // Verificar se o Firebase está disponível
@@ -305,12 +311,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // A verificação do usuário agora é feita antes de chamar a função
-        if (!user) {
-            console.error("Usuário não autenticado, não é possível salvar.");
-            mostrarPopup('Você não está logado. Faça login para salvar.');
+        // Sempre pega o usuário autenticado do Firebase
+        const currentUser = firebase.auth().currentUser;
+        if (!currentUser || !currentUser.uid) {
+            mostrarPopup('Você precisa estar logado para salvar a conta.');
             return;
         }
+        const userId = currentUser.uid;
 
         const descricao = elementos.campoDescricao.value.trim();
         const incluirSoma = document.getElementById('incluir-soma') ? document.getElementById('incluir-soma').checked : false;
@@ -367,23 +374,19 @@ document.addEventListener('DOMContentLoaded', function() {
             tipo: tipoConta,
             icone: iconeConta,
             cor: corConta,
-            userId: user.uid, // Usa o ID do usuário passado como parâmetro
+            banco: estado.bancoSelecionado?.nome || 'Outro',
+            userId: userId,
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         console.log('Dados da conta a ser salva no Firebase:', novaConta);
 
-        db.collection('contas').add(novaConta) // Corrigido para 'contas' para corresponder às regras
+        db.collection('contas').add(novaConta)
             .then((docRef) => {
                 console.log('Conta salva no Firestore:', novaConta, 'ID:', docRef.id);
                 mostrarPopup('Conta salva com sucesso!', () => {
-                    window.location.href = '../home.html'; // Redireciona para home.html
+                    window.location.href = '../home.html';
                 });
-                // Salvar também no localStorage com o ID do Firestore
-                novaConta.id = docRef.id;
-                let contas = JSON.parse(localStorage.getItem('contasBancarias')) || [];
-                contas.push(novaConta);
-                localStorage.setItem('contasBancarias', JSON.stringify(contas));
             })
             .catch(error => {
                 console.error('Erro ao salvar conta:', error);
@@ -463,23 +466,15 @@ document.addEventListener('DOMContentLoaded', function() {
             elementos.botaoSalvar.textContent = 'Aguarde...';
         }
 
-        // Verifica o estado de autenticação
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                console.log("Usuário autenticado:", user.uid);
-                if (elementos.botaoSalvar) {
-                    elementos.botaoSalvar.disabled = false;
-                    elementos.botaoSalvar.textContent = 'Salvar';
-                    // Adiciona o evento de clique APENAS quando o usuário está logado
-                    elementos.botaoSalvar.addEventListener('click', () => salvarConta(user));
-                }
-            } else {
-                console.warn("Nenhum usuário autenticado.");
-                if (elementos.botaoSalvar) {
-                    elementos.botaoSalvar.textContent = 'Faça login para salvar';
-                }
-            }
-        });
+        // Removido: verificação de autenticação para acessar a Home
+        // O botão salvar fica sempre habilitado, independente do login
+        if (elementos.botaoSalvar) {
+            elementos.botaoSalvar.disabled = false;
+            elementos.botaoSalvar.textContent = 'Salvar';
+            elementos.botaoSalvar.addEventListener('click', () => {
+                salvarConta(); // Não passa parâmetro, pega usuário do Firebase
+            });
+        }
 
         preencherListaBancos();
         configurarEventos();

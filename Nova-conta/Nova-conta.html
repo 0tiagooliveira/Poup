@@ -25,7 +25,9 @@
 
         <main class="conteudo-principal">
             <div class="banco-selecionado" role="button" tabindex="0" aria-label="Selecionar banco">
-                <div class="icone-banco" style="background-color: #820AD1;">Nu</div>
+                <div class="icone-banco" style="background-color: #820AD1;">
+                    <img src="../Icon/Nubank.svg" alt="Nubank" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
                 <div class="info-banco">
                     <h3>Nubank</h3>
                     <p>Banco 260</p>
@@ -149,5 +151,17 @@
     <!-- FIM: Configuração do Firebase -->
 
     <script src="script.js"></script>
+    <script>
+      // Redireciona para a Home correta após salvar a conta
+      document.addEventListener('DOMContentLoaded', function() {
+        const btnSalvar = document.getElementById('salvar-conta');
+        if (btnSalvar) {
+          btnSalvar.addEventListener('contaSalva', function() {
+            // Caminho correto para a Home (ajuste se necessário)
+            window.location.href = '../Home/home.html';
+          });
+        }
+      });
+    </script>
 </body>
 </html>

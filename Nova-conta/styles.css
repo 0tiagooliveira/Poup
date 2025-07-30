@@ -191,7 +191,7 @@ a {
 .icone-banco {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 50%;
     background-color: var(--cor-destaque);
     color: white;
     display: flex;
@@ -201,6 +201,29 @@ a {
     font-weight: bold;
     font-size: 1.25rem;
     flex-shrink: 0;
+}
+
+/* Estilos para os ícones dos bancos na lista */
+.icone-banco-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icone-banco-circulo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.icone-banco-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
 }
 
 .info-banco h3 {

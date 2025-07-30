@@ -1997,6 +1997,35 @@ a.botao-primario {
     margin-top: 1px;
 }
 
+/* Força o estilo dos ícones SVG das contas para sobrescrever qualquer inline style */
+.conta-ux-icone.conta-ux-icone-svg,
+.conta-ux-icone.conta-ux-icone-svg[style],
+.conta-ux-icone.conta-ux-icone-svg img {
+  background: var(--icone-svg-bg, #21C25E) !important;
+  background-image: none !important;
+  border: none !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 16px rgba(33,194,94,0.10) !important;
+  width: 54px !important;
+  height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.conta-ux-icone.conta-ux-icone-svg img {
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* RESPONSIVO */
 @media (max-width: 600px) {
     .conteudo-principal {

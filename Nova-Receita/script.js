@@ -944,3 +944,69 @@ function carregarIconesLazy(galeria, iconePreview, modal) {
     
     carregarChunk();
 }
+
+// Função para popular as contas no seletor com SVG do banco dentro de um círculo
+function carregarContasNoSeletor(contas) {
+    const opcoesCarteira = document.querySelector('.opcoes-carteira');
+    const opcaoSelecionada = document.querySelector('.seletor-carteira .opcao-selecionada');
+    opcoesCarteira.innerHTML = '';
+    contas.forEach(conta => {
+        // Usa o SVG do banco se existir, senão um ícone padrão
+        const svgIcon = conta.icone || '../Icon/banco-do-brasil.svg';
+        const corFundo = conta.cor || '#e8f5ee';
+
+        const div = document.createElement('div');
+        div.className = 'opcao-carteira';
+        div.setAttribute('data-id', conta.id);
+        div.setAttribute('data-icone', svgIcon);
+        div.innerHTML = `
+            <span class="circulo-icone-conta" style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width:36px;
+                height:36px;
+                border-radius:50%;
+                background:${corFundo};
+                margin-right:10px;
+                ">
+                <img src="${svgIcon}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+            </span>
+            <span>${conta.nome || conta.descricao || 'Conta'}</span>
+        `;
+        div.addEventListener('click', function() {
+            opcaoSelecionada.innerHTML = `
+                <span class="circulo-icone-conta" style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    width:36px;
+                    height:36px;
+                    border-radius:50%;
+                    background:${corFundo};
+                    margin-right:10px;
+                    ">
+                    <img src="${svgIcon}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+                </span>
+                <span>${conta.nome || conta.descricao || 'Conta'}</span>
+            `;
+            // Salve o id da conta selecionada se necessário
+            opcoesCarteira.style.display = 'none';
+        });
+        opcoesCarteira.appendChild(div);
+    });
+}
+
+// Exemplo de uso após autenticação do usuário:
+function buscarContasUsuario(uid) {
+    firebase.firestore().collection('contas')
+        .where('userId', '==', uid)
+        .get()
+        .then(snapshot => {
+            const contas = [];
+            snapshot.forEach(doc => {
+                contas.push({ id: doc.id, ...doc.data() });
+            });
+            carregarContasNoSeletor(contas);
+        });
+}

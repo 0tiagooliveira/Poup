@@ -1,5 +1,33 @@
 // Adicione isso ANTES do DOMContentLoaded
 let firebaseApp, auth, googleProvider;
+
+// Mapeamento de bancos para ícones SVG
+const bancosIcones = {
+    'Nubank': '../Icon/Nubank.svg',
+    'Banco do Brasil': '../Icon/banco-do-brasil.svg',
+    'Bradesco': '../Icon/bradesco.svg',
+    'Itaú': '../Icon/itau.svg',
+    'Santander': '../Icon/santander.svg',
+    'Caixa': '../Icon/caixa.svg',
+    'PicPay': '../Icon/picpay.svg'
+};
+
+// Função para obter ícone do banco
+function obterIconeBanco(conta) {
+    // Se o ícone já é um SVG path, retorna ele mesmo
+    if (conta.icone && conta.icone.includes('.svg')) {
+        return conta.icone;
+    }
+    
+    // Se tem o campo banco definido, usa o mapeamento
+    if (conta.banco && bancosIcones[conta.banco]) {
+        return bancosIcones[conta.banco];
+    }
+    
+    // Fallback para ícone material
+    return null;
+}
+
 (function initFirebase() {
     if (typeof firebase !== "undefined") {
         if (!firebase.apps.length) {
@@ -273,34 +301,77 @@ function carregarContasHome(uid) {
                 contas.forEach(conta => {
                     const div = document.createElement('div');
                     div.className = 'conta-home-card-ux';
-                    // Ícone visualmente melhorado: círculo com sombra, cor personalizada, ícone centralizado grande
-                    div.innerHTML = `
-                        <div class="conta-ux-esquerda">
-                            <div class="conta-ux-icone" style="
-                                background: linear-gradient(135deg, ${conta.cor || '#e8f5ee'} 60%, #fff 100%);
-                                box-shadow: 0 4px 16px rgba(33,194,94,0.10);
-                                border: 2px solid ${conta.cor || '#21C25E22'};
-                                display: flex; align-items: center; justify-content: center;">
-                                <span class="material-icons-round" style="
-                                    color:${conta.corIcone || '#21C25E'};
-                                    font-size:2.4rem;
-                                    filter: drop-shadow(0 2px 4px rgba(33,194,94,0.10));
+                    // Verificar se deve usar SVG ou ícone material
+                    let iconeSvg = obterIconeBanco(conta);
+
+                    // Força Nubank a sempre usar SVG mesmo se não houver conta.icone
+                    if (!iconeSvg && conta.banco === 'Nubank') {
+                        iconeSvg = bancosIcones['Nubank'];
+                    }
+
+                    if (iconeSvg) {
+                        // Usar SVG do banco
+                        div.innerHTML = `
+                            <div class="conta-ux-esquerda">
+                                <div class="conta-ux-icone conta-ux-icone-svg" style="
+                                    background: ${conta.cor || '#21C25E'} !important;
+                                    background-image: none !important;
+                                    border: none !important;
+                                    border-radius: 50% !important;
+                                    width: 54px !important;
+                                    height: 54px !important;
+                                    display: flex !important; 
+                                    align-items: center !important; 
+                                    justify-content: center !important;
+                                    box-shadow: 0 4px 16px rgba(33,194,94,0.10);">
+                                    <img src="${iconeSvg}" alt="${conta.banco || 'Banco'}" style="
+                                        width: 32px; 
+                                        height: 32px; 
+                                        object-fit: contain;
                                     ">
-                                    ${conta.iconeBanco || conta.icone || 'account_balance_wallet'}
-                                </span>
+                                </div>
+                                <div class="conta-ux-info">
+                                    <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
+                                    <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                </div>
                             </div>
-                            <div class="conta-ux-info">
-                                <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
-                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                            <div class="conta-ux-direita">
+                                <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                                <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
+                                    <span class="material-icons-round">delete</span>
+                                </button>
                             </div>
-                        </div>
-                        <div class="conta-ux-direita">
-                            <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
-                            <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
-                                <span class="material-icons-round">delete</span>
-                            </button>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        // Usar ícone material original
+                        div.innerHTML = `
+                            <div class="conta-ux-esquerda">
+                                <div class="conta-ux-icone" style="
+                                    background: linear-gradient(135deg, ${conta.cor || '#e8f5ee'} 60%, #fff 100%);
+                                    box-shadow: 0 4px 16px rgba(33,194,94,0.10);
+                                    border: 2px solid ${conta.cor || '#21C25E22'};
+                                    display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-icons-round" style="
+                                        color:${conta.corIcone || '#21C25E'};
+                                        font-size:2.4rem;
+                                        filter: drop-shadow(0 2px 4px rgba(33,194,94,0.10));
+                                        ">
+                                        ${conta.iconeBanco || conta.icone || 'account_balance_wallet'}
+                                    </span>
+                                </div>
+                                <div class="conta-ux-info">
+                                    <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
+                                    <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                </div>
+                            </div>
+                            <div class="conta-ux-direita">
+                                <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                                <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
+                                    <span class="material-icons-round">delete</span>
+                                </button>
+                            </div>
+                        `;
+                    }
                     div.style.opacity = 0;
                     div.style.transform = 'translateY(18px) scale(0.98)';
                     setTimeout(() => {
@@ -758,34 +829,77 @@ function carregarContasHome(uid) {
                 contas.forEach(conta => {
                     const div = document.createElement('div');
                     div.className = 'conta-home-card-ux';
-                    // Ícone visualmente melhorado: círculo com sombra, cor personalizada, ícone centralizado grande
-                    div.innerHTML = `
-                        <div class="conta-ux-esquerda">
-                            <div class="conta-ux-icone" style="
-                                background: linear-gradient(135deg, ${conta.cor || '#e8f5ee'} 60%, #fff 100%);
-                                box-shadow: 0 4px 16px rgba(33,194,94,0.10);
-                                border: 2px solid ${conta.cor || '#21C25E22'};
-                                display: flex; align-items: center; justify-content: center;">
-                                <span class="material-icons-round" style="
-                                    color:${conta.corIcone || '#21C25E'};
-                                    font-size:2.4rem;
-                                    filter: drop-shadow(0 2px 4px rgba(33,194,94,0.10));
+                    // Verificar se deve usar SVG ou ícone material
+                    let iconeSvg = obterIconeBanco(conta);
+
+                    // Força Nubank a sempre usar SVG mesmo se não houver conta.icone
+                    if (!iconeSvg && conta.banco === 'Nubank') {
+                        iconeSvg = bancosIcones['Nubank'];
+                    }
+
+                    if (iconeSvg) {
+                        // Usar SVG do banco
+                        div.innerHTML = `
+                            <div class="conta-ux-esquerda">
+                                <div class="conta-ux-icone conta-ux-icone-svg" style="
+                                    background: ${conta.cor || '#21C25E'} !important;
+                                    background-image: none !important;
+                                    border: none !important;
+                                    border-radius: 50% !important;
+                                    width: 54px !important;
+                                    height: 54px !important;
+                                    display: flex !important; 
+                                    align-items: center !important; 
+                                    justify-content: center !important;
+                                    box-shadow: 0 4px 16px rgba(33,194,94,0.10);">
+                                    <img src="${iconeSvg}" alt="${conta.banco || 'Banco'}" style="
+                                        width: 32px; 
+                                        height: 32px; 
+                                        object-fit: contain;
                                     ">
-                                    ${conta.iconeBanco || conta.icone || 'account_balance_wallet'}
-                                </span>
+                                </div>
+                                <div class="conta-ux-info">
+                                    <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
+                                    <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                </div>
                             </div>
-                            <div class="conta-ux-info">
-                                <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
-                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                            <div class="conta-ux-direita">
+                                <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                                <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
+                                    <span class="material-icons-round">delete</span>
+                                </button>
                             </div>
-                        </div>
-                        <div class="conta-ux-direita">
-                            <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
-                            <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
-                                <span class="material-icons-round">delete</span>
-                            </button>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        // Usar ícone material original
+                        div.innerHTML = `
+                            <div class="conta-ux-esquerda">
+                                <div class="conta-ux-icone" style="
+                                    background: linear-gradient(135deg, ${conta.cor || '#e8f5ee'} 60%, #fff 100%);
+                                    box-shadow: 0 4px 16px rgba(33,194,94,0.10);
+                                    border: 2px solid ${conta.cor || '#21C25E22'};
+                                    display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-icons-round" style="
+                                        color:${conta.corIcone || '#21C25E'};
+                                        font-size:2.4rem;
+                                        filter: drop-shadow(0 2px 4px rgba(33,194,94,0.10));
+                                        ">
+                                        ${conta.iconeBanco || conta.icone || 'account_balance_wallet'}
+                                    </span>
+                                </div>
+                                <div class="conta-ux-info">
+                                    <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
+                                    <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                </div>
+                            </div>
+                            <div class="conta-ux-direita">
+                                <div class="conta-ux-saldo" title="Saldo atual">${(conta.saldo || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                                <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
+                                    <span class="material-icons-round">delete</span>
+                                </button>
+                            </div>
+                        `;
+                    }
                     div.style.opacity = 0;
                     div.style.transform = 'translateY(18px) scale(0.98)';
                     setTimeout(() => {
