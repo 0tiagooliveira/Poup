@@ -18,6 +18,12 @@ let firebaseApp, auth, googleProvider;
         }
         auth = firebase.auth();
         googleProvider = new firebase.auth.GoogleAuthProvider();
+        // Configurar o provedor Google para solicitar informações específicas
+        googleProvider.addScope('profile');
+        googleProvider.addScope('email');
+        googleProvider.setCustomParameters({
+            'prompt': 'select_account'
+        });
     } else {
         console.error("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML.");
     }
@@ -30,6 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
         alert("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML e que o Live Server está configurado corretamente.");
         return;
     }
+    
+    console.log('Firebase Auth inicializado:', !!auth);
+    console.log('Google Provider inicializado:', !!googleProvider);
 
     // Alternar entre abas
     const tabs = document.querySelectorAll('.tab');
@@ -73,11 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formCriarConta) {
         formCriarConta.addEventListener('submit', function(e) {
             e.preventDefault();
+            const nome = document.getElementById('nome-criar').value;
             const email = document.getElementById('email-criar').value;
             const senha = document.getElementById('senha-criar').value;
 
             auth.createUserWithEmailAndPassword(email, senha)
                 .then(userCredential => {
+                    // Salvar nome no Firestore
+                    const user = userCredential.user;
+                    if (typeof firebase !== "undefined" && firebase.firestore) {
+                        firebase.firestore().collection('usuarios').doc(user.uid).set({
+                            nome: nome,
+                            email: email
+                        });
+                    }
                     alert('Conta criada com sucesso!');
                     window.location.href = '../Home/home.html';
                 })
@@ -106,19 +124,89 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Botões de login social
-    const btnGoogle = document.querySelector('.btn-social.google');
-    if (btnGoogle) {
+    const btnGoogleButtons = document.querySelectorAll('.btn-social.google');
+    console.log('Botões Google encontrados:', btnGoogleButtons.length);
+    
+    btnGoogleButtons.forEach((btnGoogle, index) => {
+        console.log(`Adicionando listener ao botão Google ${index + 1}`);
         btnGoogle.addEventListener('click', function() {
+            console.log('Botão Google clicado');
+            
+            if (!googleProvider) {
+                alert('Google Provider não está configurado.');
+                return;
+            }
+            
             auth.signInWithPopup(googleProvider)
                 .then(result => {
-                    alert('Login com Google realizado!');
+                    console.log('Login Google bem-sucedido:', result);
+                    const user = result.user;
+                    
+                    // Salvar dados do usuário no Firestore (se não existir)
+                    if (typeof firebase !== "undefined" && firebase.firestore) {
+                        const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                        userRef.get().then(doc => {
+                            if (!doc.exists) {
+                                // Usuário novo, salvar dados
+                                userRef.set({
+                                    nome: user.displayName || 'Usuário Google',
+                                    email: user.email,
+                                    fotoURL: user.photoURL || '',
+                                    provedor: 'google'
+                                });
+                            }
+                        });
+                    }
+                    
+                    alert('Login com Google realizado com sucesso!');
                     window.location.href = '../Home/home.html';
                 })
                 .catch(error => {
-                    alert('Erro ao fazer login com Google: ' + (error.message || error));
+                    console.error('Erro detalhado:', error);
+                    let mensagemErro = 'Erro ao fazer login com Google: ';
+                    
+                    switch(error.code) {
+                        case 'auth/popup-closed-by-user':
+                            mensagemErro += 'Popup foi fechado antes de completar o login.';
+                            break;
+                        case 'auth/popup-blocked':
+                            mensagemErro += 'Popup foi bloqueado pelo navegador. Permita popups para este site.';
+                            break;
+                        case 'auth/cancelled-popup-request':
+                            mensagemErro += 'Solicitação de popup foi cancelada.';
+                            break;
+                        case 'auth/unauthorized-domain':
+                            mensagemErro = 'CONFIGURAÇÃO NECESSÁRIA:\n\n';
+                            mensagemErro += '1. Acesse o Firebase Console (console.firebase.google.com)\n';
+                            mensagemErro += '2. Vá para Authentication > Sign-in method\n';
+                            mensagemErro += '3. Clique em Google\n';
+                            mensagemErro += '4. Em "Authorized domains", adicione:\n';
+                            mensagemErro += '   - 127.0.0.1\n';
+                            mensagemErro += '   - localhost\n';
+                            mensagemErro += '5. Salve as alterações\n\n';
+                            mensagemErro += 'Depois teste novamente o login com Google.';
+                            break;
+                        default:
+                            // Verifica se é erro de domínio não autorizado pela mensagem
+                            if (error.message && error.message.includes('not authorized to run this operation')) {
+                                mensagemErro = 'CONFIGURAÇÃO NECESSÁRIA:\n\n';
+                                mensagemErro += '1. Acesse o Firebase Console (console.firebase.google.com)\n';
+                                mensagemErro += '2. Vá para Authentication > Sign-in method\n';
+                                mensagemErro += '3. Clique em Google\n';
+                                mensagemErro += '4. Em "Authorized domains", adicione:\n';
+                                mensagemErro += '   - 127.0.0.1\n';
+                                mensagemErro += '   - localhost\n';
+                                mensagemErro += '5. Salve as alterações\n\n';
+                                mensagemErro += 'Depois teste novamente o login com Google.';
+                            } else {
+                                mensagemErro += error.message || 'Erro desconhecido.';
+                            }
+                    }
+                    
+                    alert(mensagemErro);
                 });
         });
-    }
+    });
 
     const btnApple = document.getElementById('btn-apple');
     if (btnApple) {

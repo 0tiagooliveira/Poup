@@ -4,15 +4,20 @@ let firebaseApp, auth, googleProvider;
 (function initFirebase() {
     if (typeof firebase !== "undefined") {
         if (!firebase.apps.length) {
-            firebaseApp = firebase.initializeApp({
-                apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
-                authDomain: "poup-beta.firebaseapp.com",
-                projectId: "poup-beta",
-                storageBucket: "poup-beta.appspot.com",
-                messagingSenderId: "954695915981",
-                appId: "1:954695915981:web:d31b216f79eac178094c84",
-                measurementId: "G-LP9BDVD3KJ"
-            });
+            try {
+                firebaseApp = firebase.initializeApp({
+                    apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+                    authDomain: "poup-beta.firebaseapp.com",
+                    projectId: "poup-beta",
+                    storageBucket: "poup-beta.appspot.com",
+                    messagingSenderId: "954695915981",
+                    appId: "1:954695915981:web:d31b216f79eac178094c84",
+                    measurementId: "G-LP9BDVD3KJ"
+                });
+                console.log('Firebase inicializado com sucesso');
+            } catch (error) {
+                console.error('Erro ao inicializar Firebase:', error);
+            }
         } else {
             firebaseApp = firebase.app();
         }
@@ -24,6 +29,16 @@ let firebaseApp, auth, googleProvider;
         googleProvider.setCustomParameters({
             'prompt': 'select_account'
         });
+        
+        // Verificar se o Firebase está funcionando
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('Usuário autenticado:', user.email);
+            } else {
+                console.log('Usuário não autenticado');
+            }
+        });
+        
     } else {
         console.error("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML.");
     }
@@ -86,6 +101,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = document.getElementById('email-criar').value;
             const senha = document.getElementById('senha-criar').value;
 
+            // Validação básica
+            if (!nome || !email || !senha) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            if (senha.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+
+            // Mostrar loading
+            const btnSubmit = formCriarConta.querySelector('button[type="submit"]');
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = 'Criando conta...';
+            btnSubmit.disabled = true;
+
             auth.createUserWithEmailAndPassword(email, senha)
                 .then(userCredential => {
                     // Salvar nome no Firestore
@@ -93,14 +125,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (typeof firebase !== "undefined" && firebase.firestore) {
                         firebase.firestore().collection('usuarios').doc(user.uid).set({
                             nome: nome,
-                            email: email
+                            email: email,
+                            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
                     alert('Conta criada com sucesso!');
                     window.location.href = '../Home/home.html';
                 })
                 .catch(error => {
-                    alert('Erro ao criar conta: ' + (error.message || error));
+                    console.error('Erro ao criar conta:', error);
+                    
+                    // Restaurar botão
+                    btnSubmit.textContent = textoOriginal;
+                    btnSubmit.disabled = false;
+                    
+                    let mensagemErro = 'Erro ao criar conta: ';
+                    
+                    switch(error.code) {
+                        case 'auth/email-already-in-use':
+                            mensagemErro += 'Este email já está sendo usado. Tente fazer login ou use outro email.';
+                            break;
+                        case 'auth/invalid-email':
+                            mensagemErro += 'Email inválido. Verifique o formato do email.';
+                            break;
+                        case 'auth/weak-password':
+                            mensagemErro += 'Senha muito fraca. Use pelo menos 6 caracteres.';
+                            break;
+                        case 'auth/operation-not-allowed':
+                            mensagemErro += 'Criação de contas não permitida. Contate o suporte.';
+                            break;
+                        default:
+                            mensagemErro += error.message || 'Erro desconhecido.';
+                    }
+                    
+                    alert(mensagemErro);
                 });
         });
     }
@@ -113,12 +171,55 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = document.getElementById('email-login').value;
             const senha = document.getElementById('senha-login').value;
 
+            // Validação básica
+            if (!email || !senha) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            // Mostrar loading
+            const btnSubmit = formLogin.querySelector('button[type="submit"]');
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = 'Entrando...';
+            btnSubmit.disabled = true;
+
             auth.signInWithEmailAndPassword(email, senha)
                 .then(userCredential => {
                     window.location.href = '../Home/home.html';
                 })
                 .catch(error => {
-                    alert('Erro ao fazer login: ' + (error.message || error));
+                    console.error('Erro de login:', error);
+                    
+                    // Restaurar botão
+                    btnSubmit.textContent = textoOriginal;
+                    btnSubmit.disabled = false;
+                    
+                    let mensagemErro = 'Erro ao fazer login: ';
+                    
+                    switch(error.code) {
+                        case 'auth/user-not-found':
+                            mensagemErro += 'Usuário não encontrado. Verifique o email ou crie uma conta.';
+                            break;
+                        case 'auth/wrong-password':
+                            mensagemErro += 'Senha incorreta. Tente novamente.';
+                            break;
+                        case 'auth/invalid-email':
+                            mensagemErro += 'Email inválido. Verifique o formato do email.';
+                            break;
+                        case 'auth/user-disabled':
+                            mensagemErro += 'Esta conta foi desativada.';
+                            break;
+                        case 'auth/too-many-requests':
+                            mensagemErro += 'Muitas tentativas de login. Tente novamente mais tarde.';
+                            break;
+                        case 'auth/invalid-login-credentials':
+                            mensagemErro += 'Credenciais inválidas. Verifique seu email e senha.';
+                            break;
+                        default:
+                            mensagemErro += error.message || 'Erro desconhecido.';
+                    }
+                    
+                    alert(mensagemErro);
                 });
         });
     }

@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poup+ - Login/Cadastro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+    <link rel="icon" type="image/svg+xml" href="Icon/LogoPoup.svg">
 
     <!-- Firebase scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
+
 <body>
     <div class="container">
         <!-- Logo -->
@@ -39,6 +42,10 @@
                             <p class="subtitle">Vamos começar preenchendo o formulário abaixo.</p>
 
                             <form id="form-criar-conta">
+                                <div class="form-group">
+                                    <label for="nome-criar">Nome</label>
+                                    <input type="text" id="nome-criar" placeholder="Seu nome" required>
+                                </div>
                                 <div class="form-group">
                                     <label for="email-criar">Email</label>
                                     <input type="email" id="email-criar" placeholder="Seu email" required>
@@ -116,4 +123,5 @@
 
     <script src="script.js" defer></script>
 </body>
+
 </html>

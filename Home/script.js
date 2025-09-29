@@ -1431,3 +1431,46 @@ service cloud.firestore {
 
 IMPORTANTE: Nunca deixe as regras abertas (allow read, write: if true) em produção!
 */
+
+// JavaScript para os botões de ação radiais
+document.addEventListener('DOMContentLoaded', function() {
+    const botaoAcaoPrincipal = document.getElementById('botao-acao-principal');
+    const acoesSecundarias = document.getElementById('acoes-secundarias');
+    const acoesRadiaisOverlay = document.getElementById('acoes-radiais-overlay');
+    
+    if (botaoAcaoPrincipal && acoesSecundarias && acoesRadiaisOverlay) {
+        let acoesAbertas = false;
+        
+        // Função para abrir/fechar as ações
+        function toggleAcoes() {
+            acoesAbertas = !acoesAbertas;
+            
+            if (acoesAbertas) {
+                botaoAcaoPrincipal.classList.add('ativo');
+                acoesSecundarias.classList.add('ativo');
+                acoesRadiaisOverlay.classList.add('ativo');
+            } else {
+                botaoAcaoPrincipal.classList.remove('ativo');
+                acoesSecundarias.classList.remove('ativo');
+                acoesRadiaisOverlay.classList.remove('ativo');
+            }
+        }
+        
+        // Evento do botão principal
+        botaoAcaoPrincipal.addEventListener('click', toggleAcoes);
+        
+        // Evento do overlay para fechar
+        acoesRadiaisOverlay.addEventListener('click', function() {
+            if (acoesAbertas) {
+                toggleAcoes();
+            }
+        });
+        
+        // Fechar com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && acoesAbertas) {
+                toggleAcoes();
+            }
+        });
+    }
+});
