@@ -185,10 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             auth.signInWithEmailAndPassword(email, senha)
                 .then(userCredential => {
+                    console.log('Login realizado com sucesso:', userCredential.user.email);
                     window.location.href = '../Home/home.html';
                 })
                 .catch(error => {
                     console.error('Erro de login:', error);
+                    console.log('Tentativa de login com:', email);
                     
                     // Restaurar botão
                     btnSubmit.textContent = textoOriginal;
@@ -199,6 +201,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     switch(error.code) {
                         case 'auth/user-not-found':
                             mensagemErro += 'Usuário não encontrado. Verifique o email ou crie uma conta.';
+                            // Sugerir ir para aba de criar conta
+                            setTimeout(() => {
+                                if (confirm('Usuário não encontrado. Deseja criar uma conta com este email?')) {
+                                    // Alternar para aba de criar conta
+                                    const tabCriarConta = document.querySelector('.tab[data-tab="criar-conta"]');
+                                    const tabLogin = document.querySelector('.tab[data-tab="login"]');
+                                    const painelCriarConta = document.getElementById('criar-conta');
+                                    const painelLogin = document.getElementById('login');
+                                    
+                                    if (tabCriarConta && tabLogin && painelCriarConta && painelLogin) {
+                                        // Remover active das abas atuais
+                                        tabLogin.classList.remove('active');
+                                        painelLogin.classList.remove('active');
+                                        
+                                        // Ativar aba de criar conta
+                                        tabCriarConta.classList.add('active');
+                                        painelCriarConta.classList.add('active');
+                                        
+                                        // Preencher o email no formulário de criar conta
+                                        const emailCriar = document.getElementById('email-criar');
+                                        if (emailCriar) {
+                                            emailCriar.value = email;
+                                        }
+                                    }
+                                }
+                            }, 100);
                             break;
                         case 'auth/wrong-password':
                             mensagemErro += 'Senha incorreta. Tente novamente.';
@@ -213,7 +241,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             mensagemErro += 'Muitas tentativas de login. Tente novamente mais tarde.';
                             break;
                         case 'auth/invalid-login-credentials':
-                            mensagemErro += 'Credenciais inválidas. Verifique seu email e senha.';
+                            mensagemErro = '❌ CREDENCIAIS INVÁLIDAS\n\n';
+                            mensagemErro += '• Verifique se o email está correto\n';
+                            mensagemErro += '• Verifique se a senha está correta\n';
+                            mensagemErro += '• Certifique-se de que já possui uma conta\n\n';
+                            mensagemErro += '💡 Dica: Se não tem conta, use a aba "Criar conta"';
                             break;
                         default:
                             mensagemErro += error.message || 'Erro desconhecido.';
@@ -331,9 +363,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnEsqueceuSenha = document.querySelector('.btn-link');
     if (btnEsqueceuSenha) {
         btnEsqueceuSenha.addEventListener('click', function() {
-            // Lógica para recuperar senha
-            console.log('Esqueceu a senha');
-            alert('Redirecionando para recuperação de senha');
+            const email = document.getElementById('email-login').value;
+            
+            if (!email) {
+                alert('Digite seu email primeiro para receber o link de redefinição de senha.');
+                document.getElementById('email-login').focus();
+                return;
+            }
+            
+            if (confirm(`Enviar email de redefinição de senha para ${email}?`)) {
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        alert('Email de redefinição de senha enviado! Verifique sua caixa de entrada.');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao enviar email:', error);
+                        let mensagem = 'Erro ao enviar email: ';
+                        
+                        switch(error.code) {
+                            case 'auth/user-not-found':
+                                mensagem += 'Email não encontrado. Verifique se digitou corretamente.';
+                                break;
+                            case 'auth/invalid-email':
+                                mensagem += 'Email inválido.';
+                                break;
+                            default:
+                                mensagem += error.message;
+                        }
+                        
+                        alert(mensagem);
+                    });
+            }
         });
     }
 });
