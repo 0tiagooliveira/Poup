@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Início</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Adicionar Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- FIM: Configuração do Firebase -->
+</head>
+
+<body>
+    <!-- Tela de Carregamento -->
+    <div id="loading-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <p style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; color: #333;">Carregando...</p>
+    </div>
+
+    <div class="container-app" style="display: none;"> <!-- Conteúdo principal escondido por padrão -->
+        <header class="cabecalho">
+            <div class="cabecalho-conteudo">
+                <div class="usuario-info-container"> <!-- Container para posicionamento -->
+                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;">
+                        <div class="avatar-usuario">
+                            <span class="material-icons-round">account_circle</span>
+                        </div>
+                        <div class="usuario-saudacao">
+                            <p class="saudacao">Bem-vindo de volta,</p>
+                            <p class="nome-usuario">Usuário</p> <!-- Será atualizado via JS -->
+                        </div>
+                    </div>
+                    <!-- Menu Dropdown do Usuário -->
+                    <div class="menu-usuario" id="menu-usuario">
+                        <a href="#" class="item-menu" id="config-usuario-btn">
+                            <span class="material-icons-round">settings</span>
+                            <span>Configurações</span>
+                        </a>
+                        <a href="#" class="item-menu" id="sair-btn">
+                            <span class="material-icons-round">logout</span>
+                            <span>Sair</span>
+                        </a>
+                    </div>
+                </div>
+                <button class="botao-notificacao">
+                    <span class="material-icons-round">notifications</span>
+                    <span class="notificacao-badge">2</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="conteudo-principal">
+            <div class="area-conteudo">
+                <!-- Seletor de mês e saldo -->
+                <div class="cartao-saldo-mensal">
+                    <div class="seletor-mes-container">
+                        <button class="botao-mes anterior">
+                            <span class="material-icons-round">chevron_left</span>
+                        </button>
+                        <select class="seletor-mes">
+                            <option>Janeiro</option>
+                            <option>Fevereiro</option>
+                            <option>Março</option>
+                            <option>Abril</option>
+                            <option>Maio</option>
+                            <option>Junho</option>
+                            <option>Julho</option>
+                            <option>Agosto</option>
+                            <option>Setembro</option>
+                            <option>Outubro</option>
+                            <option>Novembro</option>
+                            <option>Dezembro</option>
+                        </select>
+                        <button class="botao-mes proximo">
+                            <span class="material-icons-round">chevron_right</span>
+                        </button>
+                    </div>
+                    <p class="rotulo-saldo">Saldo total</p>
+                    <p class="valor-saldo">R$ 0,00</p>
+                    <div class="indicador-saldo">
+                        <span class="material-icons-round">trending_up</span>
+                        <span>0% vs mês anterior</span>
+                    </div>
+                </div>
+
+                <!-- Cartões de Receitas e Despesas -->
+                <div class="linha-receitas-despesas">
+                    <a href="../Lista-de-receitas/Lista-de-receitas.html" class="cartao cartao-receitas">
+                        <div class="cartao-cabecalho">
+                            <h3>Receitas</h3>
+                            <span class="material-icons-round">arrow_forward</span>
+                        </div>
+                        <div class="cartao-conteudo">
+                            <div class="icone-container receita">
+                                <span class="material-icons-round">savings</span>
+                            </div>
+                            <span class="valor-receitas">R$ 0,00</span>
+                        </div>
+                    </a>
+                    <a href="../Lista-de-despesas/Lista-de-despesas.html" class="cartao cartao-despesas">
+                        <div class="cartao-cabecalho">
+                            <h3>Despesas</h3>
+                            <span class="material-icons-round">arrow_forward</span>
+                        </div>
+                        <div class="cartao-conteudo">
+                            <div class="icone-container despesa">
+                                <span class="material-icons-round">shopping_cart</span>
+                            </div>
+                            <span class="valor-despesas">R$ 0,00</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Seção de Contas -->
+                <div class="secao">
+                    <div class="secao-cabecalho">
+                        <h2 class="titulo-secao">Contas</h2>
+                    </div>
+                    <!-- Container para os cards de conta -->
+                    <div id="container-contas-home" style="display: flex; flex-wrap: wrap; gap: 18px; justify-content: flex-start;">
+                        <!-- Os cards de conta serão inseridos aqui pelo script.js -->
+                    </div>
+                    <!-- Botão de criar nova conta centralizado após as contas registradas -->
+                    <div id="botao-nova-conta-container" style="display: none; justify-content: center; margin: 24px 0 0 0;">
+                        <a href="../Nova-conta/Nova-conta.html" class="botao-primario" style="min-width:180px;">
+                            <span class="material-icons-round" style="font-size:1.2rem;margin-right:6px;">add</span>
+                            Nova Conta
+                        </a>
+                    </div>
+                    <!-- Cartão de estado vazio para contas -->
+                    <div class="cartao-estado-vazio" id="cartao-estado-vazio-contas" style="display:none;">
+                        <div class="icone-vazio">
+                            <span class="material-icons-round">account_balance</span>
+                        </div>
+                        <p>Você ainda não tem contas cadastradas</p>
+                        <div class="adicionar-conta">
+                            <br>
+                            <a href="../Nova-conta/Nova-conta.html" class="botao-primario">Adicionar nova conta</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Receitas e Despesas (cards lado a lado, visual consistente) -->
+                <div class="secao" style="display:flex; flex-direction:row; gap:24px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:260px;">
+                        <div class="cartao cartao-receitas cartao-lista-ux">
+                            <div class="cartao-cabecalho">
+                                <h3>Receitas</h3>
+                                <span class="material-icons-round">arrow_forward</span>
+                            </div>
+                            <div class="cartao-conteudo">
+                                <div class="icone-container receita">
+                                    <span class="material-icons-round">savings</span>
+                                </div>
+                                <span class="valor-receitas">R$ 0,00</span>
+                            </div>
+                            <div id="lista-receitas-home" class="lista-mini-ux"></div>
+                            <a href="../Lista-de-receitas/Lista-de-receitas.html" class="botao-primario botao-mini-ux">Ver todas</a>
+                        </div>
+                    </div>
+                    <div style="flex:1; min-width:260px;">
+                        <div class="cartao cartao-despesas cartao-lista-ux">
+                            <div class="cartao-cabecalho">
+                                <h3>Despesas</h3>
+                                <span class="material-icons-round">arrow_forward</span>
+                            </div>
+                            <div class="cartao-conteudo">
+                                <div class="icone-container despesa">
+                                    <span class="material-icons-round">shopping_cart</span>
+                                </div>
+                                <span class="valor-despesas">R$ 0,00</span>
+                            </div>
+                            <div id="lista-despesas-home" class="lista-mini-ux"></div>
+                            <a href="../Lista-de-despesas/Lista-de-despesas.html" class="botao-primario botao-mini-ux">Ver todas</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Cartões -->
+                <div class="secao">
+                    <div class="secao-cabecalho">
+                        <h2 class="titulo-secao">Cartões de crédito</h2>
+                        <button class="botao-secao">
+                        </button>
+                    </div>
+                    <div class="cartao-estado-vazio">
+                        <div class="icone-vazio">
+                            <span class="material-icons-round">credit_card</span>
+                        </div>
+                        <p>Nenhum cartão cadastrado</p>
+                        <a href="../Novo Cartão/Novo Cartão.html" class="botao-primario">Adicionar cartão</a>
+                    </div>
+                </div>
+
+                <!-- Seção de Receitas por Categoria -->
+                <div class="secao">
+                    <div class="secao-cabecalho">
+                        <h2 class="titulo-secao">Receitas por categoria</h2>
+                        <div class="filtros-categoria">
+                            <button class="botao-filtro-receita ativo" data-filtro="atual">Atual</button>
+                            <button class="botao-filtro-receita" data-filtro="anterior">Anterior</button>
+                            <button class="botao-filtro-receita" data-filtro="todos">Todos</button>
+                        </div>
+                    </div>
+                    <div id="container-receitas-categoria">
+                        <!-- Estado vazio será inserido dinamicamente -->
+                    </div>
+                    <!-- Estado vazio (template) -->
+                    <div class="cartao-estado-vazio" id="cartao-estado-vazio-receitas" style="display: none;">
+                        <div class="icone-vazio">
+                            <span class="material-icons-round">receipt_long</span>
+                        </div>
+                        <p>Nenhuma receita cadastrada este mês.</p>
+                        <a href="../Nova-Receita/Nova-Receita.html" class="botao-primario">
+                            <span class="material-icons-round">add</span>
+                            Nova Receita
+                        </a>
+                    </div>
+                    <!-- Estado ativo (NOVO LAYOUT) -->
+                    <div class="grafico-categoria-container" id="cartao-estado-ativo-receitas" style="display:none;">
+                        <div class="grafico-categoria-grafico">
+                            <canvas id="grafico-receitas-categoria"></canvas>
+                            <div class="grafico-categoria-total-central">
+                                <span class="valor-total" id="valor-total-receitas">R$ 0,00</span>
+                                <span class="label-total">TOTAL</span>
+                            </div>
+                        </div>
+                        <div class="grafico-categoria-lista" id="lista-categorias-receitas"></div>
+                    </div>
+                </div>
+
+                <!-- Seção de Categorias (Despesas) -->
+                <div class="secao">
+                    <div class="secao-cabecalho">
+                        <h2 class="titulo-secao">Despesas por categoria</h2>
+                        <div class="filtros-categoria">
+                            <button class="botao-filtro ativo" data-filtro="atual">Atual</button>
+                            <button class="botao-filtro" data-filtro="anterior">Anterior</button>
+                            <button class="botao-filtro" data-filtro="todos">Todos</button>
+                        </div>
+                    </div>
+
+                    <!-- Container dinâmico para gráfico -->
+                    <div id="container-despesas-categoria">
+                        <!-- Estado vazio será inserido dinamicamente -->
+                    </div>
+
+                    <!-- Estado vazio (template) -->
+                    <div class="cartao-estado-vazio" id="cartao-estado-vazio-categorias" style="display: none;">
+                        <div class="icone-vazio">
+                            <span class="material-icons-round">pie_chart</span>
+                        </div>
+                        <p>Nenhuma despesa este mês</p>
+                        <a href="../Nova-Despesa/Nova-Despesa.html" class="botao-primario">Adicionar despesa</a>
+                    </div>
+
+                    <!-- Estado ativo (NOVO LAYOUT) -->
+                    <div class="grafico-categoria-container" id="cartao-estado-ativo-categorias" style="display:none;">
+                        <div class="grafico-categoria-grafico">
+                            <canvas id="grafico-despesas-categoria"></canvas>
+                            <div class="grafico-categoria-total-central">
+                                <span class="valor-total" id="valor-total-despesas">R$ 0,00</span>
+                                <span class="label-total">TOTAL</span>
+                            </div>
+                        </div>
+                        <div class="grafico-categoria-lista" id="lista-categorias-despesas"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Barra de navegação inferior -->
+        <nav class="barra-navegacao-inferior">
+            <a href="#" class="item-navegacao ativo">
+                <span class="material-icons-round">home</span>
+                <span>Principal</span>
+            </a>
+            <a href="../Transações/Transações.html" class="item-navegacao">
+                <span class="material-icons-round">receipt_long</span>
+                <span>Transações</span>
+            </a>
+            <div class="botao-adicionar">
+                <span class="material-icons-round">add</span>
+            </div>
+            <a href="#" class="item-navegacao">
+                <span class="material-icons-round">bar_chart</span>
+                <span>Relatórios</span>
+            </a>
+            <a href="#" class="item-navegacao">
+                <span class="material-icons-round">settings</span>
+                <span>Configurações</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="script.js" defer></script>
+
+    <!-- Popup de confirmação de exclusão de conta (customizado) -->
+    <div id="popup-excluir-conta-custom"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:3000; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+        <div
+            style="background:#fff; border-radius:12px; padding:32px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-width:260px; max-width:90vw; text-align:center;">
+            <span id="popup-excluir-conta-msg"
+                style="display:block; font-family:'Poppins',sans-serif; font-size:1.1rem; color:#333; margin-bottom:24px;">
+                Tem certeza que deseja excluir esta conta?
+            </span>
+            <div style="display:flex; gap:16px; justify-content:center;">
+                <button id="popup-excluir-conta-nao"
+                    style="padding:12px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Não</button>
+                <button id="popup-excluir-conta-sim"
+                    style="padding:12px 24px; background-color:#ef233c; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Sim</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

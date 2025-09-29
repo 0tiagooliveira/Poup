@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poup+ - Cartões</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+  <header class="cabecalho" style="position:sticky;top:0;background:#fff;z-index:10;">
+    <div class="cabecalho-conteudo" style="gap:12px;">
+      <button id="voltar-home" class="botao-primario" style="display:flex;align-items:center;gap:6px;background:#eaf3f1;color:#0f766e;">
+        <span class="material-icons-round">west</span>
+        <span>Início</span>
+      </button>
+      <h1 style="margin:0;font-size:1.2rem;">Meus Cartões</h1>
+      <a href="../Novo Cartão/Novo Cartão.html" class="botao-primario" style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+        <span class="material-icons-round">add</span>
+        Novo cartão
+      </a>
+    </div>
+  </header>
+
+  <main class="conteudo-principal" style="padding:16px;">
+    <div id="estado-vazio" class="cartao-estado-vazio" style="display:none;">
+      <div class="icone-vazio"><span class="material-icons-round">credit_card</span></div>
+      <p>Nenhum cartão cadastrado</p>
+      <a href="../Novo Cartão/Novo Cartão.html" class="botao-primario">Adicionar cartão</a>
+    </div>
+
+    <div id="lista-cartoes" style="display:grid;gap:12px;"></div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

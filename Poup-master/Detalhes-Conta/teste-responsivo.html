@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Responsivo - Detalhes da Conta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .viewport-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .breakpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .breakpoint {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .mobile { background: #ff6b6b; color: white; }
+        .tablet { background: #4ecdc4; color: white; }
+        .desktop { background: #45b7d1; color: white; }
+        .large { background: #96ceb4; color: white; }
+        
+        .test-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .test-link:hover {
+            background: #0056b3;
+        }
+        
+        .current-size {
+            font-size: 1.2em;
+            color: #333;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info">
+        <h1>🎯 Teste de Responsividade - Detalhes da Conta</h1>
+        <div class="current-size" id="currentSize">Redimensione a janela para ver as mudanças</div>
+        
+        <div class="breakpoints">
+            <div class="breakpoint mobile">📱 Mobile<br>&lt; 768px</div>
+            <div class="breakpoint tablet">📱 Tablet<br>768px - 1023px</div>
+            <div class="breakpoint desktop">🖥️ Desktop<br>1024px - 1199px</div>
+            <div class="breakpoint large">🖥️ Large<br>≥ 1200px</div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="Detalhes-Conta.html" class="test-link">🔍 Testar Página Responsiva</a>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 0.9em; color: #666;">
+            <h3>🆕 Melhorias Implementadas:</h3>
+            <ul style="text-align: left; display: inline-block;">
+                <li>✅ Layout responsivo para todas as telas</li>
+                <li>✅ Bordas arredondadas em telas maiores</li>
+                <li>✅ Espaçamento otimizado para cada breakpoint</li>
+                <li>✅ Ícones dos bancos com cores corretas</li>
+                <li>✅ Sombras e efeitos melhorados</li>
+                <li>✅ Container centralizado em desktop</li>
+                <li>✅ Padding adequado em todas as telas</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const currentSizeEl = document.getElementById('currentSize');
+            
+            let breakpoint = '';
+            if (width < 768) {
+                breakpoint = '📱 Mobile';
+            } else if (width < 1024) {
+                breakpoint = '📱 Tablet';
+            } else if (width < 1200) {
+                breakpoint = '🖥️ Desktop';
+            } else {
+                breakpoint = '🖥️ Large Desktop';
+            }
+            
+            currentSizeEl.innerHTML = `
+                <strong>${breakpoint}</strong><br>
+                Viewport: ${width}px × ${height}px
+            `;
+        }
+
+        window.addEventListener('resize', updateSize);
+        updateSize();
+    </script>
+</body>
+</html>

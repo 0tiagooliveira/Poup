@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Transações</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+</head>
+<body>
+    <div class="app-container">
+        <header class="cabecalho">
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <div class="titulo-pagina">
+                    <h1>Transações</h1>
+                    <span class="material-icons">expand_more</span>
+                </div>
+                <div class="acoes-cabecalho">
+                    <button class="botao-icone" id="botao-busca"><span class="material-icons">search</span></button>
+                    <button class="botao-icone" id="botao-filtros"><span class="material-icons">filter_list</span></button>
+                </div>
+            </div>
+            <nav class="navegacao-mes">
+                <button class="botao-navegacao" id="prev-month">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <h2 class="mes-atual" id="current-month">Carregando...</h2>
+                <button class="botao-navegacao" id="next-month">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Barra de Busca (inicialmente oculta) -->
+        <div class="barra-busca" id="barra-busca" style="display: none;">
+            <div class="input-busca-container">
+                <span class="material-icons">search</span>
+                <input type="text" id="input-busca" placeholder="Buscar transações..." />
+                <button class="botao-fechar-busca" id="fechar-busca">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="conteudo-principal">
+            <section class="secao-resumo" id="transacoes-resumo">
+                <div class="card-resumo">
+                    <span class="material-icons-round resumo-icone">trending_up</span>
+                    <div class="card-resumo-content">
+                        <span class="titulo-resumo">Total receitas</span>
+                        <span class="valor-resumo" id="total-receitas">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="card-resumo">
+                    <span class="material-icons-round resumo-icone">trending_down</span>
+                    <div class="card-resumo-content">
+                        <span class="titulo-resumo">Total despesas</span>
+                        <span class="valor-resumo" id="total-despesas">R$ 0,00</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="lista-transacoes" id="lista-transacoes">
+                </div>
+        </main>
+
+        <!-- Barra de navegação inferior -->
+        <nav class="barra-navegacao-inferior">
+            <a href="../Home/home.html" class="item-navegacao">
+                <span class="material-icons-round">home</span>
+                <span>Principal</span>
+            </a>
+            <a href="../Transações/Transações.html" class="item-navegacao ativo">
+                <span class="material-icons-round">receipt_long</span>
+                <span>Transações</span>
+            </a>
+            <div class="botao-adicionar">
+                <span class="material-icons-round">add</span>
+            </div>
+            <a href="#" class="item-navegacao">
+                <span class="material-icons-round">bar_chart</span>
+                <span>Relatórios</span>
+            </a>
+            <a href="#" class="item-navegacao">
+                <span class="material-icons-round">settings</span>
+                <span>Configurações</span>
+            </a>
+        </nav>
+
+        <!-- Popups -->
+        <div id="popup-confirmacao" class="popup-overlay" style="display: none;">
+            <div class="popup-container">
+                <span id="popup-confirmacao-texto" class="popup-texto">Tem certeza que deseja excluir esta transação?</span>
+                <div class="popup-botoes">
+                    <button id="popup-confirmacao-cancelar" class="botao-popup secundario">Cancelar</button>
+                    <button id="popup-confirmacao-excluir" class="botao-popup erro">Excluir</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="popup-mensagem" class="popup-overlay" style="display: none;">
+            <div class="popup-container">
+                <span id="popup-texto" class="popup-texto"></span>
+                <button id="popup-botao" class="botao-popup primario">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- Configuração do Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwNdRLFJ9iI1pqtLGVNhsGkO8I-iWCrTM",
+            authDomain: "poup-1b0ad.firebaseapp.com",
+            projectId: "poup-1b0ad",
+            storageBucket: "poup-1b0ad.appspot.com",
+            messagingSenderId: "534243632714",
+            appId: "1:534243632714:web:6c07a6bbee3b4f8b5b1d8b"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>

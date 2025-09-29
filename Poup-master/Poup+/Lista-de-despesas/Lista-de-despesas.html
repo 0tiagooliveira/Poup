@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Despesas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="cabecalho">
+        <button class="botao-voltar" onclick="console.log('Voltar para a página inicial'); window.location.href='../Home/home.html'">
+            <span class="material-icons">arrow_back</span>
+        </button>
+        <h1>Minhas Despesas</h1>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="container-principal">
+        <!-- Filtros -->
+        <section class="secao-filtros">
+            <div class="filtro-item">
+                <span class="material-icons-round filtro-icone">calendar_month</span>
+                <select id="filtro-periodo" class="filtro-select">
+                    <option value="hoje">Hoje</option>
+                    <option value="semana">Esta semana</option>
+                    <option value="mes" selected>Este mês</option>
+                    <option value="todos">Todos</option>
+                </select>
+            </div>
+            <div class="filtro-item">
+                <span class="material-icons-round filtro-icone">category</span>
+                <select id="filtro-categoria" class="filtro-select">
+                    <option value="todas" selected>Todas categorias</option>
+                    <option value="alimentacao">Alimentação</option>
+                    <option value="transporte">Transporte</option>
+                    <option value="moradia">Moradia</option>
+                    <option value="saude">Saúde</option>
+                    <option value="educacao">Educação</option>
+                    <option value="lazer">Lazer</option>
+                    <option value="compras">Compras</option>
+                    <option value="outros">Outros</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Resumo -->
+        <section class="secao-resumo">
+            <div class="card-resumo">
+                <div class="resumo-icon">
+                    <span class="material-icons-round">money_off</span>
+                </div>
+                <div class="resumo-content">
+                    <span class="titulo-resumo">Total Gasto</span>
+                    <span class="valor-resumo" id="total-gasto">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="card-resumo">
+                <div class="resumo-icon">
+                    <span class="material-icons-round">schedule</span>
+                </div>
+                <div class="resumo-content">
+                    <span class="titulo-resumo">A Pagar</span>
+                    <span class="valor-resumo" id="a-pagar">R$ 0,00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Despesas -->
+        <main class="lista-despesas" id="lista-despesas">
+            <div id="despesas-list">
+                <!-- Despesas serão carregadas dinamicamente aqui -->
+            </div>
+        </main>
+
+        <!-- Botão Nova Despesa -->
+        <button id="botao-nova-despesa" class="botao-primario">
+            <span class="material-icons">add</span> Nova Despesa
+        </button>
+
+        <!-- Popup de confirmação para exclusão de despesa -->
+        <div class="popup-confirmacao" id="popup-confirmacao" style="display: none;">
+            <div class="popup-confirmacao-conteudo">
+                <span class="popup-confirmacao-texto">Tem certeza que deseja excluir esta despesa?</span>
+                <div class="popup-confirmacao-botoes">
+                    <button class="popup-confirmacao-botao popup-confirmacao-cancelar" id="popup-cancelar">Cancelar</button>
+                    <button class="popup-confirmacao-botao popup-confirmacao-excluir" id="popup-excluir">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-mensagem">
+        <div class="popup-mensagem-conteudo">
+            <span class="popup-texto"></span>
+            <button class="popup-botao" onclick="console.log('Popup de mensagem fechado');">OK</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      } else {
+         firebase.app();
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+</body>
+</html>

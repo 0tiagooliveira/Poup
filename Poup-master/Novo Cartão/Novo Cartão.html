@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Cartão</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela 1: Seleção de Instituição -->
+        <div id="selectInstitutionPage" class="page">
+            <header class="header header-purple">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <h1>Adicionar Cartão</h1>
+            </header>
+            
+            <div class="content">
+                <div class="card">
+                    <h2>De onde você quer trazer seus dados?</h2>
+                    <p>Escolha abaixo a instituição para acompanhar toda sua vida financeira aqui no Poup+.</p>
+                    
+                    <div class="search-container">
+                        <div class="search-icon">🔍</div>
+                        <input type="text" id="searchInput" placeholder="Buscar por nome">
+                    </div>
+                    
+                    <div class="institutions-list" id="institutionsList">
+                        <!-- Instituições serão inseridas aqui pelo JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela 2: Formulário do Cartão -->
+        <div id="cardFormPage" class="page" style="display: none;">
+            <header class="header header-green">
+                <button class="back-btn" onclick="goBackToInstitutions()">←</button>
+                <h1>Novo cartão</h1>
+            </header>
+            
+            <div class="limit-display" onclick="abrirCalculadora()">
+                <span class="limit-label">Limite do cartão</span>
+                <div class="limit-amount" id="limitAmount">R$ 0,00</div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <form id="cardForm">
+                        <div class="form-group">
+                            <div class="icon-container">
+                                <img src="../Icon/descricao.svg" alt="Descrição" class="form-icon">
+                            </div>
+                            <input type="text" id="description" placeholder="Descrição">
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="icon-container">
+                                <img src="../Icon/cartao-credito.svg" alt="Bandeira" class="form-icon">
+                            </div>
+                            <div class="select-field" onclick="selectBrand()">
+                                <div class="brand-info">
+                                    <div class="brand-icon" id="selectedBrandIcon" style="color: #1A1F71;">VISA</div>
+                                    <span id="selectedBrandName">Visa</span>
+                                </div>
+                                <span class="arrow">›</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="icon-container">
+                                <img src="../Icon/conta-corrente-banco.svg" alt="Instituição" class="form-icon">
+                            </div>
+                            <div class="select-field" onclick="selectInstitution()">
+                                <div class="institution-info" id="selectedInstitutionInfo">
+                                    <span>Selecione uma conta</span>
+                                </div>
+                                <span class="arrow">›</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="icon-container">
+                                <img src="../Icon/calendario.svg" alt="Data" class="form-icon">
+                            </div>
+                            <div class="date-field">
+                                <span class="date-label">Dia do fechamento</span>
+                                <input type="number" id="closeDay" value="1" min="1" max="31">
+                                <span class="arrow">›</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="icon-container">
+                                <img src="../Icon/calendario-check.svg" alt="Vencimento" class="form-icon">
+                            </div>
+                            <div class="date-field">
+                                <span class="date-label">Dia do vencimento</span>
+                                <input type="number" id="dueDay" value="5" min="1" max="31">
+                                <span class="arrow">›</span>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <button class="confirm-btn" onclick="saveCard()">
+                        <span class="checkmark">✓</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calculadora para editar limite -->
+        <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
+            <h3 id="calculadora-titulo" class="sr-only">Calculadora de limite</h3>
+            <div class="input-container">
+                <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
+                <button class="apagar" id="botao-apagar" aria-label="Apagar dígito">X</button>
+            </div>
+            <div class="calculadora-botoes">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>+</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>-</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>*</button>
+                <button>,</button>
+                <button>0</button>
+                <button>=</button>
+                <button>/</button>
+                <button class="btn-cancelar-calculadora">Cancelar</button>
+                <button class="btn-confirmar-calculadora">Concluído</button>
+            </div>
+        </div>
+
+        <!-- Modal de seleção de bandeira -->
+        <div class="modal-overlay" id="modal-bandeiras" style="display: none;">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Selecionar Bandeira</h3>
+                    <button class="fechar-modal" id="fechar-modal-bandeiras">×</button>
+                </div>
+                <div class="modal-content">
+                    <div class="lista-bandeiras" id="lista-bandeiras">
+                        <!-- Bandeiras serão inseridas aqui pelo JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

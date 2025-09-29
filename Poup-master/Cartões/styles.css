@@ -1,0 +1,9 @@
+:root{--cor-primaria:#0f766e;--cor-borda:#e7eaf3;--cor-texto:#1f2a44;--cor-sub:#667085}
+body{font-family:Poppins,Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;color:var(--cor-texto)}
+.cartao-estado-vazio{border:1px dashed var(--cor-borda);border-radius:12px;padding:20px;text-align:center;color:#667085;background:#fff}
+.botao-primario{background:var(--cor-primaria);color:#fff;border:none;border-radius:12px;padding:10px 14px;cursor:pointer;text-decoration:none}
+.item-cartao{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--cor-borda);border-radius:12px;background:#fff}
+.item-esq{display:flex;align-items:center;gap:12px}
+.item-logo img{height:20px;object-fit:contain}
+.item-nome{font-weight:600}
+.badge-status{font-size:.8rem;color:var(--cor-sub)}

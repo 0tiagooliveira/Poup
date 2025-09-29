@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Ícone Nubank</title>
+    <style>
+        .banco-icone {
+            width: 60px;
+            height: 60px;
+            background: #00B4D8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            flex-shrink: 0;
+            margin: 20px;
+        }
+
+        .banco-icone img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Ícone do Nubank</h1>
+    
+    <div class="banco-icone" id="teste-icone">
+        <span class="material-icons-round">account_balance</span>
+    </div>
+    
+    <button onclick="testarIcone()">Carregar Ícone Nubank</button>
+    
+    <script>
+        function testarIcone() {
+            const bancoIcone = document.getElementById('teste-icone');
+            bancoIcone.innerHTML = '';
+            
+            const img = document.createElement('img');
+            img.src = '../Icon/Nubank.svg';
+            img.alt = 'Nubank';
+            img.onerror = function() {
+                console.error('Erro ao carregar o ícone:', img.src);
+                bancoIcone.innerHTML = '<span>❌</span>';
+            };
+            img.onload = function() {
+                console.log('Ícone carregado com sucesso!');
+            };
+            
+            bancoIcone.appendChild(img);
+        }
+    </script>
+</body>
+</html>

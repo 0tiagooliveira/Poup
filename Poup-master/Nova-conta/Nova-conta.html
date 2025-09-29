@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Conta Bancária</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+</head>
+<body>
+    <div class="aplicativo-container">
+        <header class="cabecalho">
+            <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Contas/contas.html'">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Nova Conta</h1>
+        </header>
+
+        <div class="saldo-container">
+            <p>Saldo atual da conta</p>
+            <h2 id="saldo-valor">R$ 0,00</h2>
+        </div>
+
+        <main class="conteudo-principal">
+            <div class="banco-selecionado" role="button" tabindex="0" aria-label="Selecionar banco">
+                <div class="icone-banco" style="background-color: #820AD1;">
+                    <img src="../Icon/Nubank.svg" alt="Nubank" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <div class="info-banco">
+                    <h3>Nubank</h3>
+                    <p>Banco 260</p>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <span class="material-icons">text_fields</span>
+                <input type="text" placeholder="Descrição" id="descricao-conta" aria-label="Descrição da conta">
+            </div>
+
+            <div class="campo-formulario" id="tipo-conta-container" role="button" tabindex="0" aria-label="Selecionar tipo de conta">
+                <span class="material-icons">account_balance_wallet</span>
+                <p id="tipo-conta-texto">Conta corrente</p>
+            </div>
+
+            <div class="opcao-conta">
+                <div>
+                    <span>Incluir na soma da tela inicial</span>
+                </div>
+                <label class="alternador">
+                    <input type="checkbox" id="incluir-soma" aria-label="Incluir na soma da tela inicial">
+                    <span class="controle-alternador"></span>
+                </label>
+            </div>
+
+            <div class="opcao-conta">
+                <div>
+                    <span>Notificação para adição rápida</span>
+                </div>
+                <label class="alternador">
+                    <input type="checkbox" id="notificacao-rapida" aria-label="Ativar notificação para adição rápida">
+                    <span class="controle-alternador"></span>
+                </label>
+            </div>
+
+            <button class="botao-primario" id="salvar-conta">Salvar</button>
+        </main>
+
+       
+        <!-- Calculadora para editar saldo -->
+        <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
+            <h3 id="calculadora-titulo" class="sr-only">Calculadora de saldo</h3>
+            <div class="input-container">
+                <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
+                <button class="apagar" id="botao-apagar" aria-label="Apagar dígito">X</button>
+            </div>
+            <div class="calculadora-botoes">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>+</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>-</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>*</button>
+                <button>,</button>
+                <button>0</button>
+                <button>=</button>
+                <button>/</button>
+                <button class="btn-cancelar-calculadora">Cancelar</button>
+                <button class="btn-confirmar-calculadora">Concluído</button>
+            </div>
+        </div>
+
+        <!-- Modal de seleção de banco -->
+        <div class="modal" id="modal-bancos" role="dialog" aria-modal="true" aria-labelledby="modal-bancos-titulo">
+            <div class="conteudo-modal">
+                <h3 id="modal-bancos-titulo">Selecione seu banco</h3>
+                <div class="lista-bancos">
+                    <!-- Bancos serão adicionados via JavaScript -->
+                </div>
+                <button class="botao-secundario" id="fechar-modal">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Modal de seleção de tipo de conta -->
+        <div class="modal" id="modal-tipos-conta" role="dialog" aria-modal="true" aria-labelledby="modal-tipos-titulo">
+            <div class="conteudo-modal">
+                <h3 id="modal-tipos-titulo">Selecione o tipo de conta</h3>
+                <div class="lista-tipos-conta">
+                    <!-- Tipos serão adicionados via JavaScript -->
+                </div>
+                <button class="botao-secundario" id="fechar-modal-tipos">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Popup customizado -->
+        <div id="popup-mensagem" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2000; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+            <div style="background:#fff; border-radius:12px; padding:32px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-width:260px; max-width:90vw; text-align:center;">
+                <span id="popup-texto" style="display:block; font-family:'Poppins',sans-serif; font-size:1.1rem; color:#333; margin-bottom:24px;"></span>
+                <button id="popup-botao" style="padding:12px 32px; background-color:#21C25E; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      // Sua configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      // Inicializa o Firebase
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+
+    <script src="script.js"></script>
+    <script>
+      // Redireciona para a Home correta após salvar a conta
+      document.addEventListener('DOMContentLoaded', function() {
+        const btnSalvar = document.getElementById('salvar-conta');
+        if (btnSalvar) {
+          btnSalvar.addEventListener('contaSalva', function() {
+            // Caminho correto para a Home (ajuste se necessário)
+            window.location.href = '../Home/home.html';
+          });
+        }
+      });
+    </script>
+</body>
+</html>
