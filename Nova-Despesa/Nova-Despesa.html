@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Nova Despesa</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <!-- Removido CSS inline do modal. Todos os estilos estão em styles.css -->
+</head>
+<body>
+    <div class="aplicativo desktop-layout">
+        <!-- Cabeçalho -->
+        <header class="cabecalho">
+            <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Lista-de-despesas/Lista-de-despesas.html'">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Nova Despesa</h1>
+        </header>
+
+        <!-- Seção do Valor -->
+        <section class="secao-valor" id="secao-valor">
+            <p>Valor da despesa</p>
+            <h2 id="valor-despesa">R$ 0,00</h2>
+        </section>
+
+        <!-- Formulário -->
+        <main class="formulario-despesa">
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">money_off</span>
+                    <span>Pago</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="pago" checked>
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="campo-formulario campo-data" id="campo-data">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">calendar_today</span>
+                    <span id="data-selecionada">Selecione a data</span>
+                </div>
+                <div class="calendario" id="calendario"></div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">description</span>
+                    <input type="text" id="descricao" placeholder="Descrição da despesa">
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">category</span>
+                    <div class="seletor-categoria" id="seletor-categoria">
+                        <div class="opcao-selecionada">
+                            <span>Selecione uma categoria</span>
+                        </div>
+                        <div class="opcoes-categoria">
+                            <!-- Categorias de despesas serão carregadas via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">account_balance</span>
+                    <div class="seletor-carteira" id="seletor-carteira">
+                        <div class="opcao-selecionada">
+                            <span>Selecione uma conta</span>
+                        </div>
+                        <div class="opcoes-carteira"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">attach_file</span>
+                    <input type="file" id="anexo" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                    <button class="botao-anexo" id="botao-anexo">Adicionar Anexo</button>
+                </div>
+                <span class="nome-arquivo" id="nome-arquivo"></span>
+            </div>
+            
+
+            <div class="campo-formulario">
+                <div class="linha-campo" id="linha-repetir">
+                    <span class="material-icons icone-campo">repeat</span>
+                    <span>Repetir</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="toggle-repetir" onchange="gerenciarToggles('repetir')">
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+                <div id="campos-repetir" style="display: none;">
+                    <div>
+                        <label for="quantidade-repeticoes">Quantidade de Repetições:</label>
+                        <div class="input-group">
+                            <button type="button" onclick="alterarQuantidade(-1)">-</button>
+                            <input type="number" id="quantidade-repeticoes" value="1" min="1" step="1">
+                            <button type="button" onclick="alterarQuantidade(1)">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="frequencia-repeticoes">Frequência:</label>
+                        <select id="frequencia-repeticoes">
+                            <option value="dias">Dias</option>
+                            <option value="semanas">Semanas</option>
+                            <option value="meses">Meses</option>
+                            <option value="anos">Anos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo" id="linha-despesa-fixa">
+                    <span class="material-icons icone-campo">autorenew</span>
+                    <span>Despesa Fixa</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="toggle-despesa-fixa" onchange="gerenciarToggles('fixa')">
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="botao-primario" id="botao-salvar">Salvar Despesa</button>
+            <br><br><br><br>
+        </main>
+
+        <!-- Calculadora para editar saldo -->
+        <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
+            <div class="input-container">
+                <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
+                <button class="apagar" id="botao-apagar" aria-label="Apagar dígito">X</button>
+            </div>
+            <div class="calculadora-botoes">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>+</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>-</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>*</button>
+                <button>,</button>
+                <button>0</button>
+                <button>=</button>
+                <button>/</button>
+                <button class="btn-cancelar-calculadora">Cancelar</button>
+                <button class="btn-confirmar-calculadora">Concluído</button>
+            </div>
+        </div>
+
+        <!-- Popup -->
+        <div id="popup-mensagem">
+            <div>
+                <span id="popup-texto"></span>
+                <button id="popup-botao">OK</button>
+            </div>
+        </div>
+
+        <!-- Modal para Categoria Personalizada -->
+        <div id="modal-categoria" class="modal" style="display: none;">
+            <div class="modal-conteudo">
+                <h3>Criar Categoria</h3>
+                <form id="form-categoria">
+                    <!-- Nome da Categoria -->
+                    <label for="nome-categoria">Nome da Categoria:</label>
+                    <input type="text" id="nome-categoria" placeholder="Ex: Alimentação, Transporte" required minlength="2">
+                    <span id="erro-nome-categoria" class="erro-validacao" style="display: none;">Informe um nome válido para a categoria (mínimo 2 caracteres).</span>
+                    
+                    <!-- Ícone -->
+                    <label for="icone-categoria">Escolha um Ícone:</label>
+                    <div id="icone-selecionado-preview" class="icone-preview">
+                        <span class="material-symbols-outlined" style="color: #D32F2F;">shopping_cart</span>
+                    </div>
+                    
+                    <!-- Cor -->
+                    <label for="cor-categoria">Escolha uma Cor:</label>
+                    <div class="cor-preview-container">
+                        <input type="color" id="cor-categoria" value="#D32F2F">
+                        <span id="cor-preview" class="preview-cor" style="background-color: #D32F2F;"></span>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="modal-botoes">
+                        <button type="button" id="salvar-categoria" class="botao-primario">Salvar</button>
+                        <button type="button" id="cancelar-categoria" class="botao-secundario">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Novo Popup para Escolher Ícone -->
+        <div id="popup-icone" class="modal" style="display: none;">
+            <div class="modal-conteudo">
+                <h3>Escolha um Ícone</h3>
+                <div id="galeria-icones" class="galeria-icones" style="grid-template-columns: repeat(4, 1fr);">
+                    <!-- Ícones serão carregados dinamicamente -->
+                </div>
+                <div class="modal-botoes">
+                    <button type="button" id="fechar-popup-icone" class="botao-secundario">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup para criar categoria personalizada foi removido por ser redundante -->
+    </div>
+    <script src="script.js" defer></script>
+
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      // A configuração do seu app da web do Firebase
+      // Lembre-se de substituir pelas suas chaves reais
+      const firebaseConfig = {
+                apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+                authDomain: "poup-beta.firebaseapp.com",
+                projectId: "poup-beta",
+                storageBucket: "poup-beta.appspot.com",
+                messagingSenderId: "954695915981",
+                appId: "1:954695915981:web:d31b216f79eac178094c84",
+                measurementId: "G-LP9BDVD3KJ"
+      };
+      // Inicializa o Firebase
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      } else {
+         firebase.app(); // if already initialized, use that one
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+</body>
+</html>
