@@ -39,6 +39,32 @@ let firebaseApp, auth, googleProvider;
             }
         });
         
+        // Verificar resultado de redirect do Google
+        auth.getRedirectResult().then((result) => {
+            if (result.user) {
+                console.log('Login via redirect bem-sucedido:', result.user.email);
+                // Salvar dados do usuário no Firestore
+                const user = result.user;
+                if (typeof firebase !== "undefined" && firebase.firestore) {
+                    const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                    userRef.get().then(doc => {
+                        if (!doc.exists) {
+                            userRef.set({
+                                nome: user.displayName || 'Usuário Google',
+                                email: user.email,
+                                fotoURL: user.photoURL || '',
+                                provedor: 'google'
+                            });
+                        }
+                    });
+                }
+                alert('Login com Google realizado com sucesso!');
+                window.location.href = '../Home/home.html';
+            }
+        }).catch((error) => {
+            console.error('Erro no redirect result:', error);
+        });
+        
     } else {
         console.error("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML.");
     }
@@ -52,8 +78,24 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    console.log('Firebase Auth inicializado:', !!auth);
-    console.log('Google Provider inicializado:', !!googleProvider);
+    // Verificar se é desenvolvimento local
+    const isLocalDevelopment = window.location.hostname === 'localhost' || 
+                               window.location.hostname === '127.0.0.1' || 
+                               window.location.hostname.includes('127.0.0.1');
+    
+    if (isLocalDevelopment) {
+        console.log('🚧 Ambiente de desenvolvimento detectado');
+        console.log('💡 Para o Google Login funcionar localmente, acesse: https://poup-beta.web.app');
+        
+        // Adicionar aviso visual para desenvolvimento
+        const avisoDesenvolvimento = document.createElement('div');
+        avisoDesenvolvimento.innerHTML = `
+            <div style="position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 8px; text-align: center; z-index: 10000; font-size: 14px;">
+                🚧 Desenvolvimento Local - Para Google Login use: <a href="https://poup-beta.web.app" style="color: white; text-decoration: underline;">https://poup-beta.web.app</a>
+            </div>
+        `;
+        document.body.appendChild(avisoDesenvolvimento);
+    }
 
     // Alternar entre abas
     const tabs = document.querySelectorAll('.tab');
@@ -309,28 +351,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             mensagemErro += 'Solicitação de popup foi cancelada.';
                             break;
                         case 'auth/unauthorized-domain':
-                            mensagemErro = 'CONFIGURAÇÃO NECESSÁRIA:\n\n';
-                            mensagemErro += '1. Acesse o Firebase Console (console.firebase.google.com)\n';
-                            mensagemErro += '2. Vá para Authentication > Sign-in method\n';
-                            mensagemErro += '3. Clique em Google\n';
-                            mensagemErro += '4. Em "Authorized domains", adicione:\n';
-                            mensagemErro += '   - 127.0.0.1\n';
-                            mensagemErro += '   - localhost\n';
-                            mensagemErro += '5. Salve as alterações\n\n';
-                            mensagemErro += 'Depois teste novamente o login com Google.';
-                            break;
                         default:
                             // Verifica se é erro de domínio não autorizado pela mensagem
                             if (error.message && error.message.includes('not authorized to run this operation')) {
-                                mensagemErro = 'CONFIGURAÇÃO NECESSÁRIA:\n\n';
-                                mensagemErro += '1. Acesse o Firebase Console (console.firebase.google.com)\n';
-                                mensagemErro += '2. Vá para Authentication > Sign-in method\n';
-                                mensagemErro += '3. Clique em Google\n';
-                                mensagemErro += '4. Em "Authorized domains", adicione:\n';
-                                mensagemErro += '   - 127.0.0.1\n';
-                                mensagemErro += '   - localhost\n';
-                                mensagemErro += '5. Salve as alterações\n\n';
-                                mensagemErro += 'Depois teste novamente o login com Google.';
+                                // Em vez de mostrar erro, vamos tentar usar redirect
+                                console.log('Tentando usar signInWithRedirect em vez de popup...');
+                                auth.signInWithRedirect(googleProvider)
+                                    .catch(redirectError => {
+                                        console.error('Erro com redirect também:', redirectError);
+                                        mensagemErro = 'ERRO DE CONFIGURAÇÃO:\n\n';
+                                        mensagemErro += 'Para testar localmente:\n';
+                                        mensagemErro += '1. Use a versão online: https://poup-beta.web.app\n';
+                                        mensagemErro += '2. Ou configure os domínios autorizados no Firebase\n\n';
+                                        mensagemErro += 'A aplicação funciona perfeitamente online!';
+                                        alert(mensagemErro);
+                                    });
+                                return; // Não mostrar o alert padrão
                             } else {
                                 mensagemErro += error.message || 'Erro desconhecido.';
                             }
