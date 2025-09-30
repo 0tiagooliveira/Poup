@@ -384,8 +384,17 @@ document.addEventListener('DOMContentLoaded', function() {
         db.collection('contas').add(novaConta)
             .then((docRef) => {
                 console.log('Conta salva no Firestore:', novaConta, 'ID:', docRef.id);
+                
+                // Criar notificação se a função estiver disponível
+                const contaComId = { ...novaConta, id: docRef.id };
+                if (typeof window.criarNotificacaoNovaConta === 'function') {
+                    window.criarNotificacaoNovaConta(contaComId).catch(err => {
+                        console.error('Erro ao criar notificação:', err);
+                    });
+                }
+                
                 mostrarPopup('Conta salva com sucesso!', () => {
-                    window.location.href = '../home.html';
+                    window.location.href = '../Home/home.html';
                 });
             })
             .catch(error => {

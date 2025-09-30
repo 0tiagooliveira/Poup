@@ -1,8 +1,14 @@
+// Cache de elementos DOM para evitar consultas repetidas (global)
+let elementos = {};
+
+// Estado da aplicação (global)
+let estado = {};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📋 Inicializando aplicação Novo Cartão...');
 
-    // Elementos do DOM
-    const elementos = {
+    // Inicializar elementos do DOM
+    elementos = {
         botaoVoltar: document.querySelector('.botao-voltar'),
         cartao: document.getElementById('cartao'),
         cartaoFrente: document.querySelector('.cartao-frente'),
@@ -53,8 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
         seletorBandeira: !!elementos.seletorBandeira,
     });
 
-    // Estado da aplicação
-    const estado = {
+    // Inicializar estado da aplicação
+    estado = {
         valorLimite: '0',
         bandeiraSelecionada: null,
         contaSelecionada: null,

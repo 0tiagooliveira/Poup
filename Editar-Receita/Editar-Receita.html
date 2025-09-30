@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Nova Receita</title>
+    <title>Editar Receita</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -17,10 +17,15 @@
     <div class="aplicativo desktop-layout">
         <!-- Cabeçalho -->
         <header class="cabecalho">
-            <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Lista-de-receitas/Lista-de-receitas.html'">
-                <span class="material-icons">arrow_back</span>
+            <div class="lado-esquerdo">
+                <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Lista-de-receitas/Lista-de-receitas.html'">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <h1>Editar Receita</h1>
+            </div>
+            <button class="botao-excluir-topo" aria-label="Excluir receita" title="Excluir receita">
+                <span class="material-symbols-outlined">delete</span>
             </button>
-            <h1>Nova Receita</h1>
         </header>
 
         <!-- Seção do Valor -->
@@ -226,7 +231,10 @@
                 </div>
             </div>
 
-            <button class="botao-primario" id="botao-salvar">Salvar Receita</button>
+            <!-- Botão de Ação -->
+            <div class="botoes-acao">
+                <button class="botao-primario" id="botao-salvar">Salvar Alterações</button>
+            </div>
             <br><br><br><br>
         </main>
 
@@ -266,6 +274,18 @@
             </div>
         </div>
 
+        <!-- Popup de Confirmação de Exclusão -->
+        <div id="popup-confirmacao" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 24px; border-radius: 12px; max-width: 350px; text-align: center;">
+                <h3 style="margin-bottom: 16px; color: #333;">Confirmar Exclusão</h3>
+                <p style="margin-bottom: 24px; color: #666;">Tem certeza que deseja excluir esta receita? Esta ação não pode ser desfeita.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="popup-cancelar" style="padding: 10px 24px; background-color: #f5f5f5; color: #333; border: none; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                    <button id="popup-confirmar-exclusao" style="padding: 10px 24px; background-color: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">Excluir</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal para Categoria Personalizada -->
         <div id="modal-categoria" class="modal" style="display: none;">
             <div class="modal-conteudo">
@@ -277,7 +297,7 @@
                     <span id="erro-nome-categoria" class="erro-validacao" style="display: none;">Informe um nome válido para a categoria (mínimo 2 caracteres).</span>
                     
                     <!-- Ícone -->
-                    <label for="icone-categoria">Escolha um Ícone:</label>
+                    <label>Escolha um Ícone:</label>
                     <div id="icone-selecionado-preview" class="icone-preview">
                         <span class="material-symbols-outlined" style="color: #21c25e;">paid</span>
                     </div>
@@ -369,13 +389,10 @@
             </div>
         </div>
     </div>
-        <script src="script.js"></script>
-    
-    <!-- Script de notificações -->
-    <script src="../js/notificacoes-utils.js"></script>
+    <script src="script.js" defer></script>
 
-    <!-- Configuração do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>
@@ -390,11 +407,27 @@
                 appId: "1:954695915981:web:d31b216f79eac178094c84",
                 measurementId: "G-LP9BDVD3KJ"
       };
+      
       // Inicializa o Firebase
       if (!firebase.apps.length) {
          firebase.initializeApp(firebaseConfig);
       } else {
          firebase.app(); // if already initialized, use that one
+      }
+      
+      // Configuração para desenvolvimento local
+      // NOTA: Para OAuth funcionar completamente, adicione 127.0.0.1 e localhost 
+      // nos domínios autorizados no Firebase Console -> Authentication -> Settings -> Authorized domains
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:') {
+         console.warn('Executando em ambiente local. Algumas funcionalidades do Firebase Auth podem não funcionar.');
+         // Simular estado de autenticação para desenvolvimento
+         setTimeout(() => {
+           if (!firebase.auth().currentUser) {
+             firebase.auth().signInAnonymously().catch(error => {
+               console.log('Modo desenvolvimento: usando dados locais');
+             });
+           }
+         }, 1000);
       }
     </script>
     <!-- FIM: Configuração do Firebase -->

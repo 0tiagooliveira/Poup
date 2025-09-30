@@ -18,6 +18,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <!-- FIM: Configuração do Firebase -->
+    
+    <!-- Script de notificações utilitárias -->
+    <script src="../js/notificacoes-utils.js"></script>
 </head>
 
 <body>
@@ -229,7 +232,7 @@
                     <!-- Estado ativo (NOVO LAYOUT) -->
                     <div class="grafico-categoria-container" id="cartao-estado-ativo-receitas" style="display:none;">
                         <div class="grafico-categoria-grafico">
-                            <canvas id="grafico-receitas-categoria" width="210" height="210"></canvas>
+                            <canvas id="grafico-receitas-categoria"></canvas>
                             <div class="grafico-categoria-total-central">
                                 <span class="valor-total" id="valor-total-receitas">R$ 0,00</span>
                                 <span class="label-total">TOTAL</span>
@@ -267,7 +270,7 @@
                     <!-- Estado ativo (NOVO LAYOUT) -->
                     <div class="grafico-categoria-container" id="cartao-estado-ativo-categorias" style="display:none;">
                         <div class="grafico-categoria-grafico">
-                            <canvas id="grafico-despesas-categoria" width="210" height="210"></canvas>
+                            <canvas id="grafico-despesas-categoria"></canvas>
                             <div class="grafico-categoria-total-central">
                                 <span class="valor-total" id="valor-total-despesas">R$ 0,00</span>
                                 <span class="label-total">TOTAL</span>
@@ -293,40 +296,46 @@
             <div class="botao-adicionar">
                 <span class="material-icons-round">add</span>
             </div>
-            <a href="#" class="item-navegacao">
+            <a href="../Gráficos/Gráficos.html" class="item-navegacao">
                 <span class="material-icons-round">bar_chart</span>
-                <span>Relatórios</span>
+                <span>Gráficos</span>
             </a>
-            <a href="#" class="item-navegacao">
+            <a href="../Configurações/Configuracoes.html" class="item-navegacao">
                 <span class="material-icons-round">settings</span>
                 <span>Configurações</span>
             </a>
         </nav>
-    </div>
 
-    <!-- Container das ações radiais -->
-    <div class="acoes-radiais-overlay" id="acoes-radiais-overlay"></div>
-    <div class="acoes-radiais-container">
-        <button class="botao-acao-principal" id="botao-acao-principal">
-            <span class="material-icons-round">add</span>
-        </button>
-        <div class="acoes-secundarias" id="acoes-secundarias">
-            <a href="../Nova-Receita/Nova-Receita.html" class="acao-secundaria" title="Nova Receita">
-                <span class="material-icons-round">savings</span>
+    <!-- Menu de Ações Flutuante -->
+    <div class="menu-acoes" id="menu-acoes" style="display: none;">
+        <div class="overlay-menu" id="overlay-menu"></div>
+        <div class="acoes-container">
+            <a href="../Nova-Receita/Nova-Receita.html" class="acao-item" data-action="receita">
+                <div class="acao-icone receita">
+                    <span class="material-icons-round">trending_up</span>
+                </div>
+                <span class="acao-texto">Receita</span>
             </a>
-            <a href="../Nova-Despesa/Nova-Despesa.html" class="acao-secundaria" title="Nova Despesa">
-                <span class="material-icons-round">shopping_cart</span>
+            <a href="../Nova-Despesa/Nova-Despesa.html" class="acao-item" data-action="despesa">
+                <div class="acao-icone despesa">
+                    <span class="material-icons-round">trending_down</span>
+                </div>
+                <span class="acao-texto">Despesa</span>
             </a>
-            <a href="../Nova-conta/Nova-conta.html" class="acao-secundaria" title="Nova Conta">
-                <span class="material-icons-round">account_balance</span>
+            <a href="../Nova-conta/Nova-conta.html" class="acao-item" data-action="conta">
+                <div class="acao-icone conta">
+                    <span class="material-icons-round">account_balance_wallet</span>
+                </div>
+                <span class="acao-texto">Nova Conta</span>
             </a>
-            <a href="../Novo Cartão/Novo Cartão.html" class="acao-secundaria" title="Novo Cartão">
-                <span class="material-icons-round">credit_card</span>
-            </a>
-            <a href="../Transações/Transações.html" class="acao-secundaria" title="Transferência">
-                <span class="material-icons-round">swap_horiz</span>
+            <a href="#" class="acao-item" data-action="transferencia">
+                <div class="acao-icone transferencia">
+                    <span class="material-icons-round">compare_arrows</span>
+                </div>
+                <span class="acao-texto">Transferência</span>
             </a>
         </div>
+    </div>
     </div>
 
     <script src="script.js" defer></script>
@@ -345,6 +354,54 @@
                     style="padding:12px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Não</button>
                 <button id="popup-excluir-conta-sim"
                     style="padding:12px 24px; background-color:#ef233c; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel de Notificações -->
+    <div class="notificacoes-overlay" id="notificacoes-overlay">
+        <div class="notificacoes-painel" id="notificacoes-painel">
+            <div class="notificacoes-header">
+                <h3>Notificações</h3>
+                <button class="btn-fechar-notificacoes" id="btn-fechar-notificacoes">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="notificacoes-content" id="notificacoes-content">
+                <div class="notificacoes-loading" id="notificacoes-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Carregando notificações...</span>
+                </div>
+                <div class="notificacoes-lista" id="notificacoes-lista">
+                    <!-- Notificações serão inseridas aqui dinamicamente -->
+                </div>
+                <div class="notificacoes-vazio" id="notificacoes-vazio" style="display: none;">
+                    <span class="material-icons-round">notifications_none</span>
+                    <p>Nenhuma notificação</p>
+                    <small>Você está em dia com suas finanças!</small>
+                </div>
+            </div>
+                            <!-- Actions -->
+                <div class="notificacoes-actions">
+                    <button class="btn-marcar-todas-lidas">
+                        Limpar Todas
+                    </button>
+                </div>
+        </div>
+    </div>
+
+    <!-- Popup de Confirmação para Limpar Notificações -->
+    <div id="popup-confirmar-limpeza" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Confirmar Ação</h3>
+            </div>
+            <div class="popup-body">
+                <p>Tem certeza que deseja limpar todas as notificações?</p>
+            </div>
+            <div class="popup-actions">
+                <button class="btn-cancelar" id="btn-cancelar-limpeza">Cancelar</button>
+                <button class="btn-confirmar" id="btn-confirmar-limpeza">Limpar Todas</button>
             </div>
         </div>
     </div>

@@ -281,3 +281,105 @@ a {
 .android .btn-social.apple {
     display: none;
 }
+
+/* Popup de Sucesso */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    animation: popupIn 0.3s ease-out;
+}
+
+@keyframes popupIn {
+    from {
+        transform: scale(0.9) translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup-icon {
+    margin-bottom: 16px;
+}
+
+.popup-icon i {
+    font-size: 48px;
+    color: #21C25E;
+}
+
+.popup-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #101213;
+    margin-bottom: 8px;
+}
+
+.popup-message {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+.popup-button {
+    background: #21C25E;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.popup-button:hover {
+    background: #1a9d4d;
+}
+
+/* Popup de Erro */
+.popup-content.popup-erro .popup-icon i {
+    color: #ef233c;
+}
+
+.popup-content.popup-erro .popup-button {
+    background: #ef233c;
+}
+
+.popup-content.popup-erro .popup-button:hover {
+    background: #d32535;
+}
+
+/* Popup de Informação */
+.popup-content.popup-info .popup-icon i {
+    color: #ffd166;
+}
+
+.popup-content.popup-info .popup-button {
+    background: #ffd166;
+    color: #333;
+}
+
+.popup-content.popup-info .popup-button:hover {
+    background: #ffcc4d;
+}

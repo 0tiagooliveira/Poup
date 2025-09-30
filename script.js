@@ -1,101 +1,150 @@
 // INÍCIO: Firebase Auth
 // Adicione isso ANTES do DOMContentLoaded
 let firebaseApp, auth, googleProvider;
-(function initFirebase() {
+let loginEmAndamento = false; // Flag para evitar múltiplos logins simultâneos
+let ultimaReinicicializacao = 0; // Timestamp da última reinicialização
+
+// Função para limpar cache do Firebase e reinicializar
+function reinicializarFirebase() {
+    const agora = Date.now();
+    // Evitar múltiplas reinicializações em sequência
+    if (agora - ultimaReinicicializacao < 5000) {
+        console.log('Reinicialização bloqueada - muito cedo');
+        return;
+    }
+    ultimaReinicicializacao = agora;
+    
+    try {
+        console.log('Iniciando reinicialização do Firebase...');
+        
+        // Limpar localStorage e sessionStorage do Firebase
+        localStorage.removeItem('firebase:authUser:' + 'AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc:[DEFAULT]');
+        sessionStorage.removeItem('firebase:authUser:' + 'AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc:[DEFAULT]');
+        
+        // Limpar todas as apps existentes
+        if (firebase.apps.length > 0) {
+            firebase.apps.forEach(app => {
+                try {
+                    app.delete();
+                } catch (e) {
+                    console.warn('Erro ao deletar app Firebase:', e);
+                }
+            });
+        }
+        
+        // Aguardar um pouco para garantir limpeza
+        setTimeout(() => {
+            initFirebase();
+        }, 200);
+    } catch (error) {
+        console.error('Erro ao limpar Firebase:', error);
+        initFirebase();
+    }
+}
+
+function initFirebase() {
     if (typeof firebase !== "undefined") {
-        if (!firebase.apps.length) {
-            try {
+        try {
+            if (!firebase.apps.length) {
                 firebaseApp = firebase.initializeApp({
                     apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
                     authDomain: "poup-beta.firebaseapp.com",
                     projectId: "poup-beta",
                     storageBucket: "poup-beta.appspot.com",
                     messagingSenderId: "954695915981",
-                    appId: "1:954695915981:web:d31b216f79eac178094c84",
-                    measurementId: "G-LP9BDVD3KJ"
+                    appId: "1:954695915981:web:d31b216f79eac178094c84"
                 });
-                console.log('Firebase inicializado com sucesso');
-            } catch (error) {
-                console.error('Erro ao inicializar Firebase:', error);
-            }
-        } else {
-            firebaseApp = firebase.app();
-        }
-        auth = firebase.auth();
-        googleProvider = new firebase.auth.GoogleAuthProvider();
-        // Configurar o provedor Google para solicitar informações específicas
-        googleProvider.addScope('profile');
-        googleProvider.addScope('email');
-        googleProvider.setCustomParameters({
-            'prompt': 'select_account'
-        });
-        
-        // Verificar se o Firebase está funcionando
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('Usuário autenticado:', user.email);
             } else {
-                console.log('Usuário não autenticado');
+                firebaseApp = firebase.app();
             }
-        });
-        
-        // Verificar resultado de redirect do Google
-        auth.getRedirectResult().then((result) => {
-            if (result.user) {
-                console.log('Login via redirect bem-sucedido:', result.user.email);
-                // Salvar dados do usuário no Firestore
-                const user = result.user;
-                if (typeof firebase !== "undefined" && firebase.firestore) {
-                    const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
-                    userRef.get().then(doc => {
-                        if (!doc.exists) {
-                            userRef.set({
-                                nome: user.displayName || 'Usuário Google',
-                                email: user.email,
-                                fotoURL: user.photoURL || '',
-                                provedor: 'google'
-                            });
-                        }
-                    });
-                }
-                alert('Login com Google realizado com sucesso!');
-                window.location.href = '../Home/home.html';
+            auth = firebase.auth();
+            googleProvider = new firebase.auth.GoogleAuthProvider();
+            
+            // Configurar o provedor Google com configurações otimizadas
+            googleProvider.addScope('profile');
+            googleProvider.addScope('email');
+            
+            // Configurações específicas para resolver problemas de Cross-Origin
+            googleProvider.setCustomParameters({
+                'prompt': 'select_account',
+                'include_granted_scopes': 'true',
+                'access_type': 'online'
+            });
+            
+            // Configurar auth para melhor compatibilidade
+            auth.useDeviceLanguage();
+            
+            console.log('Firebase inicializado com sucesso');
+            console.log('API Key em uso:', firebaseApp.options.apiKey);
+        } catch (error) {
+            console.error("Erro ao inicializar Firebase:", error);
+            // Aguardar DOM carregar para mostrar popup
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    mostrarPopupErro('Erro de Configuração', 'Falha ao inicializar sistema de autenticação. Recarregue a página.');
+                });
+            } else {
+                mostrarPopupErro('Erro de Configuração', 'Falha ao inicializar sistema de autenticação. Recarregue a página.');
             }
-        }).catch((error) => {
-            console.error('Erro no redirect result:', error);
-        });
-        
+        }
     } else {
         console.error("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML.");
+        // Aguardar DOM carregar para mostrar popup
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                mostrarPopupErro('Erro de Sistema', 'Sistema de autenticação não carregado. Verifique sua conexão e recarregue a página.');
+            });
+        } else {
+            mostrarPopupErro('Erro de Sistema', 'Sistema de autenticação não carregado. Verifique sua conexão e recarregue a página.');
+        }
     }
-})();
+}
+
+// Inicializar Firebase
+initFirebase();
 // FIM: Firebase Auth
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Verifica se Firebase está carregado
+    // Verificar se Firebase está carregado
     if (!auth) {
-        alert("Firebase não carregado. Certifique-se de que os scripts do Firebase estão incluídos no HTML e que o Live Server está configurado corretamente.");
+        mostrarPopupErro('Erro de Configuração', 'Sistema de autenticação não foi carregado corretamente. Recarregue a página.');
         return;
     }
     
-    // Verificar se é desenvolvimento local
-    const isLocalDevelopment = window.location.hostname === 'localhost' || 
-                               window.location.hostname === '127.0.0.1' || 
-                               window.location.hostname.includes('127.0.0.1');
-    
-    if (isLocalDevelopment) {
-        console.log('🚧 Ambiente de desenvolvimento detectado');
-        console.log('💡 Para o Google Login funcionar localmente, acesse: https://poup-beta.web.app');
-        
-        // Adicionar aviso visual para desenvolvimento
-        const avisoDesenvolvimento = document.createElement('div');
-        avisoDesenvolvimento.innerHTML = `
-            <div style="position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 8px; text-align: center; z-index: 10000; font-size: 14px;">
-                🚧 Desenvolvimento Local - Para Google Login use: <a href="https://poup-beta.web.app" style="color: white; text-decoration: underline;">https://poup-beta.web.app</a>
-            </div>
-        `;
-        document.body.appendChild(avisoDesenvolvimento);
+    console.log('Firebase Auth inicializado:', !!auth);
+    console.log('Google Provider inicializado:', !!googleProvider);
+
+    // Verificar se retornou de um redirect do Google
+    auth.getRedirectResult().then(result => {
+        if (result.user) {
+            console.log('Login via redirect bem-sucedido:', result);
+            const user = result.user;
+            
+            // Salvar dados do usuário no Firestore (se não existir)
+            if (typeof firebase !== "undefined" && firebase.firestore) {
+                const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                userRef.get().then(doc => {
+                    if (!doc.exists) {
+                        userRef.set({
+                            nome: user.displayName || 'Usuário Google',
+                            email: user.email,
+                            fotoURL: user.photoURL || '',
+                            provedor: 'google'
+                        });
+                    }
+                });
+            }
+            
+            mostrarPopupSucesso('Login com Google realizado com sucesso!');
+            setTimeout(() => {
+                window.location.href = './Home/home.html';
+            }, 2000);
     }
+}).catch(error => {
+    if (error.code !== 'auth/popup-closed-by-user') {
+        console.error('Erro no redirect:', error);
+    }
+});
 
     // Alternar entre abas
     const tabs = document.querySelectorAll('.tab');
@@ -139,26 +188,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formCriarConta) {
         formCriarConta.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Evitar submissões múltiplas
+            if (loginEmAndamento) {
+                return;
+            }
+            loginEmAndamento = true;
+            
             const nome = document.getElementById('nome-criar').value;
             const email = document.getElementById('email-criar').value;
             const senha = document.getElementById('senha-criar').value;
-
-            // Validação básica
-            if (!nome || !email || !senha) {
-                alert('Por favor, preencha todos os campos.');
-                return;
-            }
-
-            if (senha.length < 6) {
-                alert('A senha deve ter pelo menos 6 caracteres.');
-                return;
-            }
-
-            // Mostrar loading
-            const btnSubmit = formCriarConta.querySelector('button[type="submit"]');
-            const textoOriginal = btnSubmit.textContent;
-            btnSubmit.textContent = 'Criando conta...';
-            btnSubmit.disabled = true;
 
             auth.createUserWithEmailAndPassword(email, senha)
                 .then(userCredential => {
@@ -167,40 +206,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (typeof firebase !== "undefined" && firebase.firestore) {
                         firebase.firestore().collection('usuarios').doc(user.uid).set({
                             nome: nome,
-                            email: email,
-                            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                            email: email
                         });
                     }
-                    alert('Conta criada com sucesso!');
-                    window.location.href = '../Home/home.html';
+                    loginEmAndamento = false;
+                    mostrarPopupSucesso('Conta criada com sucesso!');
+                    setTimeout(() => {
+                        window.location.href = './Home/home.html';
+                    }, 2000);
                 })
                 .catch(error => {
-                    console.error('Erro ao criar conta:', error);
-                    
-                    // Restaurar botão
-                    btnSubmit.textContent = textoOriginal;
-                    btnSubmit.disabled = false;
-                    
-                    let mensagemErro = 'Erro ao criar conta: ';
+                    loginEmAndamento = false;
+                    let mensagem = '';
                     
                     switch(error.code) {
                         case 'auth/email-already-in-use':
-                            mensagemErro += 'Este email já está sendo usado. Tente fazer login ou use outro email.';
-                            break;
-                        case 'auth/invalid-email':
-                            mensagemErro += 'Email inválido. Verifique o formato do email.';
+                            mensagem = 'Este email já está sendo usado por outra conta.';
                             break;
                         case 'auth/weak-password':
-                            mensagemErro += 'Senha muito fraca. Use pelo menos 6 caracteres.';
+                            mensagem = 'A senha é muito fraca. Use pelo menos 6 caracteres.';
                             break;
-                        case 'auth/operation-not-allowed':
-                            mensagemErro += 'Criação de contas não permitida. Contate o suporte.';
+                        case 'auth/invalid-email':
+                            mensagem = 'O email informado não é válido.';
                             break;
                         default:
-                            mensagemErro += error.message || 'Erro desconhecido.';
+                            mensagem = error.message || 'Erro desconhecido ao criar conta.';
                     }
                     
-                    alert(mensagemErro);
+                    mostrarPopupErro('Erro ao Criar Conta', mensagem);
                 });
         });
     }
@@ -210,90 +243,46 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formLogin) {
         formLogin.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Evitar submissões múltiplas
+            if (loginEmAndamento) {
+                return;
+            }
+            loginEmAndamento = true;
+            
             const email = document.getElementById('email-login').value;
             const senha = document.getElementById('senha-login').value;
 
-            // Validação básica
-            if (!email || !senha) {
-                alert('Por favor, preencha todos os campos.');
-                return;
-            }
-
-            // Mostrar loading
-            const btnSubmit = formLogin.querySelector('button[type="submit"]');
-            const textoOriginal = btnSubmit.textContent;
-            btnSubmit.textContent = 'Entrando...';
-            btnSubmit.disabled = true;
-
             auth.signInWithEmailAndPassword(email, senha)
                 .then(userCredential => {
-                    console.log('Login realizado com sucesso:', userCredential.user.email);
-                    window.location.href = '../Home/home.html';
+                    loginEmAndamento = false;
+                    mostrarPopupSucesso('Login realizado com sucesso!');
+                    setTimeout(() => {
+                        window.location.href = './Home/home.html';
+                    }, 1500);
                 })
                 .catch(error => {
-                    console.error('Erro de login:', error);
-                    console.log('Tentativa de login com:', email);
-                    
-                    // Restaurar botão
-                    btnSubmit.textContent = textoOriginal;
-                    btnSubmit.disabled = false;
-                    
-                    let mensagemErro = 'Erro ao fazer login: ';
+                    loginEmAndamento = false;
+                    let mensagem = '';
                     
                     switch(error.code) {
                         case 'auth/user-not-found':
-                            mensagemErro += 'Usuário não encontrado. Verifique o email ou crie uma conta.';
-                            // Sugerir ir para aba de criar conta
-                            setTimeout(() => {
-                                if (confirm('Usuário não encontrado. Deseja criar uma conta com este email?')) {
-                                    // Alternar para aba de criar conta
-                                    const tabCriarConta = document.querySelector('.tab[data-tab="criar-conta"]');
-                                    const tabLogin = document.querySelector('.tab[data-tab="login"]');
-                                    const painelCriarConta = document.getElementById('criar-conta');
-                                    const painelLogin = document.getElementById('login');
-                                    
-                                    if (tabCriarConta && tabLogin && painelCriarConta && painelLogin) {
-                                        // Remover active das abas atuais
-                                        tabLogin.classList.remove('active');
-                                        painelLogin.classList.remove('active');
-                                        
-                                        // Ativar aba de criar conta
-                                        tabCriarConta.classList.add('active');
-                                        painelCriarConta.classList.add('active');
-                                        
-                                        // Preencher o email no formulário de criar conta
-                                        const emailCriar = document.getElementById('email-criar');
-                                        if (emailCriar) {
-                                            emailCriar.value = email;
-                                        }
-                                    }
-                                }
-                            }, 100);
+                            mensagem = 'Usuário não encontrado. Verifique o email ou crie uma nova conta.';
                             break;
                         case 'auth/wrong-password':
-                            mensagemErro += 'Senha incorreta. Tente novamente.';
+                            mensagem = 'Senha incorreta. Tente novamente ou recupere sua senha.';
                             break;
                         case 'auth/invalid-email':
-                            mensagemErro += 'Email inválido. Verifique o formato do email.';
-                            break;
-                        case 'auth/user-disabled':
-                            mensagemErro += 'Esta conta foi desativada.';
+                            mensagem = 'O email informado não é válido.';
                             break;
                         case 'auth/too-many-requests':
-                            mensagemErro += 'Muitas tentativas de login. Tente novamente mais tarde.';
-                            break;
-                        case 'auth/invalid-login-credentials':
-                            mensagemErro = '❌ CREDENCIAIS INVÁLIDAS\n\n';
-                            mensagemErro += '• Verifique se o email está correto\n';
-                            mensagemErro += '• Verifique se a senha está correta\n';
-                            mensagemErro += '• Certifique-se de que já possui uma conta\n\n';
-                            mensagemErro += '💡 Dica: Se não tem conta, use a aba "Criar conta"';
+                            mensagem = 'Muitas tentativas de login. Tente novamente mais tarde.';
                             break;
                         default:
-                            mensagemErro += error.message || 'Erro desconhecido.';
+                            mensagem = error.message || 'Erro desconhecido ao fazer login.';
                     }
                     
-                    alert(mensagemErro);
+                    mostrarPopupErro('Erro no Login', mensagem);
                 });
         });
     }
@@ -307,91 +296,176 @@ document.addEventListener('DOMContentLoaded', function() {
         btnGoogle.addEventListener('click', function() {
             console.log('Botão Google clicado');
             
-            if (!googleProvider) {
-                alert('Google Provider não está configurado.');
+            // Evitar cliques múltiplos
+            if (loginEmAndamento) {
+                console.log('Login já em andamento, ignorando clique');
                 return;
             }
             
-            auth.signInWithPopup(googleProvider)
-                .then(result => {
-                    console.log('Login Google bem-sucedido:', result);
-                    const user = result.user;
-                    
-                    // Salvar dados do usuário no Firestore (se não existir)
-                    if (typeof firebase !== "undefined" && firebase.firestore) {
-                        const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
-                        userRef.get().then(doc => {
-                            if (!doc.exists) {
-                                // Usuário novo, salvar dados
-                                userRef.set({
-                                    nome: user.displayName || 'Usuário Google',
-                                    email: user.email,
-                                    fotoURL: user.photoURL || '',
-                                    provedor: 'google'
-                                });
-                            }
-                        });
+            if (!googleProvider) {
+                mostrarPopupErro('Erro de Configuração', 'Sistema de login com Google não está configurado. Tente recarregar a página.');
+                return;
+            }
+            
+            // Tentar reinicializar Firebase se necessário
+            if (!auth || !firebaseApp) {
+                console.log('Reinicializando Firebase...');
+                reinicializarFirebase();
+                setTimeout(() => {
+                    if (auth && googleProvider) {
+                        realizarLoginGoogle();
+                    } else {
+                        mostrarPopupErro('Erro de Sistema', 'Não foi possível inicializar o sistema de login. Recarregue a página.');
                     }
-                    
-                    alert('Login com Google realizado com sucesso!');
-                    window.location.href = '../Home/home.html';
-                })
-                .catch(error => {
-                    console.error('Erro detalhado:', error);
-                    let mensagemErro = 'Erro ao fazer login com Google: ';
-                    
-                    switch(error.code) {
-                        case 'auth/popup-closed-by-user':
-                            mensagemErro += 'Popup foi fechado antes de completar o login.';
-                            break;
-                        case 'auth/popup-blocked':
-                            mensagemErro += 'Popup foi bloqueado pelo navegador. Permita popups para este site.';
-                            break;
-                        case 'auth/cancelled-popup-request':
-                            mensagemErro += 'Solicitação de popup foi cancelada.';
-                            break;
-                        case 'auth/unauthorized-domain':
-                        default:
-                            // Verifica se é erro de domínio não autorizado pela mensagem
-                            if (error.message && error.message.includes('not authorized to run this operation')) {
-                                // Em vez de mostrar erro, vamos tentar usar redirect
-                                console.log('Tentando usar signInWithRedirect em vez de popup...');
-                                auth.signInWithRedirect(googleProvider)
-                                    .catch(redirectError => {
-                                        console.error('Erro com redirect também:', redirectError);
-                                        mensagemErro = 'ERRO DE CONFIGURAÇÃO:\n\n';
-                                        mensagemErro += 'Para testar localmente:\n';
-                                        mensagemErro += '1. Use a versão online: https://poup-beta.web.app\n';
-                                        mensagemErro += '2. Ou configure os domínios autorizados no Firebase\n\n';
-                                        mensagemErro += 'A aplicação funciona perfeitamente online!';
-                                        alert(mensagemErro);
-                                    });
-                                return; // Não mostrar o alert padrão
-                            } else {
-                                mensagemErro += error.message || 'Erro desconhecido.';
-                            }
-                    }
-                    
-                    alert(mensagemErro);
-                });
+                }, 1000);
+                return;
+            }
+            
+            realizarLoginGoogle();
         });
     });
+
+    function realizarLoginGoogle() {
+        // Evitar múltiplas tentativas simultâneas
+        if (loginEmAndamento) {
+            console.log('Login já em andamento');
+            return;
+        }
+        
+        loginEmAndamento = true;
+        console.log('Iniciando login Google...');
+        
+        // Usar signInWithRedirect em vez de popup para evitar problemas de Cross-Origin
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Tentar método de popup primeiro, depois redirect se falhar
+        auth.signInWithPopup(googleProvider)
+            .then(result => {
+                loginEmAndamento = false;
+                console.log('Login Google bem-sucedido:', result);
+                const user = result.user;
+                
+                // Salvar dados do usuário no Firestore (se não existir)
+                if (typeof firebase !== "undefined" && firebase.firestore) {
+                    const userRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                    userRef.get().then(doc => {
+                        if (!doc.exists) {
+                            // Usuário novo, salvar dados
+                            userRef.set({
+                                nome: user.displayName || 'Usuário Google',
+                                email: user.email,
+                                fotoURL: user.photoURL || '',
+                                provedor: 'google'
+                            });
+                        }
+                    });
+                }
+                
+                mostrarPopupSucesso('Login com Google realizado com sucesso!');
+                setTimeout(() => {
+                    window.location.href = './Home/home.html';
+                }, 2000);
+            })
+            .catch(error => {
+                loginEmAndamento = false;
+                console.error('Erro detalhado:', error);
+                console.log('Tentativa de login com:', error.email || 'email não disponível');
+                
+                let titulo = 'Erro no Login';
+                let mensagem = '';
+                let tipo = 'erro'; // erro, info
+                let tentarRedirect = false;
+                
+                switch(error.code) {
+                    case 'auth/popup-closed-by-user':
+                        tipo = 'info';
+                        titulo = 'Login Cancelado';
+                        mensagem = 'O login foi cancelado. Tente novamente quando desejar fazer login.';
+                        break;
+                    case 'auth/popup-blocked':
+                        titulo = 'Popup Bloqueado';
+                        mensagem = 'Seu navegador bloqueou o popup de login. Tentando método alternativo...';
+                        tentarRedirect = true;
+                        break;
+                    case 'auth/cancelled-popup-request':
+                        tipo = 'info';
+                        titulo = 'Solicitação Cancelada';
+                        mensagem = 'A solicitação de login foi cancelada. Você pode tentar novamente.';
+                        break;
+                    case 'auth/unauthorized-domain':
+                        titulo = 'Domínio Não Autorizado';
+                        mensagem = 'Este domínio não está autorizado para login com Google. Entre em contato com o administrador.';
+                        break;
+                    case 'auth/invalid-api-key':
+                        titulo = 'Erro de Configuração';
+                        mensagem = 'Chave de API inválida. Tentando reinicializar sistema...';
+                        setTimeout(() => {
+                            reinicializarFirebase();
+                        }, 1000);
+                        break;
+                    case 'auth/internal-error':
+                        // Tratar especificamente o erro interno
+                        if (error.message && error.message.includes('INVALID_LOGIN_CREDENTIALS')) {
+                            titulo = 'Erro de Credenciais';
+                            mensagem = 'Houve um problema com as credenciais de login. Tentando corrigir automaticamente...';
+                            setTimeout(() => {
+                                reinicializarFirebase();
+                            }, 1500);
+                        } else {
+                            titulo = 'Erro Interno';
+                            mensagem = 'Erro interno do sistema. Tentando reinicializar...';
+                            setTimeout(() => {
+                                reinicializarFirebase();
+                            }, 1000);
+                        }
+                        break;
+                    default:
+                        // Verificar mensagens específicas
+                        if (error.message && error.message.includes('API key not valid')) {
+                            titulo = 'Erro de Sistema';
+                            mensagem = 'Há um problema na configuração do sistema. Tentando corrigir automaticamente...';
+                            setTimeout(() => {
+                                reinicializarFirebase();
+                            }, 1000);
+                        } else if (error.message && error.message.includes('not authorized to run this operation')) {
+                            titulo = 'Operação Não Autorizada';
+                            mensagem = 'Este domínio não está configurado para login. Entre em contato com o administrador.';
+                        } else if (error.message && error.message.includes('Cross-Origin-Opener-Policy')) {
+                            titulo = 'Erro de Navegador';
+                            mensagem = 'Problema de segurança do navegador. Tentando método alternativo...';
+                            tentarRedirect = true;
+                        } else {
+                            mensagem = `Erro inesperado: ${error.message || 'Erro desconhecido. Tente novamente.'}`;
+                        }
+                }
+                
+                // Tentar método de redirect se popup falhou
+                if (tentarRedirect && !isLocalhost) {
+                    console.log('Tentando login com redirect...');
+                    auth.signInWithRedirect(googleProvider);
+                    return;
+                }
+                
+                if (tipo === 'info') {
+                    mostrarPopupInfo(titulo, mensagem);
+                } else {
+                    mostrarPopupErro(titulo, mensagem);
+                }
+            });
+    }
 
     const btnApple = document.getElementById('btn-apple');
     if (btnApple) {
         btnApple.addEventListener('click', function() {
-            // Lógica para login com Apple
-            console.log('Login com Apple');
-            alert('Redirecionando para login com Apple');
+            mostrarPopupInfo('Em Desenvolvimento', 'Login com Apple será implementado em breve.');
         });
     }
 
     const btnAppleLogin = document.getElementById('btn-apple-login');
     if (btnAppleLogin) {
         btnAppleLogin.addEventListener('click', function() {
-            // Lógica para login com Apple
-            console.log('Login com Apple');
-            alert('Redirecionando para login com Apple');
+            mostrarPopupInfo('Em Desenvolvimento', 'Login com Apple será implementado em breve.');
         });
     }
 
@@ -399,37 +473,135 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnEsqueceuSenha = document.querySelector('.btn-link');
     if (btnEsqueceuSenha) {
         btnEsqueceuSenha.addEventListener('click', function() {
-            const email = document.getElementById('email-login').value;
-            
-            if (!email) {
-                alert('Digite seu email primeiro para receber o link de redefinição de senha.');
-                document.getElementById('email-login').focus();
-                return;
-            }
-            
-            if (confirm(`Enviar email de redefinição de senha para ${email}?`)) {
-                auth.sendPasswordResetEmail(email)
-                    .then(() => {
-                        alert('Email de redefinição de senha enviado! Verifique sua caixa de entrada.');
-                    })
-                    .catch(error => {
-                        console.error('Erro ao enviar email:', error);
-                        let mensagem = 'Erro ao enviar email: ';
-                        
-                        switch(error.code) {
-                            case 'auth/user-not-found':
-                                mensagem += 'Email não encontrado. Verifique se digitou corretamente.';
-                                break;
-                            case 'auth/invalid-email':
-                                mensagem += 'Email inválido.';
-                                break;
-                            default:
-                                mensagem += error.message;
-                        }
-                        
-                        alert(mensagem);
-                    });
-            }
+            solicitarRedefinicaoSenha();
         });
+    }
+});
+
+// Função para solicitar redefinição de senha
+function solicitarRedefinicaoSenha() {
+    // Pegar o email do campo de login se estiver preenchido
+    const emailInput = document.getElementById('email-login');
+    let email = emailInput ? emailInput.value.trim() : '';
+    
+    if (!email) {
+        // Se não há email no campo, solicitar ao usuário
+        email = prompt('Digite seu email para receber o link de redefinição de senha:');
+        if (!email) {
+            return; // Usuário cancelou
+        }
+    }
+    
+    // Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        mostrarPopupErro('Email Inválido', 'Por favor, digite um email válido.');
+        return;
+    }
+    
+    // Tentar reinicializar Firebase se necessário
+    if (!auth) {
+        mostrarPopupErro('Erro de Sistema', 'Sistema de autenticação não inicializado. Recarregue a página.');
+        return;
+    }
+    
+    // Enviar email de redefinição
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            mostrarPopupSucesso(`Email de redefinição de senha enviado para ${email}! Verifique sua caixa de entrada e spam.`);
+        })
+        .catch((error) => {
+            console.error('Erro ao enviar email de redefinição:', error);
+            
+            let titulo = 'Erro ao Enviar Email';
+            let mensagem = '';
+            
+            switch(error.code) {
+                case 'auth/user-not-found':
+                    mensagem = 'Não encontramos uma conta associada a este email. Verifique o email ou crie uma nova conta.';
+                    break;
+                case 'auth/invalid-email':
+                    mensagem = 'Email inválido. Verifique se o email está correto.';
+                    break;
+                case 'auth/too-many-requests':
+                    mensagem = 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.';
+                    break;
+                case 'auth/network-request-failed':
+                    mensagem = 'Erro de conexão. Verifique sua internet e tente novamente.';
+                    break;
+                case 'auth/internal-error':
+                    // Tentar reinicializar se for erro interno
+                    titulo = 'Erro de Configuração';
+                    mensagem = 'Erro interno do sistema. Tentando reinicializar...';
+                    setTimeout(() => {
+                        reinicializarFirebase();
+                    }, 1000);
+                    break;
+                default:
+                    mensagem = `Erro inesperado: ${error.message || 'Tente novamente mais tarde.'}`;
+            }
+            
+            mostrarPopupErro(titulo, mensagem);
+        });
+}
+
+// Funções para o popup
+function mostrarPopupSucesso(mensagem) {
+    const popup = document.getElementById('popup-sucesso');
+    const mensagemElement = popup.querySelector('.popup-message');
+    mensagemElement.textContent = mensagem;
+    popup.style.display = 'flex';
+}
+
+function fecharPopup() {
+    const popup = document.getElementById('popup-sucesso');
+    popup.style.display = 'none';
+}
+
+function mostrarPopupErro(titulo, mensagem) {
+    const popup = document.getElementById('popup-erro');
+    const tituloElement = popup.querySelector('.popup-title');
+    const mensagemElement = popup.querySelector('.popup-message');
+    
+    tituloElement.textContent = titulo;
+    mensagemElement.textContent = mensagem;
+    popup.style.display = 'flex';
+}
+
+function fecharPopupErro() {
+    const popup = document.getElementById('popup-erro');
+    popup.style.display = 'none';
+}
+
+function mostrarPopupInfo(titulo, mensagem) {
+    const popup = document.getElementById('popup-info');
+    const tituloElement = popup.querySelector('.popup-title');
+    const mensagemElement = popup.querySelector('.popup-message');
+    
+    tituloElement.textContent = titulo;
+    mensagemElement.textContent = mensagem;
+    popup.style.display = 'flex';
+}
+
+function fecharPopupInfo() {
+    const popup = document.getElementById('popup-info');
+    popup.style.display = 'none';
+}
+
+// Fechar popups com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharPopup();
+        fecharPopupErro();
+        fecharPopupInfo();
+    }
+});
+
+// Fechar popups clicando no overlay
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('popup-overlay')) {
+        fecharPopup();
+        fecharPopupErro();
+        fecharPopupInfo();
     }
 });

@@ -21,7 +21,7 @@
     <div class="container">
         <!-- Logo -->
         <div class="logo-container">
-            <img src="Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
+            <img src="../Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
         </div>
 
         <!-- Conteúdo Principal -->
@@ -119,6 +119,42 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Popup de Sucesso -->
+    <div id="popup-sucesso" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="popup-title">Sucesso!</h3>
+            <p class="popup-message">Login com Google realizado com sucesso!</p>
+            <button class="popup-button" onclick="fecharPopup()">OK</button>
+        </div>
+    </div>
+
+    <!-- Popup de Erro -->
+    <div id="popup-erro" class="popup-overlay" style="display: none;">
+        <div class="popup-content popup-erro">
+            <div class="popup-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="popup-title">Erro</h3>
+            <p class="popup-message" id="popup-erro-message">Ocorreu um erro.</p>
+            <button class="popup-button" onclick="fecharPopupErro()">OK</button>
+        </div>
+    </div>
+
+    <!-- Popup de Informação -->
+    <div id="popup-info" class="popup-overlay" style="display: none;">
+        <div class="popup-content popup-info">
+            <div class="popup-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 class="popup-title">Informação</h3>
+            <p class="popup-message" id="popup-info-message">Informação importante.</p>
+            <button class="popup-button" onclick="fecharPopupInfo()">OK</button>
+        </div>
     </div>
 
     <script src="script.js" defer></script>

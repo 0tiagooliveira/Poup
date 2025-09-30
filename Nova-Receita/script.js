@@ -1,8 +1,14 @@
+// Cache de elementos DOM para evitar consultas repetidas (global)
+let elementos = {};
+
+// Estado da aplicação (global)
+let estado = {};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado - Iniciando aplicação...');
     
-    // Cache de elementos DOM para evitar consultas repetidas
-    const elementos = {
+    // Inicializar elementos DOM
+    elementos = {
         botaoVoltar: document.querySelector('.botao-voltar'),
         secaoValor: document.getElementById('secao-valor'),
         valorReceita: document.getElementById('valor-receita'),
@@ -41,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
         camposRepetir: document.getElementById('campos-repetir')
     };
 
-    // Estado da aplicação
-    const estado = {
+    // Inicializar estado da aplicação
+    estado = {
         valorAtual: '0',
         digitandoValor: false,
         dataSelecionada: new Date(),
@@ -321,7 +327,21 @@ document.addEventListener('DOMContentLoaded', function() {
             salvarLocalStorage(novaReceita),
             salvarFirestore(novaReceita)
         ]).then(() => {
-            mostrarPopup('Receita salva com sucesso!', () => {
+            // Gerar receitas futuras se for fixa ou repetida
+            return gerarReceitasFuturas(novaReceita);
+        }).then(() => {
+            const mensagem = (novaReceita.receitaFixa || novaReceita.repetir) 
+                ? 'Receita salva com sucesso! Receitas futuras foram geradas automaticamente.'
+                : 'Receita salva com sucesso!';
+            
+            // Criar notificação se a função estiver disponível
+            if (typeof window.criarNotificacaoNovaReceita === 'function') {
+                window.criarNotificacaoNovaReceita(novaReceita).catch(err => {
+                    console.error('Erro ao criar notificação:', err);
+                });
+            }
+            
+            mostrarPopup(mensagem, () => {
                 limparFormulario();
                 window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
             });
@@ -369,6 +389,167 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(reject);
         });
+    }
+
+    // Função para gerar receitas futuras automaticamente
+    function gerarReceitasFuturas(receitaBase) {
+        return new Promise((resolve, reject) => {
+            try {
+                // Verificar se é receita fixa ou repetida
+                if (!receitaBase.receitaFixa && !receitaBase.repetir) {
+                    resolve(); // Não é fixa nem repetida
+                    return;
+                }
+
+                const receitasFuturas = [];
+                const dataBase = new Date(converterDataParaISO(receitaBase.data));
+                
+                // Determinar quantidade de meses para gerar
+                let mesesParaGerar = 12; // Padrão: 12 meses para receitas fixas
+                
+                if (receitaBase.repetir && receitaBase.quantidadeRepeticoes) {
+                    const quantidade = parseInt(receitaBase.quantidadeRepeticoes);
+                    const frequencia = receitaBase.frequenciaRepeticoes || 'mensal';
+                    
+                    if (frequencia === 'mensal') {
+                        mesesParaGerar = quantidade;
+                    } else if (frequencia === 'anual') {
+                        mesesParaGerar = quantidade * 12;
+                    }
+                }
+
+                console.log(`Gerando ${mesesParaGerar} receitas futuras...`);
+
+                // Gerar receitas para os próximos meses
+                for (let i = 1; i <= mesesParaGerar; i++) {
+                    const novaData = new Date(dataBase);
+                    novaData.setMonth(dataBase.getMonth() + i);
+                    
+                    // Ajustar para o último dia do mês se necessário
+                    if (novaData.getDate() !== dataBase.getDate()) {
+                        novaData.setDate(0); // Vai para o último dia do mês anterior
+                        novaData.setMonth(novaData.getMonth() + 1);
+                    }
+
+                    const receitaFutura = {
+                        ...receitaBase,
+                        data: formatarDataParaExibicao(novaData),
+                        recebido: false, // Receitas futuras sempre começam como não recebidas
+                        timestamp: Date.now() + i, // Timestamp único
+                        origem: 'automatica', // Marcar como gerada automaticamente
+                        receitaOrigem: receitaBase.timestamp // Referência à receita original
+                    };
+
+                    receitasFuturas.push(receitaFutura);
+                }
+
+                // Salvar todas as receitas futuras
+                const promessas = receitasFuturas.map(receita => {
+                    return Promise.all([
+                        salvarReceitaFuturaLocalStorage(receita),
+                        salvarReceitaFuturaFirestore(receita)
+                    ]);
+                });
+
+                Promise.all(promessas)
+                    .then(() => {
+                        console.log(`${receitasFuturas.length} receitas futuras criadas com sucesso!`);
+                        resolve();
+                    })
+                    .catch(reject);
+
+            } catch (error) {
+                console.error('Erro ao gerar receitas futuras:', error);
+                reject(error);
+            }
+        });
+    }
+
+    // Função auxiliar para salvar receita futura no localStorage
+    function salvarReceitaFuturaLocalStorage(receita) {
+        return new Promise((resolve) => {
+            try {
+                let receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
+                
+                // Verificar se já existe receita para este mês
+                const mesAno = receita.data.substring(3); // MM/AAAA
+                const existeReceita = receitas.some(r => 
+                    r.data.substring(3) === mesAno && 
+                    r.descricao === receita.descricao &&
+                    r.categoria === receita.categoria
+                );
+
+                if (!existeReceita) {
+                    receitas.push(receita);
+                    localStorage.setItem('receitas', JSON.stringify(receitas));
+                    console.log(`Receita futura salva no localStorage: ${receita.data}`);
+                }
+                
+                resolve();
+            } catch (e) {
+                console.error('Erro ao salvar receita futura no localStorage:', e);
+                resolve(); // Não falha se localStorage der erro
+            }
+        });
+    }
+
+    // Função auxiliar para salvar receita futura no Firestore
+    function salvarReceitaFuturaFirestore(receita) {
+        return new Promise((resolve, reject) => {
+            if (!firebase?.auth || !firebase?.firestore) {
+                resolve(); // Firebase não disponível
+                return;
+            }
+
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                resolve(); // Usuário não logado
+                return;
+            }
+
+            // Verificar se já existe receita para este mês no Firestore
+            const mesAno = receita.data.substring(3); // MM/AAAA
+            
+            firebase.firestore().collection('receitas')
+                .where('userId', '==', user.uid)
+                .where('descricao', '==', receita.descricao)
+                .where('categoria', '==', receita.categoria)
+                .get()
+                .then(snapshot => {
+                    const existeReceita = snapshot.docs.some(doc => {
+                        const data = doc.data().data;
+                        return data && data.substring(3) === mesAno;
+                    });
+
+                    if (!existeReceita) {
+                        const receitaFirestore = { ...receita, userId: user.uid };
+                        return firebase.firestore().collection('receitas').add(receitaFirestore);
+                    } else {
+                        console.log(`Receita já existe para ${mesAno}, pulando...`);
+                        return Promise.resolve();
+                    }
+                })
+                .then(() => {
+                    console.log(`Receita futura salva no Firestore: ${receita.data}`);
+                    resolve();
+                })
+                .catch(reject);
+        });
+    }
+
+    // Funções auxiliares para conversão de datas
+    function converterDataParaISO(dataString) {
+        // Converte "DD/MM/AAAA" para "AAAA-MM-DD"
+        const partes = dataString.split('/');
+        return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+    }
+
+    function formatarDataParaExibicao(data) {
+        // Converte Date para "DD/MM/AAAA"
+        const dia = data.getDate().toString().padStart(2, '0');
+        const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+        const ano = data.getFullYear();
+        return `${dia}/${mes}/${ano}`;
     }
 
     // Função otimizada para limpar formulário
@@ -671,12 +852,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         opcoesCarteira.innerHTML = '';
 
+        // Verificar se há usuário autenticado no Firebase
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                console.log('Usuário autenticado encontrado, buscando contas no Firebase...');
+                buscarContasUsuario(user.uid);
+                return;
+            }
+        }
+
+        // Fallback para localStorage se não houver Firebase ou usuário
         let carteiras = [];
         try {
             carteiras = JSON.parse(localStorage.getItem('contasBancarias') || '[]');
-            console.log(`Carteiras encontradas: ${carteiras.length}`);
+            console.log(`Carteiras encontradas no localStorage: ${carteiras.length}`);
         } catch (e) {
-            console.error('Erro ao carregar contas:', e);
+            console.error('Erro ao carregar contas do localStorage:', e);
         }
 
         if (carteiras.length === 0) {
@@ -853,12 +1045,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Usuário autenticado:', user.uid);
                 botaoSalvar.disabled = false;
                 botaoSalvar.textContent = 'Salvar Receita';
+                
+                // Carregar contas do usuário autenticado
+                buscarContasUsuario(user.uid);
             } else {
                 console.warn('Nenhum usuário autenticado.');
                 botaoSalvar.textContent = 'Faça login para salvar';
                 botaoSalvar.style.backgroundColor = '#ccc';
+                
+                // Fallback para localStorage se não autenticado
+                carregarCarteiras();
             }
         });
+    } else {
+        console.warn('Firebase não disponível, usando dados locais');
+        // Se Firebase não estiver disponível, usar localStorage
+        carregarCarteiras();
     }
 });
 
@@ -947,18 +1149,46 @@ function carregarIconesLazy(galeria, iconePreview, modal) {
 
 // Função para popular as contas no seletor com SVG do banco dentro de um círculo
 function carregarContasNoSeletor(contas) {
-    const opcoesCarteira = document.querySelector('.opcoes-carteira');
-    const opcaoSelecionada = document.querySelector('.seletor-carteira .opcao-selecionada');
+    console.log('Carregando contas no seletor...', contas);
+    const opcoesCarteira = elementos.opcoesCarteira;
+    const opcaoSelecionada = elementos.opcaoSelecionadaCarteira;
+    
+    if (!opcoesCarteira || !opcaoSelecionada) {
+        console.error('Elementos do seletor de carteira não encontrados');
+        return;
+    }
+    
     opcoesCarteira.innerHTML = '';
+    
+    // Mapeamento de bancos para ícones SVG
+    const bancosIcones = {
+        'Nubank': '../Icon/Nubank.svg',
+        'Banco do Brasil': '../Icon/banco-do-brasil.svg',
+        'Bradesco': '../Icon/bradesco.svg',
+        'Itaú': '../Icon/itau.svg',
+        'Santander': '../Icon/santander.svg',
+        'Caixa': '../Icon/caixa.svg',
+        'PicPay': '../Icon/picpay.svg'
+    };
+    
     contas.forEach(conta => {
-        // Usa o SVG do banco se existir, senão um ícone padrão
-        const svgIcon = conta.icone || '../Icon/banco-do-brasil.svg';
+        // Determinar o ícone a usar
+        let iconeUrl = conta.icone;
+        if (!iconeUrl && conta.banco && bancosIcones[conta.banco]) {
+            iconeUrl = bancosIcones[conta.banco];
+        }
+        if (!iconeUrl) {
+            iconeUrl = '../Icon/conta-corrente-banco.svg'; // Ícone padrão
+        }
+        
         const corFundo = conta.cor || '#e8f5ee';
+        const nomeConta = conta.nome || conta.descricao || conta.banco || 'Conta';
+        const tipoConta = conta.tipo || 'Conta bancária';
 
         const div = document.createElement('div');
         div.className = 'opcao-carteira';
         div.setAttribute('data-id', conta.id);
-        div.setAttribute('data-icone', svgIcon);
+        div.setAttribute('data-icone', iconeUrl);
         div.innerHTML = `
             <span class="circulo-icone-conta" style="
                 display:inline-flex;
@@ -970,11 +1200,18 @@ function carregarContasNoSeletor(contas) {
                 background:${corFundo};
                 margin-right:10px;
                 ">
-                <img src="${svgIcon}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+                <img src="${iconeUrl}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
             </span>
-            <span>${conta.nome || conta.descricao || 'Conta'}</span>
+            <div class="detalhes-carteira">
+                <span class="nome-carteira">${nomeConta}</span>
+                <span>${tipoConta}</span>
+            </div>
         `;
+        
         div.addEventListener('click', function() {
+            console.log(`Conta selecionada: ${nomeConta} (${conta.id})`);
+            estado.carteiraSelecionada = conta.id;
+            
             opcaoSelecionada.innerHTML = `
                 <span class="circulo-icone-conta" style="
                     display:inline-flex;
@@ -986,19 +1223,35 @@ function carregarContasNoSeletor(contas) {
                     background:${corFundo};
                     margin-right:10px;
                     ">
-                    <img src="${svgIcon}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+                    <img src="${iconeUrl}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
                 </span>
-                <span>${conta.nome || conta.descricao || 'Conta'}</span>
+                <span>${nomeConta}</span>
             `;
-            // Salve o id da conta selecionada se necessário
-            opcoesCarteira.style.display = 'none';
+            opcoesCarteira.classList.remove('mostrar');
         });
         opcoesCarteira.appendChild(div);
     });
+    
+    // Adicionar opção para criar nova conta
+    const opcaoCrear = document.createElement('div');
+    opcaoCrear.className = 'opcao-carteira';
+    opcaoCrear.id = 'criar-nova-carteira';
+    opcaoCrear.innerHTML = `
+        <span class="icone-carteira">➕</span>
+        <div class="detalhes-carteira">
+            <span class="nome-carteira">Criar nova conta</span>
+        </div>
+    `;
+    opcaoCrear.addEventListener('click', function() {
+        console.log('Redirecionando para criar nova conta');
+        window.location.href = "../Nova-conta/Nova-conta.html";
+    });
+    opcoesCarteira.appendChild(opcaoCrear);
 }
 
 // Exemplo de uso após autenticação do usuário:
 function buscarContasUsuario(uid) {
+    console.log('Buscando contas do usuário no Firebase...', uid);
     firebase.firestore().collection('contas')
         .where('userId', '==', uid)
         .get()
@@ -1007,6 +1260,43 @@ function buscarContasUsuario(uid) {
             snapshot.forEach(doc => {
                 contas.push({ id: doc.id, ...doc.data() });
             });
-            carregarContasNoSeletor(contas);
+            console.log(`Contas encontradas no Firebase: ${contas.length}`, contas);
+            
+            if (contas.length === 0) {
+                // Se não há contas, mostrar opção para criar
+                mostrarOpcaoCriarConta();
+            } else {
+                carregarContasNoSeletor(contas);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar contas no Firebase:', error);
+            // Fallback para criar conta em caso de erro
+            mostrarOpcaoCriarConta();
         });
+}
+
+function mostrarOpcaoCriarConta() {
+    const opcoesCarteira = elementos.opcoesCarteira;
+    if (!opcoesCarteira) {
+        console.error('Elemento opcoesCarteira não encontrado');
+        return;
+    }
+    
+    opcoesCarteira.innerHTML = '';
+    const opcaoCrear = document.createElement('div');
+    opcaoCrear.className = 'opcao-carteira';
+    opcaoCrear.id = 'criar-nova-carteira';
+    opcaoCrear.innerHTML = `
+        <span class="icone-carteira">➕</span>
+        <div class="detalhes-carteira">
+            <span class="nome-carteira">Criar nova conta</span>
+            <span>Você ainda não tem contas cadastradas</span>
+        </div>
+    `;
+    opcaoCrear.addEventListener('click', function() {
+        console.log('Redirecionando para criar nova conta');
+        window.location.href = "../Nova-conta/Nova-conta.html";
+    });
+    opcoesCarteira.appendChild(opcaoCrear);
 }
