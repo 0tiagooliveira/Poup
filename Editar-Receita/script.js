@@ -1,3 +1,8 @@
+// --- Variáveis globais auxiliares ---
+let contasCache = {}; // id -> objeto conta
+let receitaCarregadaGlobal = null; // guarda receita carregada para reprocessar conta depois
+let tentativasAtualizarConta = 0;
+
 // Função auxiliar para mostrar mensagens com toast elegante
 function mostrarPopupMensagem(mensagem, tipo = 'info') {
     // Criar elemento do toast
@@ -89,7 +94,8 @@ function carregarReceitaExistente(receitaId) {
                     if (doc.exists) {
                         const receitaOriginal = doc.data();
                         console.log('Receita carregada:', receitaOriginal);
-                        preencherFormulario(receitaOriginal);
+                        receitaCarregadaGlobal = { id: receitaId, ...receitaOriginal };
+                        preencherFormulario(receitaCarregadaGlobal);
                     } else {
                         mostrarPopupMensagem('Receita não encontrada. Redirecionando...');
                         setTimeout(() => {
@@ -194,53 +200,8 @@ function preencherFormulario(receita) {
         configurarSeletorCategoria();
     }
     
-    // Preencher carteira
-    if (receita.carteira) {
-        const opcaoSelecionadaCarteira = document.querySelector('.seletor-carteira .opcao-selecionada');
-        if (opcaoSelecionadaCarteira) {
-            if (typeof receita.carteira === 'object') {
-                const svgIcon = receita.carteira.icone || '../Icon/banco-do-brasil.svg';
-                const corFundo = receita.carteira.cor || '#e8f5ee';
-                const nomeCarteira = receita.carteira.nome || receita.carteira.banco || receita.carteira.id || 'Conta';
-                
-                opcaoSelecionadaCarteira.innerHTML = `
-                    <span class="circulo-icone-conta" style="
-                        display:inline-flex;
-                        align-items:center;
-                        justify-content:center;
-                        width:36px;
-                        height:36px;
-                        border-radius:50%;
-                        background:${corFundo};
-                        margin-right:10px;
-                        ">
-                        <img src="${svgIcon}" alt="${nomeCarteira}" style="width:22px;height:22px;object-fit:contain;">
-                    </span>
-                    <span>${nomeCarteira}</span>
-                `;
-            } else {
-                // Se carteira for string, mostrar apenas o nome
-                opcaoSelecionadaCarteira.innerHTML = `
-                    <span class="circulo-icone-conta" style="
-                        display:inline-flex;
-                        align-items:center;
-                        justify-content:center;
-                        width:36px;
-                        height:36px;
-                        border-radius:50%;
-                        background:#e8f5ee;
-                        margin-right:10px;
-                        ">
-                        <span class="material-symbols-outlined" style="font-size:18px;color:#666;">account_balance</span>
-                    </span>
-                    <span>${receita.carteira}</span>
-                `;
-            }
-        }
-        window.contaSelecionada = receita.carteira;
-        // Configurar seletor de carteira
-        configurarSeletorCarteira();
-    }
+    // Preencher carteira (conta) usando cache / busca assíncrona
+    atualizarContaSelecionadaNaEdicao(receita);
     
     // Preencher configurações de receita fixa/repetitiva
     const toggleReceitaFixa = document.getElementById('toggle-receita-fixa');
@@ -1037,7 +998,7 @@ function carregarContasNoSeletor(contas) {
             }
             
             opcoesCarteira.classList.remove('mostrar');
-            window.contaSelecionada = conta;
+            window.contaSelecionada = conta.id; // salvar apenas ID para consistência
         });
         
         opcoesCarteira.appendChild(div);
@@ -1068,8 +1029,16 @@ function buscarContasUsuario(uid) {
             
             console.log('[Editar Receita] Total de contas carregadas:', contas.length);
             
+            // Preenche cache
+            contasCache = {};
+            contas.forEach(c => { contasCache[c.id] = c; });
+
             if (contas.length > 0) {
                 carregarContasNoSeletor(contas);
+                // Após carregar contas, tentar novamente atualizar exibição se já temos receita
+                if (receitaCarregadaGlobal) {
+                    atualizarContaSelecionadaNaEdicao(receitaCarregadaGlobal, true);
+                }
             } else {
                 console.warn('[Editar Receita] Nenhuma conta encontrada');
                 const opcoesCarteira = document.querySelector('.opcoes-carteira');
@@ -1113,13 +1082,17 @@ function salvarReceita(receitaId) {
     const opcaoCategoria = document.querySelector('.seletor-categoria .opcao-selecionada span:last-child');
     const opcaoCarteira = document.querySelector('.seletor-carteira .opcao-selecionada span:last-child');
     
+    const contaParaSalvar = (typeof window.contaSelecionada === 'object' && window.contaSelecionada?.id)
+        ? window.contaSelecionada.id
+        : window.contaSelecionada; // ID ou string
+
     const receitaAtualizada = {
         valor: valorReceita.textContent, // Mantém "R$ " + valor formatado
         recebido: checkboxRecebido ? checkboxRecebido.checked : true,
         data: dataSelecionada ? dataSelecionada.textContent : new Date().toLocaleDateString('pt-BR'),
         descricao: inputDescricao.value.trim(),
         categoria: opcaoCategoria ? opcaoCategoria.textContent : 'Sem categoria',
-        carteira: window.contaSelecionada || 'Sem carteira',
+        carteira: contaParaSalvar || 'Sem carteira',
         timestamp: Date.now()
     };
 
@@ -1234,3 +1207,50 @@ window.adicionarNumeroCalculadora = adicionarNumeroCalculadora;
 window.apagarCalculadora = apagarCalculadora;
 window.cancelarCalculadora = cancelarCalculadora;
 window.confirmarCalculadora = confirmarCalculadora;
+
+// --- Funções auxiliares novas ---
+function atualizarContaSelecionadaNaEdicao(receita, forcar=false) {
+    if (!receita || !receita.carteira) return;
+    const el = document.querySelector('.seletor-carteira .opcao-selecionada');
+    if (!el) return;
+
+    // Caso já tenha sido desenhado corretamente e não esteja forçando, sair
+    if (!forcar && el.dataset.renderOk === '1') return;
+
+    if (typeof receita.carteira === 'object') {
+        const c = receita.carteira;
+        desenharContaSelecionada(el, c.icone, c.cor, c.nome || c.banco || 'Conta');
+        window.contaSelecionada = c.id || c.nome;
+        return;
+    }
+
+    // Se for string (ID ou nome solto)
+    const idOuNome = receita.carteira;
+    const contaObj = contasCache[idOuNome];
+    if (contaObj) {
+        desenharContaSelecionada(el, contaObj.icone, contaObj.cor, contaObj.nome || contaObj.banco || 'Conta');
+        window.contaSelecionada = contaObj.id;
+        el.dataset.renderOk = '1';
+        return;
+    }
+
+    // Se não encontrou no cache ainda, tentar novamente algumas vezes
+    if (tentativasAtualizarConta < 10) {
+        tentativasAtualizarConta++;
+        setTimeout(() => atualizarContaSelecionadaNaEdicao(receita), 250);
+    } else {
+        // Fallback: mostrar placeholder amigável sem expor ID cru
+        desenharContaSelecionada(el, null, '#e2e8f0', 'Conta (carregando...)');
+    }
+}
+
+function desenharContaSelecionada(container, iconeSvg, corFundo='#e8f5ee', nome='Conta') {
+    const svgFinal = iconeSvg ? `<img src="${iconeSvg}" alt="${nome}" style="width:22px;height:22px;object-fit:contain;" />` : '<span class="material-symbols-outlined" style="font-size:18px;color:#666;">account_balance</span>';
+    container.innerHTML = `
+        <span class="circulo-icone-conta" style="
+            display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:${corFundo};margin-right:10px;">
+            ${svgFinal}
+        </span>
+        <span>${nome}</span>
+    `;
+}

@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funções da calculadora
     function abrirCalculadora() {
-        console.log('Abrindo calculadora');
+    // Abrindo calculadora
         elementos.calculadoraContainer.style.display = 'block';
         estado.valorAtual = elementos.saldoValor.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
         elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         db.collection('contas').add(novaConta)
             .then((docRef) => {
-                console.log('Conta salva no Firestore:', novaConta, 'ID:', docRef.id);
+                // Conta salva no Firestore (detalhes omitidos)
                 
                 // Criar notificação se a função estiver disponível
                 const contaComId = { ...novaConta, id: docRef.id };

@@ -86,7 +86,7 @@ body, html {
 }
 
 /* Formulário */
-.formulario-despesa {
+.formulario-receita {
     background-color: var(--cor-fundo);
     border-radius: 24px 24px 0 0;
     margin-top: -20px;
@@ -624,7 +624,7 @@ body, html {
     border-radius: 4px;
 }
 
-#linha-despesa-fixa, #linha-repetir {
+#linha-despesa-fixa, #linha-repetir, #linha-receita-fixa {
     background-color: #F8F8F8;
     padding: 12px;
     border-radius: 8px;
@@ -632,7 +632,8 @@ body, html {
 }
 
 #linha-despesa-fixa input:checked + .controle-alternador,
-#linha-repetir input:checked + .controle-alternador {
+#linha-repetir input:checked + .controle-alternador,
+#linha-receita-fixa input:checked + .controle-alternador {
     background-color: var(--cor-primaria);
 }
 
@@ -712,7 +713,7 @@ body, html {
         padding: 20px 16px;
     }
     
-    .formulario-despesa {
+    .formulario-receita {
         padding: 20px 16px;
         max-width: 98vw;
         margin-left: auto;

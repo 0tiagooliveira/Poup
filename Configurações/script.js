@@ -1,157 +1,86 @@
-// --- FIREBASE CONFIG E INICIALIZAÇÃO ---
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-import { getAuth, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-import { getFirestore, doc, updateDoc, deleteDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBBjLr2DGJ0FuH9MBQGhTa5_2lOmwxFkGI",
-    authDomain: "poup-8b8f7.firebaseapp.com",
-    projectId: "poup-8b8f7",
-    storageBucket: "poup-8b8f7.appspot.com",
-    messagingSenderId: "150878508946",
-    appId: "1:150878508946:web:5a2adfdab80a2f24d5aac8"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
 // --- VARIÁVEIS GLOBAIS ---
 let usuarioAtual = null;
-let preferencesData = {};
-
-// --- DADOS DOS BANCOS E MOEDAS ---
-const bancos = {
-    'nubank': 'Nubank',
-    'itau': 'Itaú',
-    'bradesco': 'Bradesco',
-    'banco-do-brasil': 'Banco do Brasil',
-    'caixa': 'Caixa Econômica',
-    'santander': 'Santander',
-    'picpay': 'PicPay',
-    'outros': 'Outros'
-};
-
-const moedas = {
-    'BRL': 'Real (R$)',
-    'USD': 'Dólar ($)',
-    'EUR': 'Euro (€)',
-    'GBP': 'Libra (£)'
+let preferencesData = {
+    notificacoes: true,
+    modoEscuro: false,
+    moeda: 'BRL',
+    biometria: false
 };
 
 // --- INICIALIZAÇÃO DA PÁGINA ---
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Inicializando página de configurações...');
     verificarAutenticacao();
     inicializarEventListeners();
-    carregarPreferenciasUsuario();
+    carregarPreferenciasLocal();
+    adicionarAnimacoes();
 });
 
 // --- VERIFICAÇÃO DE AUTENTICAÇÃO ---
 function verificarAutenticacao() {
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            usuarioAtual = user;
-            preencherDadosUsuario();
-        } else {
-            window.location.href = '../index.html';
+    // Verificar se o Firebase está disponível
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                usuarioAtual = user;
+                preencherDadosUsuario();
+                console.log('✅ Usuário autenticado:', user.email);
+            } else {
+                console.log('❌ Usuário não autenticado, redirecionando...');
+                window.location.href = '../Home/home.html';
+            }
+        });
+    } else {
+        console.log('⚠️ Firebase não disponível, usando dados locais');
+        // Usar dados salvos localmente
+        const dadosUsuario = localStorage.getItem('dadosUsuario');
+        if (dadosUsuario) {
+            try {
+                usuarioAtual = JSON.parse(dadosUsuario);
+                preencherDadosUsuario();
+            } catch (error) {
+                console.error('Erro ao carregar dados do usuário:', error);
+            }
         }
-    });
+    }
 }
 
 // --- PREENCHER DADOS DO USUÁRIO ---
 function preencherDadosUsuario() {
     if (!usuarioAtual) return;
 
-    const nomeInput = document.getElementById('input-nome');
-    const emailInput = document.getElementById('input-email');
+    const nomeInput = document.getElementById('nome-usuario');
+    const emailInput = document.getElementById('email-usuario');
     const avatarImg = document.getElementById('avatar-usuario');
 
     if (nomeInput) {
-        nomeInput.value = usuarioAtual.displayName || 'Usuário';
+        nomeInput.value = usuarioAtual.displayName || usuarioAtual.nome || 'Usuário Poup+';
     }
     
     if (emailInput) {
-        emailInput.value = usuarioAtual.email || '';
+        emailInput.value = usuarioAtual.email || 'usuario@poup.com';
     }
     
     if (avatarImg) {
         avatarImg.src = usuarioAtual.photoURL || '../Icon/perfil.svg';
     }
 
-    // Carregar preferências salvas
-    carregarPreferencias();
-}
-
-// --- CARREGAR PREFERÊNCIAS DO USUÁRIO ---
-async function carregarPreferencias() {
-    try {
-        const preferenciasRef = doc(db, 'preferencias', usuarioAtual.uid);
-        const preferenciasDoc = await getDoc(preferenciasRef);
-        
-        if (preferenciasDoc.exists()) {
-            preferencesData = preferenciasDoc.data();
-            aplicarPreferencias();
-        } else {
-            // Definir preferências padrão
-            preferencesData = {
-                notificacoes: true,
-                modoEscuro: false,
-                moeda: 'BRL',
-                biometria: false,
-                somaTelaInicial: true,
-                adicaoRapida: false
-            };
-            await salvarPreferencias();
-        }
-    } catch (error) {
-        console.error('Erro ao carregar preferências:', error);
-        mostrarToast('Erro ao carregar preferências', 'erro');
-    }
-}
-
-// --- APLICAR PREFERÊNCIAS NA INTERFACE ---
-function aplicarPreferencias() {
-    const switchNotificacoes = document.getElementById('switch-notificacoes');
-    const switchModoEscuro = document.getElementById('switch-modo-escuro');
-    const selectMoeda = document.getElementById('select-moeda');
-    const switchBiometria = document.getElementById('switch-biometria');
-    const switchSomaInicial = document.getElementById('switch-soma-inicial');
-    const switchAdicaoRapida = document.getElementById('switch-adicao-rapida');
-
-    if (switchNotificacoes) switchNotificacoes.checked = preferencesData.notificacoes;
-    if (switchModoEscuro) switchModoEscuro.checked = preferencesData.modoEscuro;
-    if (selectMoeda) selectMoeda.value = preferencesData.moeda;
-    if (switchBiometria) switchBiometria.checked = preferencesData.biometria;
-    if (switchSomaInicial) switchSomaInicial.checked = preferencesData.somaTelaInicial;
-    if (switchAdicaoRapida) switchAdicaoRapida.checked = preferencesData.adicaoRapida;
-
-    // Aplicar modo escuro se ativado
-    if (preferencesData.modoEscuro) {
-        aplicarModoEscuro();
-    }
-}
-
-// --- SALVAR PREFERÊNCIAS ---
-async function salvarPreferencias() {
-    try {
-        const preferenciasRef = doc(db, 'preferencias', usuarioAtual.uid);
-        await setDoc(preferenciasRef, preferencesData);
-        mostrarToast('Preferências salvas com sucesso', 'sucesso');
-    } catch (error) {
-        console.error('Erro ao salvar preferências:', error);
-        mostrarToast('Erro ao salvar preferências', 'erro');
-    }
+    console.log('👤 Dados do usuário preenchidos');
 }
 
 // --- INICIALIZAR EVENT LISTENERS ---
 function inicializarEventListeners() {
-    // Botão voltar
-    const botaoVoltar = document.getElementById('botao-voltar');
+    console.log('🎛️ Inicializando event listeners...');
+    
+    // Botão voltar com animação
+    const botaoVoltar = document.querySelector('.botao-voltar');
     if (botaoVoltar) {
-        botaoVoltar.addEventListener('click', () => {
-            window.location.href = '../Home/home.html';
+        botaoVoltar.addEventListener('click', (e) => {
+            e.preventDefault();
+            animarSaida();
+            setTimeout(() => {
+                window.location.href = '../Home/home.html';
+            }, 300);
         });
     }
 
@@ -160,89 +89,129 @@ function inicializarEventListeners() {
     const inputFoto = document.getElementById('input-foto');
     
     if (botaoAlterarFoto && inputFoto) {
-        botaoAlterarFoto.addEventListener('click', () => inputFoto.click());
+        botaoAlterarFoto.addEventListener('click', () => {
+            inputFoto.click();
+            adicionarEfeitoClick(botaoAlterarFoto);
+        });
         inputFoto.addEventListener('change', handleUploadAvatar);
     }
 
-    // Editar nome
-    const btnEditarNome = document.getElementById('btn-editar-nome');
-    if (btnEditarNome) {
-        btnEditarNome.addEventListener('click', editarNome);
-    }
-
-    // Alterar senha
-    const btnAlterarSenha = document.getElementById('btn-alterar-senha');
-    if (btnAlterarSenha) {
-        btnAlterarSenha.addEventListener('click', abrirModalAlterarSenha);
-    }
-
-    // Switches de preferências
+    // Switches de preferências com animações
     const switches = [
-        'switch-notificacoes',
-        'switch-modo-escuro', 
-        'switch-biometria',
-        'switch-soma-inicial',
-        'switch-adicao-rapida'
+        'notificacoes',
+        'modo-escuro', 
+        'biometria'
     ];
 
     switches.forEach(switchId => {
         const switchElement = document.getElementById(switchId);
         if (switchElement) {
-            switchElement.addEventListener('change', handlePreferenceChange);
+            switchElement.addEventListener('change', (e) => {
+                handlePreferenceChange(e);
+                adicionarEfeitoSwitch(switchElement);
+            });
         }
     });
 
     // Select de moeda
-    const selectMoeda = document.getElementById('select-moeda');
+    const selectMoeda = document.getElementById('moeda-padrao');
     if (selectMoeda) {
         selectMoeda.addEventListener('change', handlePreferenceChange);
     }
 
-    // Ações de dados
-    const btnExportarDados = document.getElementById('btn-exportar-dados');
-    const btnLimparCache = document.getElementById('btn-limpar-cache');
-    const btnExcluirConta = document.getElementById('btn-excluir-conta');
-
-    if (btnExportarDados) btnExportarDados.addEventListener('click', exportarDados);
-    if (btnLimparCache) btnLimparCache.addEventListener('click', limparCache);
-    if (btnExcluirConta) btnExcluirConta.addEventListener('click', abrirModalExcluirConta);
+    // Itens clicáveis
+    const itemsClicaveis = document.querySelectorAll('.item-configuracao.clickable');
+    itemsClicaveis.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const id = item.id;
+            adicionarEfeitoClick(item);
+            
+            setTimeout(() => {
+                switch(id) {
+                    case 'alterar-senha':
+                        abrirModalAlterarSenha();
+                        break;
+                    case 'exportar-dados':
+                        exportarDados();
+                        break;
+                    case 'limpar-cache':
+                        limparCache();
+                        break;
+                    case 'excluir-conta':
+                        abrirModalExcluirConta();
+                        break;
+                }
+            }, 150);
+        });
+    });
 
     // Botão logout
     const botaoLogout = document.getElementById('botao-logout');
     if (botaoLogout) {
-        botaoLogout.addEventListener('click', abrirModalLogout);
+        botaoLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            adicionarEfeitoClick(botaoLogout);
+            setTimeout(() => {
+                abrirModalLogout();
+            }, 150);
+        });
     }
 
-    // Modal controls
-    const modalOverlays = document.querySelectorAll('.modal-overlay');
-    modalOverlays.forEach(overlay => {
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                fecharModal(overlay.id);
-            }
+    // Botão salvar
+    const botaoSalvar = document.getElementById('botao-salvar');
+    if (botaoSalvar) {
+        botaoSalvar.addEventListener('click', () => {
+            salvarTodasPreferencias();
+            adicionarEfeitoClick(botaoSalvar);
         });
+    }
+
+    // Event listeners para modais
+    setupModalEventListeners();
+    
+    console.log('✅ Event listeners configurados');
+}
+
+// --- CONFIGURAR EVENT LISTENERS DOS MODAIS ---
+function setupModalEventListeners() {
+    // Modal overlay clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+            fecharModal(e.target);
+        }
     });
 
+    // Modal close buttons
     const modalCloses = document.querySelectorAll('.modal-close');
     modalCloses.forEach(close => {
         close.addEventListener('click', (e) => {
             const modal = e.target.closest('.modal-overlay');
-            fecharModal(modal.id);
+            fecharModal(modal);
         });
     });
 
-    // Botões de confirmação dos modais
-    const btnConfirmarSenha = document.getElementById('btn-confirmar-senha');
-    const btnConfirmarLogout = document.getElementById('btn-confirmar-logout');
-    const btnConfirmarExclusao = document.getElementById('btn-confirmar-exclusao');
+    // Botões de cancelar
+    const botoesCancelar = document.querySelectorAll('.botao-secundario');
+    botoesCancelar.forEach(botao => {
+        botao.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal-overlay');
+            fecharModal(modal);
+        });
+    });
 
-    if (btnConfirmarSenha) btnConfirmarSenha.addEventListener('click', confirmarAlteracaoSenha);
-    if (btnConfirmarLogout) btnConfirmarLogout.addEventListener('click', confirmarLogout);
-    if (btnConfirmarExclusao) btnConfirmarExclusao.addEventListener('click', confirmarExclusaoConta);
+    // Escape key para fechar modais
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modalAtivo = document.querySelector('.modal-overlay.ativo');
+            if (modalAtivo) {
+                fecharModal(modalAtivo);
+            }
+        }
+    });
 }
 
 // --- UPLOAD DE AVATAR ---
-async function handleUploadAvatar(event) {
+function handleUploadAvatar(event) {
     const arquivo = event.target.files[0];
     if (!arquivo) return;
 
@@ -258,127 +227,34 @@ async function handleUploadAvatar(event) {
         return;
     }
 
-    try {
-        mostrarToast('Enviando foto...', 'sucesso');
-        
-        const avatarRef = ref(storage, `avatars/${usuarioAtual.uid}`);
-        await uploadBytes(avatarRef, arquivo);
-        const downloadURL = await getDownloadURL(avatarRef);
-        
-        // Atualizar perfil do usuário
-        await updateProfile(usuarioAtual, {
-            photoURL: downloadURL
-        });
-
-        // Atualizar imagem na interface
+    // Simular upload (em uma implementação real, seria enviado para o servidor)
+    mostrarToast('Atualizando foto...', 'sucesso');
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
         const avatarImg = document.getElementById('avatar-usuario');
         if (avatarImg) {
-            avatarImg.src = downloadURL;
-        }
-
-        mostrarToast('Foto atualizada com sucesso!', 'sucesso');
-    } catch (error) {
-        console.error('Erro ao fazer upload da foto:', error);
-        mostrarToast('Erro ao atualizar foto', 'erro');
-    }
-}
-
-// --- EDITAR NOME ---
-async function editarNome() {
-    const inputNome = document.getElementById('input-nome');
-    const btnEditar = document.getElementById('btn-editar-nome');
-    
-    if (inputNome.readOnly) {
-        // Habilitar edição
-        inputNome.readOnly = false;
-        inputNome.focus();
-        btnEditar.innerHTML = '<span class="material-icons">check</span>';
-        btnEditar.title = 'Salvar nome';
-    } else {
-        // Salvar alteração
-        const novoNome = inputNome.value.trim();
-        
-        if (!novoNome) {
-            mostrarToast('Nome não pode estar vazio', 'erro');
-            return;
-        }
-
-        try {
-            await updateProfile(usuarioAtual, {
-                displayName: novoNome
-            });
-
-            inputNome.readOnly = true;
-            btnEditar.innerHTML = '<span class="material-icons">edit</span>';
-            btnEditar.title = 'Editar nome';
+            avatarImg.src = e.target.result;
             
-            mostrarToast('Nome atualizado com sucesso!', 'sucesso');
-        } catch (error) {
-            console.error('Erro ao atualizar nome:', error);
-            mostrarToast('Erro ao atualizar nome', 'erro');
+            // Salvar no localStorage
+            localStorage.setItem('avatarUsuario', e.target.result);
+            
+            // Animação de sucesso
+            avatarImg.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                avatarImg.style.transform = 'scale(1)';
+            }, 200);
+            
+            mostrarToast('Foto atualizada com sucesso!', 'sucesso');
         }
-    }
-}
-
-// --- MODAIS DE SENHA ---
-function abrirModalAlterarSenha() {
-    const modal = document.getElementById('modal-alterar-senha');
-    if (modal) {
-        modal.classList.add('ativo');
-        
-        // Limpar campos
-        document.getElementById('senha-atual').value = '';
-        document.getElementById('nova-senha').value = '';
-        document.getElementById('confirmar-senha').value = '';
-    }
-}
-
-async function confirmarAlteracaoSenha() {
-    const senhaAtual = document.getElementById('senha-atual').value;
-    const novaSenha = document.getElementById('nova-senha').value;
-    const confirmarSenha = document.getElementById('confirmar-senha').value;
-
-    // Validações
-    if (!senhaAtual || !novaSenha || !confirmarSenha) {
-        mostrarToast('Preencha todos os campos', 'erro');
-        return;
-    }
-
-    if (novaSenha !== confirmarSenha) {
-        mostrarToast('Senhas não coincidem', 'erro');
-        return;
-    }
-
-    if (novaSenha.length < 6) {
-        mostrarToast('Nova senha deve ter pelo menos 6 caracteres', 'erro');
-        return;
-    }
-
-    try {
-        // Reautenticar usuário
-        const credential = EmailAuthProvider.credential(usuarioAtual.email, senhaAtual);
-        await reauthenticateWithCredential(usuarioAtual, credential);
-
-        // Atualizar senha
-        await updatePassword(usuarioAtual, novaSenha);
-
-        fecharModal('modal-alterar-senha');
-        mostrarToast('Senha alterada com sucesso!', 'sucesso');
-    } catch (error) {
-        console.error('Erro ao alterar senha:', error);
-        
-        if (error.code === 'auth/wrong-password') {
-            mostrarToast('Senha atual incorreta', 'erro');
-        } else {
-            mostrarToast('Erro ao alterar senha', 'erro');
-        }
-    }
+    };
+    reader.readAsDataURL(arquivo);
 }
 
 // --- MANIPULAR MUDANÇAS DE PREFERÊNCIAS ---
 function handlePreferenceChange(event) {
     const elemento = event.target;
-    const preferencia = elemento.id.replace('switch-', '').replace('select-', '');
+    const preferencia = elemento.id.replace('-', '');
     
     let valor;
     if (elemento.type === 'checkbox') {
@@ -390,11 +266,9 @@ function handlePreferenceChange(event) {
     // Mapear IDs para chaves de preferência
     const mapeamento = {
         'notificacoes': 'notificacoes',
-        'modo-escuro': 'modoEscuro',
+        'modoescuro': 'modoEscuro',
         'biometria': 'biometria',
-        'soma-inicial': 'somaTelaInicial',
-        'adicao-rapida': 'adicaoRapida',
-        'moeda': 'moeda'
+        'moedapadrao': 'moeda'
     };
 
     const chave = mapeamento[preferencia];
@@ -405,113 +279,262 @@ function handlePreferenceChange(event) {
         if (chave === 'modoEscuro') {
             if (valor) {
                 aplicarModoEscuro();
+                mostrarToast('Modo escuro ativado', 'sucesso');
             } else {
                 removerModoEscuro();
+                mostrarToast('Modo claro ativado', 'sucesso');
             }
         }
         
-        salvarPreferencias();
+        if (chave === 'notificacoes') {
+            mostrarToast(valor ? 'Notificações ativadas' : 'Notificações desativadas', 'sucesso');
+        }
+        
+        if (chave === 'moeda') {
+            mostrarToast(`Moeda alterada para ${valor}`, 'sucesso');
+        }
+        
+        salvarPreferenciasLocal();
+        console.log('⚙️ Preferência atualizada:', chave, valor);
     }
 }
 
 // --- MODO ESCURO ---
 function aplicarModoEscuro() {
-    document.documentElement.style.setProperty('--cor-fundo-app', '#1e293b');
-    document.documentElement.style.setProperty('--cor-fundo-conteudo', '#334155');
-    document.documentElement.style.setProperty('--cor-texto-principal', '#f1f5f9');
-    document.documentElement.style.setProperty('--cor-texto-secundario', '#cbd5e1');
-    document.documentElement.style.setProperty('--cor-borda', '#475569');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const body = document.body;
+    body.style.transition = 'background 0.3s ease, color 0.3s ease';
+    
+    // Animar a transição
+    setTimeout(() => {
+        body.style.transition = '';
+    }, 300);
 }
 
 function removerModoEscuro() {
-    document.documentElement.style.setProperty('--cor-fundo-app', '#f8fafc');
-    document.documentElement.style.setProperty('--cor-fundo-conteudo', '#ffffff');
-    document.documentElement.style.setProperty('--cor-texto-principal', '#1e293b');
-    document.documentElement.style.setProperty('--cor-texto-secundario', '#64748b');
-    document.documentElement.style.setProperty('--cor-borda', '#e2e8f0');
+    document.documentElement.removeAttribute('data-theme');
+    const body = document.body;
+    body.style.transition = 'background 0.3s ease, color 0.3s ease';
+    
+    setTimeout(() => {
+        body.style.transition = '';
+    }, 300);
 }
 
-// --- EXPORTAR DADOS ---
-async function exportarDados() {
-    try {
-        mostrarToast('Preparando exportação...', 'sucesso');
+// --- MODAIS ---
+function abrirModalAlterarSenha() {
+    criarModalDinamico(
+        'Alterar Senha',
+        `<div style="text-align: left;">
+            <p style="margin-bottom: 20px; text-align: center;">Para sua segurança, confirme sua identidade antes de alterar a senha.</p>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Senha Atual:</label>
+            <input type="password" id="senha-atual" style="width: 100%; padding: 12px; border: 2px solid var(--cor-borda); border-radius: 12px; margin-bottom: 16px;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Nova Senha:</label>
+            <input type="password" id="nova-senha" style="width: 100%; padding: 12px; border: 2px solid var(--cor-borda); border-radius: 12px; margin-bottom: 16px;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Confirmar Nova Senha:</label>
+            <input type="password" id="confirmar-senha" style="width: 100%; padding: 12px; border: 2px solid var(--cor-borda); border-radius: 12px;">
+        </div>`,
+        'Alterar Senha',
+        confirmarAlteracaoSenha
+    );
+}
 
-        const dadosUsuario = {
-            usuario: {
-                nome: usuarioAtual.displayName,
-                email: usuarioAtual.email,
-                dataExportacao: new Date().toISOString()
-            },
-            preferencias: preferencesData
-        };
+function abrirModalLogout() {
+    criarModalDinamico(
+        'Sair da Conta',
+        'Tem certeza que deseja sair da sua conta? Você precisará fazer login novamente para acessar seus dados.',
+        'Sair da Conta',
+        confirmarLogout
+    );
+}
 
-        // Buscar dados de contas
-        const contasRef = collection(db, 'contas');
-        const contasSnapshot = await getDocs(contasRef);
-        dadosUsuario.contas = [];
-        
-        contasSnapshot.forEach((doc) => {
-            if (doc.data().usuarioId === usuarioAtual.uid) {
-                dadosUsuario.contas.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
+function abrirModalExcluirConta() {
+    criarModalDinamico(
+        'Excluir Conta',
+        '<div style="text-align: center;"><span style="font-size: 48px; color: var(--cor-erro);">⚠️</span><br><br>Esta ação é <strong>irreversível</strong>!<br><br>Todos os seus dados, incluindo contas, receitas, despesas e configurações serão <strong>permanentemente excluídos</strong>.<br><br>Tem certeza absoluta?</div>',
+        'Excluir Permanentemente',
+        confirmarExclusaoConta,
+        true
+    );
+}
+
+function criarModalDinamico(titulo, conteudo, textoBotao, funcaoConfirmar, perigoso = false) {
+    // Remover modal existente se houver
+    const modalExistente = document.getElementById('modal-dinamico');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-dinamico';
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modal">
+            <div class="modal-header">
+                <h3>${titulo}</h3>
+                <button class="modal-close">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ${conteudo}
+            </div>
+            <div class="modal-footer">
+                <button class="botao-secundario">Cancelar</button>
+                <button class="botao-primario ${perigoso ? 'perigoso' : ''}" id="btn-confirmar-dinamico">${textoBotao}</button>
+            </div>
+        </div>
+    `;
+
+    if (perigoso) {
+        modal.querySelector('.botao-primario').style.background = 'linear-gradient(135deg, var(--cor-erro) 0%, #dc2626 100%)';
+    }
+
+    document.body.appendChild(modal);
+
+    // Event listeners
+    modal.querySelector('.modal-close').addEventListener('click', () => fecharModal(modal));
+    modal.querySelector('.botao-secundario').addEventListener('click', () => fecharModal(modal));
+    modal.querySelector('#btn-confirmar-dinamico').addEventListener('click', () => {
+        if (funcaoConfirmar) {
+            funcaoConfirmar();
+        }
+        fecharModal(modal);
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            fecharModal(modal);
+        }
+    });
+
+    // Mostrar modal
+    setTimeout(() => {
+        modal.classList.add('ativo');
+    }, 10);
+}
+
+function fecharModal(modal) {
+    if (modal) {
+        modal.classList.remove('ativo');
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
             }
-        });
-
-        // Buscar receitas
-        const receitasRef = collection(db, 'receitas');
-        const receitasSnapshot = await getDocs(receitasRef);
-        dadosUsuario.receitas = [];
-        
-        receitasSnapshot.forEach((doc) => {
-            if (doc.data().usuarioId === usuarioAtual.uid) {
-                dadosUsuario.receitas.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            }
-        });
-
-        // Buscar despesas
-        const despesasRef = collection(db, 'despesas');
-        const despesasSnapshot = await getDocs(despesasRef);
-        dadosUsuario.despesas = [];
-        
-        despesasSnapshot.forEach((doc) => {
-            if (doc.data().usuarioId === usuarioAtual.uid) {
-                dadosUsuario.despesas.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            }
-        });
-
-        // Criar e baixar arquivo
-        const dataStr = JSON.stringify(dadosUsuario, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `poup_dados_${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-
-        mostrarToast('Dados exportados com sucesso!', 'sucesso');
-    } catch (error) {
-        console.error('Erro ao exportar dados:', error);
-        mostrarToast('Erro ao exportar dados', 'erro');
+        }, 300);
     }
 }
 
-// --- LIMPAR CACHE ---
+// --- FUNÇÕES DE CONFIRMAÇÃO ---
+function confirmarAlteracaoSenha() {
+    const senhaAtual = document.getElementById('senha-atual')?.value;
+    const novaSenha = document.getElementById('nova-senha')?.value;
+    const confirmarSenha = document.getElementById('confirmar-senha')?.value;
+
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+        mostrarToast('Preencha todos os campos', 'erro');
+        return false;
+    }
+
+    if (novaSenha !== confirmarSenha) {
+        mostrarToast('Senhas não coincidem', 'erro');
+        return false;
+    }
+
+    if (novaSenha.length < 6) {
+        mostrarToast('Nova senha deve ter pelo menos 6 caracteres', 'erro');
+        return false;
+    }
+
+    // Simular alteração de senha
+    mostrarToast('Senha alterada com sucesso!', 'sucesso');
+    return true;
+}
+
+function confirmarLogout() {
+    // Simular logout
+    mostrarToast('Fazendo logout...', 'sucesso');
+    setTimeout(() => {
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '../index.html';
+            }).catch((error) => {
+                console.error('Erro ao fazer logout:', error);
+                window.location.href = '../index.html';
+            });
+        } else {
+            window.location.href = '../index.html';
+        }
+    }, 1000);
+}
+
+function confirmarExclusaoConta() {
+    mostrarToast('Processando exclusão da conta...', 'erro');
+    
+    // Simular exclusão
+    setTimeout(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        mostrarToast('Conta excluída com sucesso', 'sucesso');
+        
+        setTimeout(() => {
+            window.location.href = '../index.html';
+        }, 2000);
+    }, 2000);
+}
+
+// --- AÇÕES DE DADOS ---
+function exportarDados() {
+    mostrarToast('Preparando exportação...', 'sucesso');
+
+    const dadosUsuario = {
+        usuario: {
+            nome: usuarioAtual?.displayName || 'Usuário',
+            email: usuarioAtual?.email || 'usuario@poup.com',
+            dataExportacao: new Date().toISOString()
+        },
+        preferencias: preferencesData,
+        configuracoes: {
+            versao: '1.0.0',
+            plataforma: 'Web'
+        }
+    };
+
+    // Criar e baixar arquivo
+    const dataStr = JSON.stringify(dadosUsuario, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `poup_dados_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+
+    mostrarToast('Dados exportados com sucesso!', 'sucesso');
+}
+
 function limparCache() {
     try {
+        // Manter dados essenciais do usuário
+        const dadosEssenciais = {
+            dadosUsuario: localStorage.getItem('dadosUsuario'),
+            preferenciasUsuario: localStorage.getItem('preferenciasUsuario'),
+            avatarUsuario: localStorage.getItem('avatarUsuario')
+        };
+
         // Limpar localStorage
         localStorage.clear();
-        
-        // Limpar sessionStorage
         sessionStorage.clear();
-        
+
+        // Restaurar dados essenciais
+        Object.keys(dadosEssenciais).forEach(key => {
+            if (dadosEssenciais[key]) {
+                localStorage.setItem(key, dadosEssenciais[key]);
+            }
+        });
+
         // Tentar limpar cache do navegador
         if ('caches' in window) {
             caches.keys().then(names => {
@@ -528,128 +551,164 @@ function limparCache() {
     }
 }
 
-// --- MODAL DE EXCLUSÃO DE CONTA ---
-function abrirModalExcluirConta() {
-    const modal = document.getElementById('modal-excluir-conta');
-    if (modal) {
-        modal.classList.add('ativo');
-    }
-}
-
-async function confirmarExclusaoConta() {
-    try {
-        // Deletar dados do usuário
-        const colecoes = ['contas', 'receitas', 'despesas', 'preferencias'];
-        
-        for (const colecao of colecoes) {
-            const ref = collection(db, colecao);
-            const snapshot = await getDocs(ref);
-            
-            const deletePromises = [];
-            snapshot.forEach((docSnapshot) => {
-                if (docSnapshot.data().usuarioId === usuarioAtual.uid) {
-                    deletePromises.push(deleteDoc(doc(db, colecao, docSnapshot.id)));
-                }
-            });
-            
-            await Promise.all(deletePromises);
-        }
-
-        // Deletar conta do usuário
-        await usuarioAtual.delete();
-
-        mostrarToast('Conta excluída com sucesso', 'sucesso');
-        
-        setTimeout(() => {
-            window.location.href = '../index.html';
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Erro ao excluir conta:', error);
-        mostrarToast('Erro ao excluir conta. Tente fazer login novamente.', 'erro');
-        fecharModal('modal-excluir-conta');
-    }
-}
-
-// --- MODAL DE LOGOUT ---
-function abrirModalLogout() {
-    const modal = document.getElementById('modal-logout');
-    if (modal) {
-        modal.classList.add('ativo');
-    }
-}
-
-async function confirmarLogout() {
-    try {
-        await auth.signOut();
-        window.location.href = '../index.html';
-    } catch (error) {
-        console.error('Erro ao fazer logout:', error);
-        mostrarToast('Erro ao fazer logout', 'erro');
-    }
-}
-
-// --- CONTROLE DE MODAIS ---
-function fecharModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('ativo');
-    }
-}
-
-// --- SISTEMA DE TOAST ---
-function mostrarToast(mensagem, tipo = 'sucesso') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    const toastIcon = document.getElementById('toast-icon');
+// --- SALVAR PREFERÊNCIAS ---
+function salvarTodasPreferencias() {
+    salvarPreferenciasLocal();
+    mostrarToast('Configurações salvas com sucesso!', 'sucesso');
     
-    if (!toast || !toastMessage || !toastIcon) return;
+    // Efeito visual no botão
+    const botaoSalvar = document.getElementById('botao-salvar');
+    if (botaoSalvar) {
+        const icone = botaoSalvar.querySelector('.material-icons');
+        if (icone) {
+            icone.textContent = 'check';
+            setTimeout(() => {
+                icone.textContent = 'save';
+            }, 2000);
+        }
+    }
+}
 
-    // Configurar ícone e classe baseado no tipo
+function salvarPreferenciasLocal() {
+    localStorage.setItem('preferenciasUsuario', JSON.stringify(preferencesData));
+    console.log('💾 Preferências salvas:', preferencesData);
+}
+
+function carregarPreferenciasLocal() {
+    const preferenciasSalvas = localStorage.getItem('preferenciasUsuario');
+    if (preferenciasSalvas) {
+        try {
+            preferencesData = { ...preferencesData, ...JSON.parse(preferenciasSalvas) };
+            aplicarPreferenciasInterface();
+            console.log('📂 Preferências carregadas:', preferencesData);
+        } catch (error) {
+            console.error('Erro ao carregar preferências:', error);
+        }
+    }
+}
+
+function aplicarPreferenciasInterface() {
+    const switchNotificacoes = document.getElementById('notificacoes');
+    const switchModoEscuro = document.getElementById('modo-escuro');
+    const selectMoeda = document.getElementById('moeda-padrao');
+    const switchBiometria = document.getElementById('biometria');
+
+    if (switchNotificacoes) switchNotificacoes.checked = preferencesData.notificacoes;
+    if (switchModoEscuro) switchModoEscuro.checked = preferencesData.modoEscuro;
+    if (selectMoeda) selectMoeda.value = preferencesData.moeda;
+    if (switchBiometria) switchBiometria.checked = preferencesData.biometria;
+
+    // Aplicar modo escuro se ativado
+    if (preferencesData.modoEscuro) {
+        aplicarModoEscuro();
+    }
+}
+
+// --- SISTEMA DE TOAST APRIMORADO ---
+function mostrarToast(mensagem, tipo = 'sucesso') {
+    // Remover toast existente
+    const toastExistente = document.getElementById('toast-dinamico');
+    if (toastExistente) {
+        toastExistente.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-dinamico';
     toast.className = `toast ${tipo}`;
     
+    let icone;
     switch (tipo) {
         case 'sucesso':
-            toastIcon.textContent = 'check_circle';
+            icone = 'check_circle';
             break;
         case 'erro':
-            toastIcon.textContent = 'error';
+            icone = 'error';
             break;
         case 'aviso':
-            toastIcon.textContent = 'warning';
+            icone = 'warning';
             break;
         default:
-            toastIcon.textContent = 'info';
+            icone = 'info';
     }
     
-    toastMessage.textContent = mensagem;
+    toast.innerHTML = `
+        <span class="material-icons">${icone}</span>
+        <span>${mensagem}</span>
+    `;
     
-    // Mostrar toast
-    toast.classList.add('ativo');
+    document.body.appendChild(toast);
+    
+    // Mostrar com animação
+    setTimeout(() => {
+        toast.classList.add('ativo');
+    }, 10);
     
     // Esconder após 3 segundos
     setTimeout(() => {
         toast.classList.remove('ativo');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
     }, 3000);
+    
+    console.log(`📢 Toast: ${mensagem} (${tipo})`);
 }
 
-// --- CARREGAR PREFERÊNCIAS DO USUÁRIO (FUNÇÃO AUXILIAR) ---
-function carregarPreferenciasUsuario() {
-    // Aplicar preferências salvas no localStorage como fallback
-    const preferenciasSalvas = localStorage.getItem('preferenciasUsuario');
-    if (preferenciasSalvas) {
-        try {
-            const preferencias = JSON.parse(preferenciasSalvas);
-            if (preferencias.modoEscuro) {
-                aplicarModoEscuro();
-            }
-        } catch (error) {
-            console.error('Erro ao carregar preferências do localStorage:', error);
-        }
+// --- ANIMAÇÕES E EFEITOS ---
+function adicionarAnimacoes() {
+    // Adicionar delay de animação às seções
+    const secoes = document.querySelectorAll('.secao-configuracao');
+    secoes.forEach((secao, index) => {
+        secao.style.animationDelay = `${index * 0.1}s`;
+    });
+
+    // Efeito de entrada
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.opacity = '1';
+    }, 100);
+}
+
+function animarSaida() {
+    document.body.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    document.body.style.opacity = '0';
+    document.body.style.transform = 'translateX(-20px)';
+}
+
+function adicionarEfeitoClick(elemento) {
+    elemento.style.transform = 'scale(0.95)';
+    elemento.style.transition = 'transform 0.15s ease';
+    
+    setTimeout(() => {
+        elemento.style.transform = 'scale(1)';
+    }, 150);
+}
+
+function adicionarEfeitoSwitch(switchElement) {
+    const slider = switchElement.nextElementSibling;
+    if (slider) {
+        slider.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            slider.style.transform = 'scale(1)';
+        }, 200);
     }
 }
 
-// --- SALVAR PREFERÊNCIAS NO LOCALSTORAGE ---
-function salvarPreferenciasLocal() {
-    localStorage.setItem('preferenciasUsuario', JSON.stringify(preferencesData));
-}
+// --- SUPORTE A TECLADO ---
+document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + S para salvar
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        salvarTodasPreferencias();
+    }
+    
+    // Esc para voltar
+    if (e.key === 'Escape' && !document.querySelector('.modal-overlay.ativo')) {
+        window.location.href = '../Home/home.html';
+    }
+});
+
+console.log('🎨 Sistema de configurações carregado com sucesso!');

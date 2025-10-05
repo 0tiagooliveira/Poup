@@ -54,20 +54,20 @@
         </div>
 
         <main class="conteudo-principal">
-            <section class="secao-resumo">
-                <div class="card-resumo">
-                    <span class="material-icons-round resumo-icone">lock_open</span>
-                    <div class="card-resumo-content">
-                        <span class="titulo-resumo">Total pendente</span>
-                        <span class="valor-resumo" id="total-previsto">R$ 0,00</span>
+            <section class="secao-resumo compacta">
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">lock_open</span>
+                        <span>Total pendente</span>
                     </div>
+                    <span class="resumo-valor" id="total-previsto">R$ 0,00</span>
                 </div>
-                <div class="card-resumo">
-                    <span class="material-icons-round resumo-icone">archive</span>
-                    <div class="card-resumo-content">
-                        <span class="titulo-resumo">Total pago</span>
-                        <span class="valor-resumo" id="total-recebido">R$ 0,00</span>
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">archive</span>
+                        <span>Total pago</span>
                     </div>
+                    <span class="resumo-valor" id="total-recebido">R$ 0,00</span>
                 </div>
             </section>
 
@@ -92,42 +92,11 @@
                 <span class="material-icons-round">bar_chart</span>
                 <span>Relatórios</span>
             </a>
-            <a href="../Configurações/Configuracoes.html" class="item-navegacao">
+            <a href="#" class="item-navegacao">
                 <span class="material-icons-round">settings</span>
                 <span>Configurações</span>
             </a>
         </nav>
-
-    <!-- Menu de Ações Flutuante -->
-    <div class="menu-acoes" id="menu-acoes" style="display: none;">
-        <div class="overlay-menu" id="overlay-menu"></div>
-        <div class="acoes-container">
-            <a href="../Nova-Receita/Nova-Receita.html" class="acao-item" data-action="receita">
-                <div class="acao-icone receita">
-                    <span class="material-icons-round">trending_up</span>
-                </div>
-                <span class="acao-texto">Receita</span>
-            </a>
-            <a href="../Nova-Despesa/Nova-Despesa.html" class="acao-item" data-action="despesa">
-                <div class="acao-icone despesa">
-                    <span class="material-icons-round">trending_down</span>
-                </div>
-                <span class="acao-texto">Despesa</span>
-            </a>
-            <a href="../Nova-conta/Nova-conta.html" class="acao-item" data-action="conta">
-                <div class="acao-icone conta">
-                    <span class="material-icons-round">account_balance_wallet</span>
-                </div>
-                <span class="acao-texto">Nova Conta</span>
-            </a>
-            <a href="#" class="acao-item" data-action="transferencia">
-                <div class="acao-icone transferencia">
-                    <span class="material-icons-round">swap_horiz</span>
-                </div>
-                <span class="acao-texto">Transferência</span>
-            </a>
-        </div>
-    </div>
     </div>
 
     <div class="popup-overlay" id="popup-confirmacao" style="display: none;">
@@ -352,7 +321,7 @@
                     <span class="material-icons">visibility_off</span>
                     <div class="detalhe-info">
                         <span class="detalhe-label">Ignorar despesa</span>
-                        <div class="toggle-switch" id="toggle-ignorar">
+                        <div class="toggle-switch" id="toggle-ignorar-despesa">
                             <input type="checkbox" id="ignorar-despesa" />
                             <label for="ignorar-despesa" class="slider"></label>
                         </div>

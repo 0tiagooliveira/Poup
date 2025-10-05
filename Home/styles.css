@@ -1,5 +1,15 @@
 :root {
     --primaria: #21C25E;
+    /* Cores dos bancos (adicionadas para bolinhas das contas) */
+    --nubank: #820ad1;
+    --itau: #EC7000;
+    --bradesco: #CC092F;
+    --santander: #EC0000;
+    --caixa: #0070AF;
+    --banco-brasil: #FFEF38;
+    --picpay: #21C25E;
+    --carteira: #4CAF50;
+    --outros: #6B7280;
     --primaria-suave: #e8f5ee;
     --primaria-escura: #1a9d4d;
     --secundaria: #21C25E;
@@ -2225,33 +2235,34 @@ a.botao-primario {
     margin-top: 1px;
 }
 
-/* Força o estilo dos ícones SVG das contas para sobrescrever qualquer inline style */
-.conta-ux-icone.conta-ux-icone-svg,
-.conta-ux-icone.conta-ux-icone-svg[style],
-.conta-ux-icone.conta-ux-icone-svg img {
-  background: var(--icone-svg-bg, #21C25E) !important;
-  background-image: none !important;
-  border: none !important;
-  border-radius: 50% !important;
-  box-shadow: 0 4px 16px rgba(33,194,94,0.10) !important;
-  width: 54px !important;
-  height: 54px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+/* Estilo base dos ícones SVG das contas (não força cor se data-color estiver definido) */
+.conta-ux-icone.conta-ux-icone-svg {
+    border-radius: 50%;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    background: var(--icone-svg-bg, transparent);
 }
+/* Quando NÃO houver atributo data-color nem style inline de background, aplica verde padrão */
+.conta-ux-icone.conta-ux-icone-svg:not([data-color]) {
+    background: var(--icone-svg-bg, #21C25E);
+}
+/* Sempre que data-color existir, usa o estilo inline definido pelo JS */
 .conta-ux-icone.conta-ux-icone-svg img {
-  width: 32px !important;
-  height: 32px !important;
-  object-fit: contain !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
 }
 
 /* RESPONSIVO */

@@ -38,11 +38,6 @@ const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
     initializeUI();
-    
-    // Inicializar menu de ações após um pequeno delay
-    setTimeout(() => {
-        window.menuAcoes = new MenuAcoes();
-    }, 100);
 });
 
 function initializeAuth() {
@@ -60,6 +55,14 @@ function initializeAuth() {
 function initializeUI() {
     document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
     document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+    
+    // Listener para o botão adicionar da barra de navegação
+    const botaoAdicionar = document.querySelector('.botao-adicionar');
+    if (botaoAdicionar) {
+        botaoAdicionar.addEventListener('click', () => {
+            window.location.href = '../Nova-Receita/Nova-Receita.html';
+        });
+    }
     
     // Listeners do popup de exclusão
     document.getElementById('popup-cancelar').addEventListener('click', () => {
@@ -113,6 +116,23 @@ function setupBusca() {
 }
 
 let todasReceitas = []; // Armazenar todas as receitas para busca
+let mapaContas = {}; // cache id -> nome da conta
+
+// Carrega contas do usuário uma única vez para mapear IDs em nomes
+async function carregarContasUsuario() {
+    if (!currentUser) return;
+    try {
+        const snap = await db.collection('contas').where('userId', '==', currentUser.uid).get();
+        mapaContas = {};
+        snap.forEach(doc => {
+            const data = doc.data() || {};
+            const nome = data.nome || data.descricao || data.banco || data.nomeConta || 'Conta';
+            mapaContas[doc.id] = nome;
+        });
+    } catch (e) {
+        console.warn('Não foi possível carregar contas para mapear nomes:', e);
+    }
+}
 
 function buscarReceitas(termo) {
     if (!termo.trim()) {
@@ -216,6 +236,11 @@ async function loadReceitas(filtros = null) {
     try {
         const firstDay = new Date(currentYear, currentMonth, 1);
         const lastDay = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+        // Garantir que temos o mapa de contas carregado
+        if (Object.keys(mapaContas).length === 0) {
+            await carregarContasUsuario();
+        }
 
         const querySnapshot = await db.collection('receitas').where('userId', '==', currentUser.uid).get();
         
@@ -443,37 +468,39 @@ function createReceitaItem(receita) {
         console.log(`Usando mapeamento padrão: ${icon} / ${background} para categoria: ${categoriaKey}`);
     }
     
-    // Mostrar categoria e conta em uma linha separados por "|"
+    // Mostrar categoria e conta em linhas separadas
     const categoria = receita.categoria || '';
+    // A conta pode ter sido salva como 'carteira' (ID) ou como objeto 'conta'
     let conta = '';
-    if (typeof receita.conta === 'object' && receita.conta !== null) {
+    if (receita.conta && typeof receita.conta === 'object') {
         conta = receita.conta.nome || receita.conta.nomeExibicao || '';
-    } else {
-        conta = receita.conta || '';
+    } else if (receita.carteira && mapaContas[receita.carteira]) {
+        conta = mapaContas[receita.carteira];
+    } else if (typeof receita.conta === 'string') {
+        conta = receita.conta;
     }
-    
-    // Criar string com categoria | conta
-    const detalhes = [categoria, conta].filter(Boolean).join(' | ');
 
-    // Verificar se é receita automática
-    const isAutomatica = receita.origem === 'automatica';
-    const indicadorAutomatico = isAutomatica ? '<span class="indicador-automatico" title="Receita gerada automaticamente">🔄</span>' : '';
-
+    const iconeBanco = obterIconeBanco(conta);
+    const statusClasse = receita.recebido ? 'badge-status-ok' : 'badge-status-pendente';
+    const statusIcone = receita.recebido ? 'check_circle' : 'radio_button_unchecked';
     item.innerHTML = `
         <div class="receita-icone" style="background-color: ${background};">
             <span class="material-icons">${icon}</span>
         </div>
         <div class="receita-conteudo">
-            <span class="receita-titulo">${receita.descricao} ${indicadorAutomatico}</span>
+            <span class="receita-titulo">${receita.descricao}</span>
             <div class="receita-detalhes">
-                ${detalhes ? `<span class="detalhes-linha">${detalhes}</span>` : ''}
+                ${categoria ? `<span class="detalhes-categoria">${categoria}</span>` : ''}
             </div>
         </div>
         <div class="receita-acoes">
             <span class="receita-valor">${formatCurrency(parseValueToNumber(receita.valor))}</span>
-            <button class="botao-acao botao-status ${receita.recebido ? 'concluido' : ''}" onclick="toggleReceita('${receita.id}', ${!receita.recebido})">
-                <span class="material-icons">check_circle</span>
-            </button>
+            <div class="receita-badges">
+                ${conta ? `<span class="badge-circular badge-conta">${iconeBanco}</span>` : ''}
+                <button class="badge-circular badge-status ${statusClasse}" onclick="event.stopPropagation(); toggleReceita('${receita.id}', ${!receita.recebido})">
+                    <span class="material-icons">${statusIcone}</span>
+                </button>
+            </div>
         </div>
     `;
 
@@ -562,51 +589,36 @@ function updateTotals(receitas) {
     console.log('=== ATUALIZANDO TOTAIS ===');
     console.log('Receitas recebidas:', receitas);
     console.log('Quantidade de receitas:', receitas.length);
-    
-    // Calcular total recebido (apenas receitas recebidas)
-    const receitasRecebidas = receitas.filter(r => r.recebido === true);
-    console.log('Receitas recebidas filtradas:', receitasRecebidas.length);
-    
-    const totalRecebido = receitasRecebidas.reduce((sum, r) => {
+    // Regra: Recebido se recebido === true OU concluida === true. Pendente caso contrário.
+    let totalRecebido = 0;
+    let totalPendente = 0;
+    receitas.forEach(r => {
         const valor = parseValueToNumber(r.valor);
-        console.log(`Receita recebida ${r.descricao}: valor original=${r.valor}, convertido=${valor}`);
-        return sum + valor;
-    }, 0);
+        const efetivada = (r.recebido === true) || (r.concluida === true);
+        if (efetivada) {
+            totalRecebido += valor;
+        } else {
+            totalPendente += valor;
+        }
+    });
 
-    // Calcular total pendente (apenas receitas NÃO recebidas)
-    const receitasPendentes = receitas.filter(r => r.recebido !== true);
-    console.log('Receitas pendentes filtradas:', receitasPendentes.length);
-    
-    const totalPendente = receitasPendentes.reduce((sum, r) => {
-        const valor = parseValueToNumber(r.valor);
-        console.log(`Receita pendente ${r.descricao}: valor original=${r.valor}, convertido=${valor}`);
-        return sum + valor;
-    }, 0);
+    console.log('[Totals] Recebido:', totalRecebido, 'Pendente:', totalPendente);
 
-    console.log('Total recebido calculado:', totalRecebido);
-    console.log('Total pendente calculado:', totalPendente);
-    
     const recebidoFormatted = formatCurrency(totalRecebido);
     const pendenteFormatted = formatCurrency(totalPendente);
-    
-    console.log('Recebido formatado:', recebidoFormatted);
-    console.log('Pendente formatado:', pendenteFormatted);
 
     const recebidoElement = document.getElementById('total-recebido');
-    const pendenteElement = document.getElementById('total-previsto'); // Este é o elemento para pendente
-    
+    const pendenteElement = document.getElementById('total-previsto') || document.getElementById('total-pendente');
+
     if (recebidoElement) {
         recebidoElement.textContent = recebidoFormatted;
-        console.log('Elemento total-recebido atualizado');
     } else {
-        console.error('Elemento total-recebido não encontrado');
+        console.warn('[Totals] Elemento total-recebido não encontrado');
     }
-    
     if (pendenteElement) {
         pendenteElement.textContent = pendenteFormatted;
-        console.log('Elemento total-pendente atualizado');
     } else {
-        console.error('Elemento total-previsto (pendente) não encontrado');
+        console.warn('[Totals] Elemento total-previsto/total-pendente não encontrado');
     }
 }
 
@@ -653,6 +665,20 @@ async function toggleReceita(receitaId, novoStatus) {
 // Tornar funções globais para onclick
 window.toggleReceita = toggleReceita;
 
+// Retorna ícone (SVG ou material) para a conta baseada no nome
+function obterIconeBanco(nomeConta = '') {
+    const n = (nomeConta || '').toLowerCase();
+    if (!n) return '<span class="material-icons">account_balance</span>';
+    if (n.includes('nubank')) return '<img src="../Icon/Nubank.svg" alt="Nubank" />';
+    if (n.includes('bradesco')) return '<img src="../Icon/bradesco.svg" alt="Bradesco" />';
+    if (n.includes('itau') || n.includes('itaú')) return '<img src="../Icon/itau.svg" alt="Itaú" />';
+    if (n.includes('santander')) return '<img src="../Icon/santander.svg" alt="Santander" />';
+    if (n.includes('caixa')) return '<img src="../Icon/caixa.svg" alt="Caixa" />';
+    if (n.includes('banco do brasil') || n.includes('bb')) return '<img src="../Icon/banco-do-brasil.svg" alt="Banco do Brasil" />';
+    if (n.includes('picpay')) return '<img src="../Icon/picpay.svg" alt="PicPay" />';
+    return '<span class="material-icons">account_balance</span>';
+}
+
 // === FUNÇÕES DO MODAL DE DETALHES ===
 let receitaAtual = null;
 
@@ -664,29 +690,18 @@ function abrirModalDetalhes(receita) {
     document.getElementById('modal-valor').textContent = formatCurrency(parseValueToNumber(receita.valor));
     document.getElementById('modal-data').textContent = formatarData(receita.data);
     
-    // Exibir nome da conta corretamente - verificar várias propriedades possíveis
+    // Exibir nome da conta corretamente (considerando que pode estar apenas o ID em 'carteira')
     let nomeContaExibicao = '';
-    if (typeof receita.conta === 'object' && receita.conta !== null) {
-        nomeContaExibicao = receita.conta.nome || 
-                           receita.conta.nomeExibicao || 
-                           receita.conta.banco || 
-                           receita.conta.nomeCompleto ||
-                           receita.conta.nomeBanco ||
-                           receita.conta.id ||
-                           'Conta não informada';
-    } else if (typeof receita.carteira === 'object' && receita.carteira !== null) {
-        // Tentar usar carteira se conta não estiver disponível
-        nomeContaExibicao = receita.carteira.nome || 
-                           receita.carteira.nomeExibicao || 
-                           receita.carteira.banco || 
-                           receita.carteira.nomeCompleto ||
-                           receita.carteira.nomeBanco ||
-                           receita.carteira.id ||
-                           'Conta não informada';
-    } else {
-        nomeContaExibicao = receita.conta || receita.carteira || 'Conta não informada';
+    if (receita.conta && typeof receita.conta === 'object') {
+        nomeContaExibicao = receita.conta.nome || receita.conta.nomeExibicao || '';
+    } else if (receita.carteira && mapaContas[receita.carteira]) {
+        nomeContaExibicao = mapaContas[receita.carteira];
+    } else if (typeof receita.conta === 'string') {
+        nomeContaExibicao = receita.conta;
     }
-    document.getElementById('modal-conta').textContent = nomeContaExibicao;
+    if (!nomeContaExibicao) nomeContaExibicao = 'Conta não informada';
+    const contaEl = document.getElementById('modal-conta');
+    if (contaEl) contaEl.textContent = nomeContaExibicao;
     
     document.getElementById('modal-categoria').textContent = receita.categoria || 'Sem categoria';
     document.getElementById('modal-tags').textContent = receita.tags || 'Nenhuma tag';
@@ -714,39 +729,40 @@ function abrirModalDetalhes(receita) {
     // Configurar ícone da conta baseado na conta real
     const contaIcone = document.getElementById('modal-conta-icone');
     let contaNome = '';
-    
-    // Verificar se receita.conta é um objeto ou string
-    if (typeof receita.conta === 'object' && receita.conta !== null) {
+    if (receita.conta && typeof receita.conta === 'object') {
         contaNome = (receita.conta.nome || receita.conta.nomeExibicao || '').toLowerCase();
-    } else {
-        contaNome = (receita.conta || '').toLowerCase();
+    } else if (receita.carteira && mapaContas[receita.carteira]) {
+        contaNome = mapaContas[receita.carteira].toLowerCase();
+    } else if (typeof receita.conta === 'string') {
+        contaNome = receita.conta.toLowerCase();
     }
     
-    if (contaNome.includes('nubank')) {
-        contaIcone.style.background = '#8b5cf6'; // Roxo do Nubank
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('bradesco')) {
-        contaIcone.style.background = '#e53e3e'; // Vermelho do Bradesco
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('itau') || contaNome.includes('itaú')) {
-        contaIcone.style.background = '#ff8c00'; // Laranja do Itaú
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('santander')) {
-        contaIcone.style.background = '#e53e3e'; // Vermelho do Santander
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('caixa')) {
-        contaIcone.style.background = '#0066cc'; // Azul da Caixa
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('banco do brasil') || contaNome.includes('bb')) {
-        contaIcone.style.background = '#ffdd00'; // Amarelo do BB
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('picpay')) {
-        contaIcone.style.background = '#21c25e'; // Verde do PicPay
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else {
-        contaIcone.style.background = '#64748b'; // Cinza padrão
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    }
+        // Mapeamento banco -> { cor, svg }
+        const bancos = [
+            { chave:['nubank'], cor:'#8b5cf6', svg:'../Icon/Nubank.svg' },
+            { chave:['bradesco'], cor:'#e53e3e', svg:'../Icon/bradesco.svg' },
+            { chave:['itau','itaú'], cor:'#ff8c00', svg:'../Icon/itau.svg' },
+            { chave:['santander'], cor:'#e53e3e', svg:'../Icon/santander.svg' },
+            { chave:['caixa'], cor:'#0066cc', svg:'../Icon/caixa.svg' },
+            { chave:['banco do brasil','bb'], cor:'#ffdd00', svg:'../Icon/banco-do-brasil.svg' },
+            { chave:['picpay'], cor:'#21c25e', svg:'../Icon/picpay.svg' }
+        ];
+
+        let aplicado = false;
+        if (contaIcone) {
+            for (const b of bancos) {
+                if (b.chave.some(k => contaNome.includes(k))) {
+                    contaIcone.style.background = b.cor;
+                    contaIcone.innerHTML = `<img src="${b.svg}" alt="Conta" style="width:16px;height:16px;object-fit:contain;" />`;
+                    aplicado = true;
+                    break;
+                }
+            }
+            if (!aplicado) {
+                contaIcone.style.background = '#64748b';
+                contaIcone.innerHTML = '<span class="material-icons" style="font-size:16px;">account_balance</span>';
+            }
+        }
     
     // Configurar status do botão "Recebido"
     const statusRecebido = document.getElementById('status-recebido');
@@ -1045,92 +1061,4 @@ function aplicarFiltrosReceitas() {
     
     // Mostrar mensagem de sucesso
     mostrarPopup('Filtros aplicados com sucesso!');
-}
-
-// Menu de Ações Flutuante
-class MenuAcoes {
-    constructor() {
-        this.menuElement = document.getElementById('menu-acoes');
-        this.overlayElement = document.getElementById('overlay-menu');
-        this.botaoAdicionar = document.querySelector('.botao-adicionar');
-        this.isMenuAberto = false;
-        this.init();
-    }
-
-    init() {
-        if (!this.menuElement || !this.botaoAdicionar) {
-            console.warn('Elementos do menu de ações não encontrados');
-            console.log('menuElement:', this.menuElement);
-            console.log('botaoAdicionar:', this.botaoAdicionar);
-            return;
-        }
-
-        console.log('Inicializando menu de ações na Lista de Receitas');
-
-        // Event listener para o botão adicionar
-        this.botaoAdicionar.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Botão + clicado - abrindo menu de ações');
-            this.toggleMenu();
-        });
-
-        // Event listener para o overlay (fechar ao clicar fora)
-        this.overlayElement?.addEventListener('click', () => {
-            this.fecharMenu();
-        });
-
-        // Event listener para ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isMenuAberto) {
-                this.fecharMenu();
-            }
-        });
-
-        // Event listeners para as ações
-        const acaoItems = this.menuElement?.querySelectorAll('.acao-item');
-        acaoItems?.forEach(item => {
-            item.addEventListener('click', (e) => {
-                // Permitir navegação normal
-                this.fecharMenu();
-            });
-        });
-    }
-
-    toggleMenu() {
-        if (this.isMenuAberto) {
-            this.fecharMenu();
-        } else {
-            this.abrirMenu();
-        }
-    }
-
-    abrirMenu() {
-        this.isMenuAberto = true;
-        this.menuElement.style.display = 'block';
-        // Pequeno delay para permitir a transição
-        setTimeout(() => {
-            this.menuElement.classList.add('ativo');
-        }, 10);
-        
-        // Bloquear scroll do body
-        document.body.style.overflow = 'hidden';
-        
-        console.log('Menu de ações aberto');
-    }
-
-    fecharMenu() {
-        this.isMenuAberto = false;
-        this.menuElement.classList.remove('ativo');
-        
-        // Aguardar animação antes de esconder
-        setTimeout(() => {
-            this.menuElement.style.display = 'none';
-        }, 300);
-        
-        // Restaurar scroll do body
-        document.body.style.overflow = '';
-        
-        console.log('Menu de ações fechado');
-    }
 }

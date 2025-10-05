@@ -1,16 +1,23 @@
 /* --- CONFIGURAÇÕES GLOBAIS E VARIÁVEIS --- */
 :root {
-    --cor-primaria: #dc2626;
-    --cor-fundo-app: #f8fafc;
-    --cor-fundo-conteudo: #ffffff;
-    --cor-texto-principal: #1e293b;
-    --cor-texto-secundario: #64748b;
-    --cor-texto-branco: #ffffff;
-    --cor-borda: #e2e8f0;
-    --cor-erro: #ef4444;
-
-    --sombra-padrao: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
-
+    --cor-primaria: #D32F2F;
+    --cor-texto: #333333;
+    --cor-texto-secundario: #666666;
+    --cor-fundo: #FFFFFF;
+    --cor-borda: #E0E0E0;
+    --cor-icone: #757575;
+    --cor-destaque: #D32F2F;
+    --cor-erro: #D32F2F;
+    --cor-sucesso: #D32F2F;
+    --sombra: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --sombra-calendario: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --sombra-elevada: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Variáveis anteriores mapeadas para manter compatibilidade */
+    --cor-fundo-app: var(--cor-fundo);
+    --cor-fundo-conteudo: var(--cor-fundo);
+    --cor-texto-principal: var(--cor-texto);
+    --cor-texto-branco: #FFFFFF;
+    --sombra-padrao: var(--sombra);
     --font-principal: 'Inter', sans-serif;
     --font-destaque: 'Poppins', sans-serif;
 }
@@ -176,10 +183,10 @@ body[cz-shortcut-listen="true"] {
 /* --- SEÇÃO DE RESUMO --- */
 .secao-resumo {
     display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 48px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
 }
 
 .card-resumo {
@@ -189,6 +196,21 @@ body[cz-shortcut-listen="true"] {
     text-align: left;
     min-width: 140px;
 }
+
+/* Compact new style */
+.secao-resumo.compacta { 
+    padding: 4px 0 0; 
+    justify-content: center; 
+    gap: 56px; 
+    width: fit-content; 
+    margin: 0 auto 12px; 
+    border: none; 
+}
+
+.resumo-bloco { display:flex; flex-direction:column; gap:2px; }
+.resumo-label { display:flex; align-items:center; gap:6px; font-size:0.72rem; letter-spacing:.4px; color: var(--cor-texto-secundario); font-weight:500; }
+.icone-mini { font-size:16px; opacity:.65; }
+.resumo-valor { font-family: var(--font-destaque); font-size:0.95rem; font-weight:600; color: var(--cor-primaria); }
 
 .card-resumo-header {
     display: flex;
@@ -245,14 +267,14 @@ body[cz-shortcut-listen="true"] {
     font-weight: 600;
 }
 
-.despesa-item {
+.receita-item, .despesa-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 0;
 }
 
-.despesa-icone {
+.receita-icone, .despesa-icone {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -263,11 +285,11 @@ body[cz-shortcut-listen="true"] {
     color: var(--cor-texto-branco);
 }
 
-.despesa-icone .material-icons {
+.receita-icone .material-icons, .despesa-icone .material-icons {
     font-size: 24px;
 }
 
-.despesa-conteudo {
+.receita-conteudo, .despesa-conteudo {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -275,7 +297,7 @@ body[cz-shortcut-listen="true"] {
     min-width: 0;
 }
 
-.despesa-titulo {
+.receita-titulo, .despesa-titulo {
     font-size: 1rem;
     font-weight: 500;
     white-space: nowrap;
@@ -286,27 +308,41 @@ body[cz-shortcut-listen="true"] {
     margin-bottom: 2px;
 }
 
-.despesa-detalhes {
-    font-size: 0.875rem;
-    color: var(--cor-texto-secundario);
+
+.receita-detalhes, .despesa-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.detalhes-linha {
-    display: block;
+.detalhes-categoria {
+    font-size: 0.88rem;
+    color: var(--cor-texto-secundario);
+    font-weight: 500;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.3;
-    font-size: 0.875rem;
 }
 
-.despesa-acoes {
+.detalhes-conta {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    font-weight: 400;
+    line-height: 1.1;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.receita-acoes, .despesa-acoes {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.despesa-valor {
+.receita-valor, .despesa-valor {
     font-family: var(--font-destaque);
     font-size: 1rem;
     font-weight: 600;
@@ -331,6 +367,16 @@ body[cz-shortcut-listen="true"] {
 .botao-status.concluido .material-icons {
     color: var(--cor-primaria);
 }
+
+/* Badges de conta e status */
+.receita-badges, .despesa-badges { display:flex; align-items:center; gap:6px; }
+.badge-circular { width:34px; height:34px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; border:none; padding:0; cursor:pointer; box-shadow:0 0 0 1px #e2e8f0 inset; }
+.badge-circular img { width:20px; height:20px; object-fit:contain; }
+.badge-status .material-icons { font-size:22px; color:#94a3b8; }
+.badge-status-ok { background:#e6f9ef; box-shadow:0 0 0 1px #bbf7d0 inset; }
+.badge-status-ok .material-icons { color: var(--cor-primaria); }
+.badge-status-pendente { background:#fff7ed; box-shadow:0 0 0 1px #fed7aa inset; }
+.badge-status-pendente .material-icons { color:#f59e0b; }
 
 
 /* --- POPUP DE CONFIRMAÇÃO --- */
@@ -689,13 +735,13 @@ input:checked + .toggle-slider:before {
     justify-content: center;
     margin: 0 auto;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
     transition: all 0.2s ease;
 }
 
 .filtros-aplicar-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.5);
 }
 
 .filtros-aplicar-btn .material-icons {
@@ -734,7 +780,7 @@ input:checked + .toggle-slider:before {
 }
 
 .dropdown-item.active {
-    background: rgba(220,38,38,0.08);
+    background: rgba(34,197,94,0.08);
     color: var(--cor-primaria);
 }
 
@@ -832,24 +878,24 @@ input:checked + .toggle-slider:before {
         font-size: 0.9rem;
     }
     
-    .despesa-item {
+    .receita-item {
         padding: 10px 12px;
     }
     
-    .despesa-icone {
+    .receita-icone {
         width: 40px;
         height: 40px;
     }
     
-    .despesa-titulo {
+    .receita-titulo {
         font-size: 0.9rem;
     }
     
-    .despesa-meta {
+    .receita-meta {
         font-size: 0.8rem;
     }
     
-    .despesa-valor {
+    .receita-valor {
         font-size: 0.95rem;
     }
 }
@@ -867,7 +913,7 @@ input:checked + .toggle-slider:before {
     justify-content: space-around;
     align-items: center;
     z-index: 1000; /* Z-index alto para ficar sempre por cima */
-    box-shadow: 0 -2px 12px rgba(220,38,38,0.04);
+    box-shadow: 0 -2px 12px rgba(33,194,94,0.04);
 }
 
 .item-navegacao {
@@ -891,21 +937,21 @@ input:checked + .toggle-slider:before {
 
 .item-navegacao.ativo,
 .item-navegacao:hover {
-    color: #dc2626;
-    background: #fef2f2;
+    color: #D32F2F;
+    background: #fdecec; /* tom claro derivado do vermelho */
 }
 
 .botao-adicionar {
     width: 62px;
     height: 62px;
-    background: linear-gradient(135deg, #dc2626 60%, #b91c1c 100%);
+    background: #D32F2F;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff;
+    color: #ffffff;
     margin-top: -32px;
-    box-shadow: 0 6px 24px rgba(220,38,38,0.18);
+    box-shadow: 0 6px 24px rgba(211,47,47,0.35);
     transition: all 0.3s;
     cursor: pointer;
     border: 4px solid #fff;
@@ -913,8 +959,9 @@ input:checked + .toggle-slider:before {
 }
 
 .botao-adicionar:hover {
-    background: linear-gradient(135deg, #dc2626 80%, #991b1b 100%);
+    background: #b71c1c;
     transform: scale(1.07) translateY(-2px);
+    box-shadow: 0 8px 28px rgba(183,28,28,0.45);
 }
 
 /* Responsividade móvel igual à Home */
@@ -961,11 +1008,11 @@ input:checked + .toggle-slider:before {
         max-height: 60px !important;
         border-radius: 50% !important;
         margin-top: -30px;
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 4px 16px rgba(211,47,47,0.4);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #dc2626 60%, #b91c1c 100%);
+        background: #D32F2F;
         color: white;
         transition: all 0.3s ease;
         font-size: 2rem;
@@ -977,7 +1024,7 @@ input:checked + .toggle-slider:before {
     transform: scale(1.05);
 }
 
-/* MODAL DE DETALHES DA DESPESA */
+/* MODAL DE DETALHES DA RECEITA */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1191,14 +1238,14 @@ input:checked + .toggle-slider:before {
 }
 
 input:checked + .slider {
-    background-color: #dc2626;
+    background-color: #22c55e;
 }
 
 input:checked + .slider:before {
     transform: translateX(20px);
 }
 
-.botao-editar-despesa {
+.botao-editar-receita {
     width: calc(100% - 40px);
     margin: 0 20px 20px;
     padding: 16px;
@@ -1212,8 +1259,8 @@ input:checked + .slider:before {
     transition: background 0.2s;
 }
 
-.botao-editar-despesa:hover {
-    background: #b91c1c;
+.botao-editar-receita:hover {
+    background: #1ea34a;
 }
 
 .botao-fechar-modal {
@@ -1273,8 +1320,8 @@ input:checked + .slider:before {
         margin-bottom: 24px;
     }
     
-    /* Lista de despesas */
-    .lista-despesas {
+    /* Lista de receitas */
+    .lista-receitas {
         gap: 16px;
     }
 }
@@ -1316,13 +1363,13 @@ input:checked + .slider:before {
     }
     
     /* Grid de itens em desktop */
-    .lista-despesas {
+    .lista-receitas {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 24px;
     }
     
-    .item-despesa {
+    .item-receita {
         break-inside: avoid;
     }
 }
@@ -1356,7 +1403,7 @@ input:checked + .slider:before {
     }
     
     /* Grid otimizado para telas grandes */
-    .lista-despesas {
+    .lista-receitas {
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 32px;
     }
@@ -1364,123 +1411,4 @@ input:checked + .slider:before {
 
 .botao-fechar-modal:hover {
     background: rgba(255, 255, 255, 0.3);
-}
-
-/* Menu de Ações Flutuante */
-.menu-acoes {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.menu-acoes.ativo {
-    pointer-events: all;
-    opacity: 1;
-}
-
-.overlay-menu {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-}
-
-.acoes-container {
-    position: absolute;
-    bottom: 120px; /* Acima da navegação */
-    right: 50%;
-    transform: translateX(50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-}
-
-.acao-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    background: white;
-    border-radius: 50px;
-    text-decoration: none;
-    color: var(--cor-texto-principal);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    transform: translateY(20px) scale(0.9);
-    opacity: 0;
-    min-width: 140px;
-    justify-content: flex-start;
-}
-
-.menu-acoes.ativo .acao-item {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-}
-
-.menu-acoes.ativo .acao-item:nth-child(2) { transition-delay: 0.1s; }
-.menu-acoes.ativo .acao-item:nth-child(3) { transition-delay: 0.2s; }
-.menu-acoes.ativo .acao-item:nth-child(4) { transition-delay: 0.3s; }
-.menu-acoes.ativo .acao-item:nth-child(5) { transition-delay: 0.4s; }
-
-.acao-item:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-.acao-icone {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-}
-
-.acao-icone.receita {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.acao-icone.despesa {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.acao-icone.conta {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.acao-icone.transferencia {
-    background: linear-gradient(135deg, #a855f7, #9333ea);
-}
-
-.acao-texto {
-    font-weight: 500;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-/* Animação do botão adicionar quando menu está ativo */
-.menu-acoes.ativo ~ nav .botao-adicionar {
-    transform: rotate(45deg);
-    background: #ef4444;
-}
-
-/* Indicador de despesa automática */
-.indicador-automatico {
-    font-size: 14px;
-    margin-left: 5px;
-    opacity: 0.7;
-    vertical-align: middle;
-    cursor: help;
 }

@@ -51,6 +51,54 @@ const bancosIcones = {
     'PicPay': '../Icon/picpay.svg'
 };
 
+// Mapeamento de bancos para variáveis de cor e fallback hex (para uso consistente na Home)
+const bancosCores = [
+    { chave: 'nubank', var: '--nubank', hex: '#820ad1' },
+    { chave: 'itaú', var: '--itau', hex: '#EC7000' },
+    { chave: 'itau', var: '--itau', hex: '#EC7000' },
+    { chave: 'bradesco', var: '--bradesco', hex: '#CC092F' },
+    { chave: 'santander', var: '--santander', hex: '#EC0000' },
+    { chave: 'caixa', var: '--caixa', hex: '#0070AF' },
+    { chave: 'banco do brasil', var: '--banco-brasil', hex: '#FFEF38' },
+    { chave: 'bb', var: '--banco-brasil', hex: '#FFEF38' },
+    { chave: 'picpay', var: '--picpay', hex: '#21C25E' },
+    { chave: 'carteira', var: '--carteira', hex: '#4CAF50' }
+];
+
+function getCorConta(conta) {
+    if (!conta) return 'var(--outros, #6B7280)';
+    // Campos possíveis onde a "marca" do banco pode aparecer
+    const candidatos = [
+        conta.banco,
+        conta.nome,
+        conta.descricao,
+        conta.instituicao,
+        conta.iconeBanco,
+    ].filter(Boolean).map(c => String(c).toLowerCase());
+
+    // Checar também se ícone SVG contém nome do banco
+    if (conta.icone && /nubank|itau|itaú|bradesco|santander|caixa|picpay|banco-do-brasil|bb|carteira/i.test(conta.icone)) {
+        candidatos.push(conta.icone.toLowerCase());
+    }
+
+    for (const item of bancosCores) {
+        if (candidatos.some(txt => txt.includes(item.chave))) {
+            const corFinal = `var(${item.var}, ${item.hex})`;
+            // Debug (pode remover depois)
+            console.debug('[getCorConta] Match', item.chave, '->', corFinal, 'para conta', conta.id || conta.nome);
+            return corFinal;
+        }
+    }
+    // Se a conta tiver cor personalizada salva, usa
+    if (conta.cor) {
+        console.debug('[getCorConta] Usando cor personalizada da conta', conta.id, conta.cor);
+        return conta.cor;
+    }
+    // Fallback final neutro
+    console.debug('[getCorConta] Nenhum match encontrado. Fallback --outros. Conta:', conta.id || conta.nome);
+    return 'var(--outros, #6B7280)';
+}
+
 // Função para obter ícone do banco
 function obterIconeBanco(conta) {
     // Se o ícone já é um SVG path, retorna ele mesmo
@@ -806,9 +854,13 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
                 const valor = dataOrdenada[idx];
                 const percent = total > 0 ? Math.round((valor / total) * 100) : 0;
                 const cor = tonsVerde[idx % tonsVerde.length];
-                // Busca ícone personalizado, senão usa padrão
-                let icone = categoriaIcones[cat] || 'category';
-                // Se for um ícone padrão, pode usar material-icons-round, senão material-symbols-outlined
+                // Ordem de prioridade para ícone da categoria:
+                // 1. Ícone salvo em alguma receita dessa categoria (categoriaIcones)
+                // 2. Mapeamento categoriaParaIcone
+                // 3. Fallback por tipo (obterIconePorCategoria)
+                let icone = categoriaIcones[cat] 
+                    || categoriaParaIcone[cat] 
+                    || obterIconePorCategoria(cat, 'receita');
                 listaCategorias.innerHTML += `
                     <div class="grafico-categoria-item">
                         <div class="grafico-categoria-icone" style="background:${cor}22;">
@@ -824,8 +876,7 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
                             <span class="grafico-categoria-valor">${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             <span class="grafico-categoria-percent">${percent}%</span>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
@@ -846,11 +897,20 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
     console.log('[Home] Montando gráfico de despesas por categoria...');
     let categorias = {};
     let total = 0;
+    let categoriaIcones = {}; // map categoria -> icone personalizado
     despesas.forEach(despesa => {
         if (despesa.categoria) {
-            const valor = parseValueToNumber(despesa.valor || '0'); // Usar a função correta
+            const valor = parseValueToNumber(despesa.valor || '0');
             categorias[despesa.categoria] = (categorias[despesa.categoria] || 0) + valor;
             total += valor;
+            if (despesa.iconeCategoria) {
+                categoriaIcones[despesa.categoria] = despesa.iconeCategoria;
+            } else if (despesa.icone) {
+                categoriaIcones[despesa.categoria] = despesa.icone;
+            } else {
+                // fallback usando função já existente
+                categoriaIcones[despesa.categoria] = obterIconePorCategoria(despesa.categoria, 'despesa');
+            }
         }
     });
     const labels = Object.keys(categorias);
@@ -895,7 +955,6 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
                 }]
             },
             options: {
-                responsive: true,
                 maintainAspectRatio: false,
                 cutout: '70%',
                 layout: { padding: 8 },
@@ -905,8 +964,7 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
             }
         });
 
-        document.getElementById('valor-total-despesas').textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
+    document.getElementById('valor-total-despesas').textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         const listaCategorias = document.getElementById('lista-categorias-despesas');
         if (listaCategorias) {
             listaCategorias.innerHTML = '';
@@ -914,7 +972,7 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
                 const valor = dataOrdenada[idx];
                 const percent = total > 0 ? Math.round((valor / total) * 100) : 0;
                 const cor = tonsVermelho[idx % tonsVermelho.length];
-                const icone = icones[idx % icones.length];
+                const icone = categoriaIcones[cat] || 'shopping_cart';
                 const item = document.createElement('div');
                 item.className = 'grafico-categoria-item';
                 item.innerHTML = `
@@ -930,8 +988,7 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
                     <div class="grafico-categoria-valores">
                         <span class="grafico-categoria-valor">${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                         <span class="grafico-categoria-percent">${percent}%</span>
-                    </div>
-                `;
+                    </div>`;
                 listaCategorias.appendChild(item);
             });
         }
@@ -948,147 +1005,147 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
     }
 }
 
-// Função para calcular saldo de uma conta específica incluindo receitas e despesas vinculadas
-async function calcularSaldoConta(uid, contaId, mesSelecionado, anoSelecionado) {
-    try {
-        // Buscar a conta
-        const contaDoc = await firebase.firestore().collection('contas').doc(contaId).get();
-        if (!contaDoc.exists) return 0;
-        
-        const conta = contaDoc.data();
-        let saldoInicial = parseFloat(conta.saldoInicial || conta.saldo || 0);
-        
-        // Buscar receitas vinculadas à conta pelo nome no mês/ano selecionado
-        const receitasSnapshot = await firebase.firestore().collection('receitas')
-            .where('userId', '==', uid)
-            .get();
-            
-        let totalReceitas = 0;
-        receitasSnapshot.forEach(doc => {
-            const receita = doc.data();
-            
-            // Verificar se a receita pertence a esta conta (por nome)
-            const pertenceAConta = receita.conta && receita.conta.nome === conta.nome;
-            
-            if (pertenceAConta) {
-                const efetivada = receita.recebido !== false;
-                const isDoMesSelecionado = isDataNoMesSelecionado(receita.data, mesSelecionado, anoSelecionado);
-                
-                if (efetivada && isDoMesSelecionado) {
-                    const valor = parseValueToNumber(receita.valor);
-                    totalReceitas += valor;
-                }
-            }
-        });
-        
-        // Buscar despesas vinculadas à conta pelo nome no mês/ano selecionado
-        const despesasSnapshot = await firebase.firestore().collection('despesas')
-            .where('userId', '==', uid)
-            .get();
-            
-        let totalDespesas = 0;
-        despesasSnapshot.forEach(doc => {
-            const despesa = doc.data();
-            
-            // Verificar se a despesa pertence a esta conta (por nome da carteira)
-            const pertenceAConta = despesa.carteira && despesa.carteira.nome === conta.nome;
-            
-            if (pertenceAConta) {
-                const efetivada = despesa.pago !== false;
-                const isDoMesSelecionado = isDataNoMesSelecionado(despesa.data, mesSelecionado, anoSelecionado);
-                
-                if (efetivada && isDoMesSelecionado) {
-                    const valor = parseValueToNumber(despesa.valor);
-                    totalDespesas += valor;
-                }
-            }
-        });
-        
-        // Calcular saldo atual da conta
-        const saldoAtual = saldoInicial + totalReceitas - totalDespesas;
-        
-        return saldoAtual;
-        
-    } catch (error) {
-        console.error('[ERRO] Falha ao calcular saldo da conta:', error);
-        return 0;
-    }
+// ===== NOVO CÁLCULO DE SALDO POR CONTA (AGREGAÇÃO ÚNICA) =====
+// Cache simples para nomes de conta em notificações e montagens rápidas
+const cacheNomesContas = {};
+
+// (Deprecated) calcularSaldoConta antigo removido em favor de agregação única em carregarContasHome
+// Nova estratégia: buscamos todas as contas, receitas e despesas uma única vez e agregamos por ID da carteira
+
+function agregarTransacoesPorConta({contas, receitas, despesas, filtrarMes, mesSelecionado, anoSelecionado}) {
+    const mapa = {};
+    // Pré-popular mapa com saldo inicial
+    contas.forEach(c => {
+        mapa[c.id] = {
+            conta: c,
+            saldoInicial: parseFloat(c.saldoInicial || c.saldo || 0) || 0,
+            receitas: 0,
+            despesas: 0
+        };
+        cacheNomesContas[c.id] = c.nome || c.descricao || c.banco || 'Conta';
+    });
+
+    const mesmaCompetencia = (dataStr) => {
+        if (!filtrarMes) return true; // Se não precisamos filtrar, sempre inclui
+        return isDataNoMesSelecionado(dataStr, mesSelecionado, anoSelecionado);
+    };
+
+    receitas.forEach(r => {
+        // Campo de vínculo é 'carteira' contendo o ID da conta
+        if (!r.carteira || !mapa[r.carteira]) {
+            console.log('[Debug] Receita sem carteira válida:', r);
+            return;
+        }
+        if ((r.recebido === false) || !mesmaCompetencia(r.data)) {
+            console.log('[Debug] Receita excluída - recebido:', r.recebido, 'competência:', mesmaCompetencia(r.data), 'data:', r.data);
+            return;
+        }
+        const valor = parseValueToNumber(r.valor || 0);
+        console.log('[Debug] Receita incluída:', r.descricao, 'valor:', valor, 'carteira:', r.carteira);
+        mapa[r.carteira].receitas += valor;
+    });
+    despesas.forEach(d => {
+        if (!d.carteira || !mapa[d.carteira]) {
+            console.log('[Debug] Despesa sem carteira válida:', d);
+            return;
+        }
+        if ((d.pago === false) || !mesmaCompetencia(d.data)) {
+            console.log('[Debug] Despesa excluída - pago:', d.pago, 'competência:', mesmaCompetencia(d.data), 'data:', d.data);
+            return;
+        }
+        const valor = parseValueToNumber(d.valor || 0);
+        console.log('[Debug] Despesa incluída:', d.descricao, 'valor:', valor, 'carteira:', d.carteira);
+        mapa[d.carteira].despesas += valor;
+    });
+    return mapa;
 }
 
 // Renderiza contas e esconde/mostra cartão vazio
 async function carregarContasHome(uid) {
-    console.log('[Home] Buscando contas para o usuário:', uid);
+    console.log('[Home] (Nova) agregação de contas para usuário:', uid);
+    console.log('[Home] Firestore instance:', firebase.firestore());
     try {
-        const snapshot = await firebase.firestore().collection('contas')
-            .where('userId', '==', uid)
-            .get();
-            
-        let contas = [];
-        snapshot.forEach(doc => {
-            const conta = { ...doc.data(), id: doc.id };
+        const dbRef = firebase.firestore();
+        console.log('[Home] Buscando dados em paralelo...');
+        // Buscar em paralelo
+        const [contasSnap, receitasSnap, despesasSnap] = await Promise.all([
+            dbRef.collection('contas').where('userId', '==', uid).get(),
+            dbRef.collection('receitas').where('userId', '==', uid).get(),
+            dbRef.collection('despesas').where('userId', '==', uid).get()
+        ]);
+
+        console.log('[Home] Documentos retornados:');
+        console.log('- Contas:', contasSnap.size);
+        console.log('- Receitas:', receitasSnap.size);
+        console.log('- Despesas:', despesasSnap.size);
+
+        const contas = [];
+        contasSnap.forEach(doc => {
+            const conta = { id: doc.id, ...doc.data() };
             contas.push(conta);
-            
-            // Salvar conta no cache local
             salvarContaNoCache(conta);
         });
-        
-        // ORDENA por nome (opcional, mas deixa igual ao select de contas)
-        contas.sort((a, b) => {
-            const nomeA = (a.nome || a.descricao || '').toLowerCase();
-            const nomeB = (b.nome || b.descricao || '').toLowerCase();
-            return nomeA.localeCompare(nomeB);
+
+        const receitas = [];
+        receitasSnap.forEach(doc => {
+            const receita = doc.data();
+            console.log('[Home] Receita encontrada:', {id: doc.id, descricao: receita.descricao, valor: receita.valor, carteira: receita.carteira, recebido: receita.recebido, data: receita.data});
+            receitas.push(receita);
         });
-        console.log('[Home] Total de contas carregadas:', contas.length, contas);
+        const despesas = [];
+        despesasSnap.forEach(doc => {
+            const despesa = doc.data();
+            console.log('[Home] Despesa encontrada:', {id: doc.id, descricao: despesa.descricao, valor: despesa.valor, carteira: despesa.carteira, pago: despesa.pago, data: despesa.data});
+            despesas.push(despesa);
+        });
+
+        contas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+        const mapa = agregarTransacoesPorConta({
+            contas,
+            receitas,
+            despesas,
+            filtrarMes: true,
+            mesSelecionado,
+            anoSelecionado
+        });
+
+        console.log('[Home] Resultado da agregação:', mapa);
+        console.log('[Home] Mês selecionado:', mesSelecionado, 'Ano:', anoSelecionado);
 
         const container = document.getElementById('container-contas-home');
         const vazio = document.getElementById('cartao-estado-vazio-contas');
         const botaoNovaContaContainer = document.getElementById('botao-nova-conta-container');
+        if (!container) return;
         container.innerHTML = '';
-        
+
         if (contas.length === 0) {
-            vazio.style.display = 'block';
+            if (vazio) vazio.style.display = 'block';
             if (botaoNovaContaContainer) botaoNovaContaContainer.style.display = 'none';
         } else {
-            vazio.style.display = 'none';
+            if (vazio) vazio.style.display = 'none';
             if (botaoNovaContaContainer) botaoNovaContaContainer.style.display = 'flex';
-            
-            // Processar cada conta individualmente para calcular seu saldo
-            for (const conta of contas) {
-                // Calcular saldo atual da conta incluindo receitas e despesas
-                const saldoAtual = await calcularSaldoConta(uid, conta.id, mesSelecionado, anoSelecionado);
-                
+
+            contas.forEach(conta => {
+                const dados = mapa[conta.id];
+                const saldoAtual = (dados?.saldoInicial || 0) + (dados?.receitas || 0) - (dados?.despesas || 0);
+                console.log(`[Debug] Conta: ${conta.nome} | Saldo Inicial: ${dados?.saldoInicial || 0} | Receitas: ${dados?.receitas || 0} | Despesas: ${dados?.despesas || 0} | Saldo Final: ${saldoAtual}`);
+                const saldoFormatado = saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 const div = document.createElement('div');
                 div.className = 'conta-home-card-ux';
-                div.setAttribute('data-conta-id', conta.id); // Adicionar identificador
-                
-                // Verificar se deve usar SVG ou ícone material
-                let iconeSvg = obterIconeBanco(conta);
+                div.setAttribute('data-conta-id', conta.id);
 
-                // Força Nubank a sempre usar SVG mesmo se não houver conta.icone
-                if (!iconeSvg && conta.banco === 'Nubank') {
-                    iconeSvg = bancosIcones['Nubank'];
-                }
+                const varColor = getCorConta(conta);
+
+                let iconeSvg = obterIconeBanco(conta);
+                if (!iconeSvg && conta.banco === 'Nubank') iconeSvg = bancosIcones['Nubank'];
 
                 if (iconeSvg) {
-                    // Usar SVG do banco
+                    console.debug('[CardConta] SVG banco=', conta.banco, 'nome=', conta.nome, 'id=', conta.id, 'varColor=', varColor);
                     div.innerHTML = `
                         <div class="conta-ux-esquerda">
-                            <div class="conta-ux-icone conta-ux-icone-svg" style="
-                                background: ${conta.cor || '#21C25E'} !important;
-                                background-image: none !important;
-                                border: none !important;
-                                border-radius: 50% !important;
-                                width: 54px !important;
-                                height: 54px !important;
-                                display: flex !important; 
-                                align-items: center !important; 
-                                justify-content: center !important;
-                                box-shadow: 0 4px 16px rgba(33,194,94,0.10);">
-                                <img src="${iconeSvg}" alt="${conta.banco || 'Banco'}" style="
-                                    width: 32px; 
-                                    height: 32px; 
-                                    object-fit: contain;
-                                ">
+                            <div class="conta-ux-icone conta-ux-icone-svg" data-color="${varColor}" style="background:${varColor};border-radius:50%;width:54px;height:54px;display:flex;align-items:center;justify-content:center;">
+                                <img src="${iconeSvg}" alt="${conta.banco || 'Banco'}" style="width:32px;height:32px;object-fit:contain;">
                             </div>
                             <div class="conta-ux-info">
                                 <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
@@ -1096,90 +1153,55 @@ async function carregarContasHome(uid) {
                             </div>
                         </div>
                         <div class="conta-ux-direita">
-                            <div class="conta-ux-saldo" title="Saldo atual">${saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                            <div class="conta-ux-saldo" title="Saldo atual">${saldoFormatado}</div>
                             <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
                                 <span class="material-icons-round">delete</span>
-                        </div>
-                    `;
+                            </button>
+                        </div>`;
                 } else {
-                    // Usar ícone material original
+                    console.debug('[CardConta] MATERIAL banco=', conta.banco, 'nome=', conta.nome, 'id=', conta.id, 'varColor=', varColor);
                     div.innerHTML = `
                         <div class="conta-ux-esquerda">
-                            <div class="conta-ux-icone" style="
-                                background: linear-gradient(135deg, ${conta.cor || '#e8f5ee'} 60%, #fff 100%);
-                                box-shadow: 0 4px 16px rgba(33,194,94,0.10);
-                                border: 2px solid ${conta.cor || '#21C25E22'};
-                                display: flex; align-items: center; justify-content: center;">
-                                <span class="material-icons-round" style="
-                                    color:${conta.corIcone || '#21C25E'};
-                                    font-size:2.4rem;
-                                    filter: drop-shadow(0 2px 4px rgba(33,194,94,0.10));
-                                    ">
-                                    ${conta.iconeBanco || conta.icone || 'account_balance_wallet'}
-                                </span>
-                                </div>
-                                <div class="conta-ux-info">
+                            <div class="conta-ux-icone" data-color="${varColor}" style="background:${varColor};width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                <span class="material-icons-round" style="color:#fff;font-size:2.2rem;">${conta.iconeBanco || conta.icone || 'account_balance_wallet'}</span>
+                            </div>
+                            <div class="conta-ux-info">
                                 <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
                                 <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
                             </div>
                         </div>
                         <div class="conta-ux-direita">
-                            <div class="conta-ux-saldo" title="Saldo atual">${saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                            <div class="conta-ux-saldo" title="Saldo atual">${saldoFormatado}</div>
                             <button class="botao-excluir-conta" data-conta-id="${conta.id}" title="Excluir conta" aria-label="Excluir conta">
                                 <span class="material-icons-round">delete</span>
                             </button>
-                        </div>
-                    `;
+                        </div>`;
                 }
-                
+
                 div.style.opacity = 0;
-                div.style.transform = 'translateY(18px) scale(0.98)';
-                setTimeout(() => {
-                    div.style.transition = 'opacity 0.5s, transform 0.5s';
+                div.style.transform = 'translateY(14px) scale(.97)';
+                requestAnimationFrame(() => {
+                    div.style.transition = 'opacity .45s, transform .45s';
                     div.style.opacity = 1;
                     div.style.transform = 'translateY(0) scale(1)';
-                }, 10);
-                
-                // FORÇA MÁXIMA: sobrescrever qualquer evento anterior
-                div.onmousedown = null;
-                div.onmouseup = null; 
-                div.onclick = null;
-                
-                // Navegação simples para detalhes da conta
-                div.addEventListener('click', function(event) {
-                    if (!event.target.closest('.botao-excluir-conta')) {
+                });
+
+                div.addEventListener('click', (e) => {
+                    if (!e.target.closest('.botao-excluir-conta')) {
                         window.location.href = `../Detalhes-Conta/Detalhes-Conta.html?conta=${conta.id}`;
                     }
                 });
-                
-                // Backup adicional
-                div.setAttribute('data-redirect-url', `../Detalhes-Conta/Detalhes-Conta.html?conta=${conta.id}`);
-                
-                // Adicionar estilo de cursor para indicar que é clicável
-                div.style.cursor = 'pointer';
-                
-                // Backup onclick ainda mais direto
-                div.onclick = function(event) {
-                    if (!event.target.closest('.botao-excluir-conta')) {
-                        const url = this.getAttribute('data-redirect-url');
-                        if (url) {
-                            console.log('[ONCLICK-BACKUP] Redirecionando para:', url);
-                            document.location = url;
-                        }
-                        return false;
-                    }
-                };
-                
+
                 container.appendChild(div);
-            }
+            });
         }
-        // Chame também o carregamento dos cartões de crédito aqui
+
         carregarCartoesCreditoHome(uid);
-        
-    } catch (error) {
-        console.error('[Home] Erro ao buscar contas:', error);
+    } catch (err) {
+        console.error('[Home] Erro na agregação de contas:', err);
     }
-}// Exemplo de carregamento de cartões de crédito
+}
+// Exemplo de carregamento de cartões de crédito
 function carregarCartoesCreditoHome(uid) {
     console.log('[Home] Buscando cartões de crédito para o usuário:', uid);
     // Tenta buscar, mas trata erro de permissão de forma amigável
@@ -1318,7 +1340,7 @@ async function calcularSaldoTotalMesAtual(uid) {
             const conta = doc.data();
             // Verificar se a conta está ativa e deve ser incluída na soma
             const contaAtiva = conta.ativa !== false; // Por padrão, ativa se não especificado
-            const incluirNaSoma = conta.incluirNaSoma !== false;
+            const incluirNaSoma = conta.incluirNaHome !== false; // Mudança para usar incluirNaHome
             
             if (contaAtiva && incluirNaSoma) {
                 const saldoInicial = parseFloat(conta.saldoInicial || conta.saldo || 0);
@@ -1592,8 +1614,11 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
 
         contasSnapshot.forEach(doc => {
             const conta = doc.data();
-            // Filtrar contas ativas no código JavaScript
-            if (conta.ativa !== false) {
+            // Filtrar contas ativas e que devem ser incluídas na soma
+            const contaAtiva = conta.ativa !== false;
+            const incluirNaHome = conta.incluirNaHome !== false;
+            
+            if (contaAtiva && incluirNaHome) {
                 const saldoInicial = parseValueToNumber(conta.saldoInicial || 0);
                 saldoInicialContas += saldoInicial;
             }
@@ -1953,6 +1978,7 @@ class NotificacoesManager {
         const tempo = this.formatarTempo(notificacao.dataHora);
         const icone = notificacoesConfig.tiposIcones[notificacao.tipo] || 'info';
         // Todas as notificações são não lidas (classe sempre aplicada)
+        const descricao = notificacao.descricao || notificacao.mensagem || '';
         
         return `
             <div class="notificacao-item nao-lida" data-id="${notificacao.id}">
@@ -1961,7 +1987,7 @@ class NotificacoesManager {
                 </div>
                 <div class="notificacao-conteudo">
                     <div class="notificacao-titulo">${notificacao.titulo}</div>
-                    <div class="notificacao-descricao">${notificacao.descricao}</div>
+                    <div class="notificacao-descricao">${descricao}</div>
                     <div class="notificacao-meta">
                         <span class="notificacao-tempo">${tempo}</span>
                         ${notificacao.valor ? `<span class="notificacao-valor">${notificacao.valor}</span>` : ''}
@@ -2287,11 +2313,12 @@ class NotificacoesManager {
 
     // Métodos de conveniência para tipos específicos
     async notificarReceita(receita) {
+        const desc = receita?.descricao || receita?.mensagem || 'Receita adicionada';
         await this.criarNotificacao({
             titulo: 'Nova Receita Adicionada',
-            descricao: `${receita.descricao} foi adicionada à sua conta`,
+            descricao: `${desc} foi adicionada à sua conta`,
             tipo: 'receita',
-            valor: `+${receita.valor}`,
+            valor: receita?.valor ? `+${receita.valor}` : null,
             acao: {
                 tipo: 'navegacao',
                 url: '../Lista-de-receitas/Lista-de-receitas.html'
@@ -2300,11 +2327,12 @@ class NotificacoesManager {
     }
 
     async notificarDespesa(despesa) {
+        const desc = despesa?.descricao || despesa?.mensagem || 'Despesa adicionada';
         await this.criarNotificacao({
             titulo: 'Nova Despesa Adicionada',
-            descricao: `${despesa.descricao} foi adicionada à sua conta`,
+            descricao: `${desc} foi adicionada à sua conta`,
             tipo: 'despesa',
-            valor: `-${despesa.valor}`,
+            valor: despesa?.valor ? `-${despesa.valor}` : null,
             acao: {
                 tipo: 'navegacao',
                 url: '../Lista-de-despesas/Lista-de-despesas.html'
@@ -2558,70 +2586,90 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== FUNÇÕES UTILITÁRIAS PARA NOTIFICAÇÕES GLOBAIS =====
 
 // Função para criar notificação de nova conta
-window.criarNotificacaoNovaConta = async function(conta) {
-    try {
-        if (window.notificacoesManager) {
-            await window.notificacoesManager.criarNotificacao({
-                tipo: 'conta_criada',
-                titulo: 'Nova conta adicionada',
-                mensagem: `A conta "${conta.nome || conta.banco || 'Nova conta'}" foi criada com sucesso!`,
-                icone: 'account_balance',
-                dados: { contaId: conta.id }
-            });
+// Evitar redefinição se já existir (definida em js/notificacoes-utils.js)
+if (typeof window.criarNotificacaoNovaConta !== 'function') {
+    window.criarNotificacaoNovaConta = async function(conta) {
+        try {
+            if (window.notificacoesManager) {
+                await window.notificacoesManager.criarNotificacao({
+                    tipo: 'conta_criada',
+                    titulo: 'Nova conta adicionada',
+                    descricao: `A conta "${conta.nome || conta.banco || 'Nova conta'}" foi criada com sucesso!`,
+                    icone: 'account_balance',
+                    dados: { contaId: conta.id }
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao criar notificação de nova conta:', error);
         }
-    } catch (error) {
-        console.error('Erro ao criar notificação de nova conta:', error);
-    }
-};
+    };
+}
 
 // Função para criar notificação de nova receita
-window.criarNotificacaoNovaReceita = async function(receita) {
-    try {
-        if (window.notificacoesManager) {
-            const valor = receita.valor || 0;
-            const formatCurrency = (val) => {
-                const num = typeof val === 'number' ? val : parseFloat(val) || 0;
-                return new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(num);
-            };
-            
+if (typeof window.criarNotificacaoNovaReceita !== 'function') {
+    window.criarNotificacaoNovaReceita = async function(receita) {
+        try {
+            if (!window.notificacoesManager) return;
+            const valorBruto = receita.valor || 0;
+            const valorNum = parseValueToNumber(valorBruto);
+            const formatCurrency = (val) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(val);
+            let contaNome = '';
+            if (receita.carteira) {
+                contaNome = cacheNomesContas[receita.carteira];
+                if (!contaNome) {
+                    try {
+                        const contaDoc = await firebase.firestore().collection('contas').doc(receita.carteira).get();
+                        if (contaDoc.exists) {
+                            contaNome = contaDoc.data().nome || contaDoc.data().descricao || contaDoc.data().banco || 'Conta';
+                            cacheNomesContas[receita.carteira] = contaNome;
+                        }
+                    } catch(e) { /* ignore */ }
+                }
+            }
+            const complementoConta = contaNome ? ` na conta ${contaNome}` : '';
             await window.notificacoesManager.criarNotificacao({
-                tipo: 'receita_criada',
-                titulo: 'Nova receita adicionada',
-                mensagem: `Receita "${receita.descricao || 'Nova receita'}" de ${formatCurrency(valor)} foi criada!`,
-                icone: 'trending_up',
-                dados: { receitaId: receita.id }
+                tipo: 'receita',
+                titulo: 'Receita registrada',
+                descricao: `${receita.descricao || 'Receita'} de ${formatCurrency(valorNum)}${complementoConta}`,
+                valor: `+${formatCurrency(valorNum)}`,
+                acao: { tipo: 'navegacao', url: '../Lista-de-receitas/Lista-de-receitas.html' }
             });
+        } catch (error) {
+            console.error('Erro ao criar notificação de nova receita:', error);
         }
-    } catch (error) {
-        console.error('Erro ao criar notificação de nova receita:', error);
-    }
-};
+    };
+}
 
 // Função para criar notificação de nova despesa
-window.criarNotificacaoNovaDespesa = async function(despesa) {
-    try {
-        if (window.notificacoesManager) {
-            const valor = despesa.valor || 0;
-            const formatCurrency = (val) => {
-                const num = typeof val === 'number' ? val : parseFloat(val) || 0;
-                return new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(num);
-            };
-            
+if (typeof window.criarNotificacaoNovaDespesa !== 'function') {
+    window.criarNotificacaoNovaDespesa = async function(despesa) {
+        try {
+            if (!window.notificacoesManager) return;
+            const valorNum = parseValueToNumber(despesa.valor || 0);
+            const formatCurrency = (val) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(val);
+            let contaNome = '';
+            if (despesa.carteira) {
+                contaNome = cacheNomesContas[despesa.carteira];
+                if (!contaNome) {
+                    try {
+                        const contaDoc = await firebase.firestore().collection('contas').doc(despesa.carteira).get();
+                        if (contaDoc.exists) {
+                            contaNome = contaDoc.data().nome || contaDoc.data().descricao || contaDoc.data().banco || 'Conta';
+                            cacheNomesContas[despesa.carteira] = contaNome;
+                        }
+                    } catch(e) { /* ignore */ }
+                }
+            }
+            const complementoConta = contaNome ? ` na conta ${contaNome}` : '';
             await window.notificacoesManager.criarNotificacao({
-                tipo: 'despesa_criada',
-                titulo: 'Nova despesa adicionada',
-                mensagem: `Despesa "${despesa.descricao || 'Nova despesa'}" de ${formatCurrency(valor)} foi criada!`,
-                icone: 'trending_down',
-                dados: { despesaId: despesa.id }
+                tipo: 'despesa',
+                titulo: 'Despesa registrada',
+                descricao: `${despesa.descricao || 'Despesa'} de ${formatCurrency(valorNum)}${complementoConta}`,
+                valor: `-${formatCurrency(valorNum)}`,
+                acao: { tipo: 'navegacao', url: '../Lista-de-despesas/Lista-de-despesas.html' }
             });
+        } catch (error) {
+            console.error('Erro ao criar notificação de nova despesa:', error);
         }
-    } catch (error) {
-        console.error('Erro ao criar notificação de nova despesa:', error);
-    }
-};
+    };
+}

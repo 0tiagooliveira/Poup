@@ -30,10 +30,10 @@
         </section>
 
         <!-- Formulário -->
-        <main class="formulario-despesa">
+        <main class="formulario-receita">
             <div class="campo-formulario">
                 <div class="linha-campo">
-                    <span class="material-icons icone-campo">money_off</span>
+                    <span class="material-icons icone-campo">paid</span>
                     <span>Pago</span>
                     <label class="alternador">
                         <input type="checkbox" id="pago" checked>
@@ -65,7 +65,89 @@
                             <span>Selecione uma categoria</span>
                         </div>
                         <div class="opcoes-categoria">
-                            <!-- Categorias de despesas serão carregadas via JS -->
+                            <!-- Categorias de despesa -->
+                            <div class="opcao-categoria" data-value="restaurant">
+                                <span class="material-icons-round">restaurant</span> <span>Alimentação</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="directions_car">
+                                <span class="material-icons-round">directions_car</span> <span>Transporte</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="home">
+                                <span class="material-icons-round">home</span> <span>Moradia</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="shopping_cart">
+                                <span class="material-icons-round">shopping_cart</span> <span>Mercado</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="local_mall">
+                                <span class="material-icons-round">local_mall</span> <span>Compras</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="local_hospital">
+                                <span class="material-icons-round">local_hospital</span> <span>Saúde</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="school">
+                                <span class="material-icons-round">school</span> <span>Educação</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="sports_soccer">
+                                <span class="material-icons-round">sports_soccer</span> <span>Lazer</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="flight">
+                                <span class="material-icons-round">flight</span> <span>Viagem</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="subscriptions">
+                                <span class="material-icons-round">subscriptions</span> <span>Assinaturas</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="credit_card">
+                                <span class="material-icons-round">credit_card</span> <span>Cartão de Crédito</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="paid">
+                                <span class="material-icons-round">paid</span> <span>Impostos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="emoji_events">
+                                <span class="material-icons-round">emoji_events</span> <span>Presentes</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="pet_supplies">
+                                <span class="material-icons-round">pets</span> <span>Pets</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="build">
+                                <span class="material-icons-round">build</span> <span>Manutenção</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="phone_iphone">
+                                <span class="material-icons-round">phone_iphone</span> <span>Telefonia/Internet</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="bolt">
+                                <span class="material-icons-round">bolt</span> <span>Energia</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="water_drop">
+                                <span class="material-icons-round">water_drop</span> <span>Água</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="local_fire_department">
+                                <span class="material-icons-round">local_fire_department</span> <span>Gás</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="self_improvement">
+                                <span class="material-icons-round">self_improvement</span> <span>Bem-estar</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="attach_money">
+                                <span class="material-icons-round">attach_money</span> <span>Empréstimos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="directions_bus">
+                                <span class="material-icons-round">directions_bus</span> <span>Transporte Público</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="local_taxi">
+                                <span class="material-icons-round">local_taxi</span> <span>Táxi/App</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="savings">
+                                <span class="material-icons-round">savings</span> <span>Poupança</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="emoji_food_beverage">
+                                <span class="material-icons-round">emoji_food_beverage</span> <span>Café/Lanches</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="add_circle" style="color:#21C25E;font-weight:600;">
+                                <span class="material-icons-round">add</span> <span>+ Criar categoria</span>
+                            </div>
+                            <!-- Adicione esta opção ao final -->
+                            <div class="opcao-categoria" data-value="criar-categoria" style="color:#21C25E;font-weight:600;">
+                                <span class="material-icons-round">add</span> <span>+ Criar categoria</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -76,6 +158,8 @@
                     <span class="material-icons icone-campo">account_balance</span>
                     <div class="seletor-carteira" id="seletor-carteira">
                         <div class="opcao-selecionada">
+                            <!-- Ícone da conta selecionada será inserido aqui via JS -->
+                            <span id="icone-conta-selecionada"></span>
                             <span>Selecione uma conta</span>
                         </div>
                         <div class="opcoes-carteira"></div>
@@ -181,20 +265,20 @@
                 <form id="form-categoria">
                     <!-- Nome da Categoria -->
                     <label for="nome-categoria">Nome da Categoria:</label>
-                    <input type="text" id="nome-categoria" placeholder="Ex: Alimentação, Transporte" required minlength="2">
+                    <input type="text" id="nome-categoria" placeholder="Ex: Venda, Alimentação, Transporte" required minlength="2">
                     <span id="erro-nome-categoria" class="erro-validacao" style="display: none;">Informe um nome válido para a categoria (mínimo 2 caracteres).</span>
                     
                     <!-- Ícone -->
                     <label for="icone-categoria">Escolha um Ícone:</label>
                     <div id="icone-selecionado-preview" class="icone-preview">
-                        <span class="material-symbols-outlined" style="color: #D32F2F;">shopping_cart</span>
+                        <span class="material-symbols-outlined" style="color: #21c25e;">paid</span>
                     </div>
                     
                     <!-- Cor -->
                     <label for="cor-categoria">Escolha uma Cor:</label>
                     <div class="cor-preview-container">
-                        <input type="color" id="cor-categoria" value="#D32F2F">
-                        <span id="cor-preview" class="preview-cor" style="background-color: #D32F2F;"></span>
+                        <input type="color" id="cor-categoria" value="#4CAF50">
+                        <span id="cor-preview" class="preview-cor" style="background-color: #4CAF50;"></span>
                     </div>
                     
                     <!-- Botões -->
@@ -219,15 +303,71 @@
             </div>
         </div>
 
-        <!-- Popup para criar categoria personalizada foi removido por ser redundante -->
+        <!-- Popup para criar categoria personalizada -->
+        <div id="popup-criar-categoria" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:3000; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+            <div style="background:#fff; border-radius:12px; padding:32px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-width:260px; max-width:90vw; text-align:center;">
+                <span style="display:block; font-family:'Poppins',sans-serif; font-size:1.1rem; color:#333; margin-bottom:18px;">
+                    Criar nova categoria
+                </span>
+                <input id="nova-categoria-nome" type="text" placeholder="Nome da categoria" style="width:90%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #e0e7e3;font-size:1rem;">
+                <div style="margin-bottom:14px;">
+                    <label for="nova-categoria-icone" style="font-size:0.98rem;color:#666;">Ícone:</label>
+                    <select id="nova-categoria-icone" style="padding:8px;border-radius:8px;border:1px solid #e0e7e3;font-size:1rem;">
+                        <option value="category">Categoria padrão</option>
+                        <option value="work">Trabalho</option>
+                        <option value="construction">Freelance</option>
+                        <option value="trending_up">Investimentos</option>
+                        <option value="card_giftcard">Presente</option>
+                        <option value="star">Favorito</option>
+                        <option value="attach_money">Dinheiro</option>
+                        <option value="payments">Pagamento</option>
+                        <option value="emoji_events">Troféu</option>
+                        <option value="family_restroom">Família</option>
+                        <option value="elderly">Idoso</option>
+                        <option value="child_care">Criança</option>
+                        <option value="volunteer_activism">Doação</option>
+                        <option value="casino">Loteria</option>
+                        <option value="swap_horiz">Transferência</option>
+                        <option value="calendar_month">Calendário</option>
+                        <option value="savings">Poupança</option>
+                        <option value="business">Empresa</option>
+                        <option value="home">Casa</option>
+                        <option value="support_agent">Consultoria</option>
+                        <option value="group">Grupo</option>
+                        <option value="copyright">Copyright</option>
+                        <option value="verified">Verificado</option>
+                        <option value="library_books">Livros</option>
+                        <option value="percent">Porcentagem</option>
+                        <option value="credit_card">Cartão</option>
+                        <option value="shopping_cart">Carrinho</option>
+                        <option value="handshake">Serviço</option>
+                        <option value="receipt">Recibo</option>
+                        <option value="account_balance">Banco</option>
+                        <option value="show_chart">Gráfico</option>
+                        <option value="attach_file">Anexo</option>
+                        <option value="calendar_today">Calendário Hoje</option>
+                        <option value="description">Descrição</option>
+                        <option value="repeat">Repetir</option>
+                        <option value="autorenew">Fixo</option>
+                        <option value="paid">Pago</option>
+                        <option value="account_balance_wallet">Carteira</option>
+                        <option value="construction">Equipamento</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:16px; justify-content:center;">
+                    <button id="popup-criar-categoria-cancelar" style="padding:10px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Cancelar</button>
+                    <button id="popup-criar-categoria-salvar" style="padding:10px 24px; background-color:#21C25E; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Salvar</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <script src="script.js" defer></script>
+        <script src="script.js"></script>
     
     <!-- Script de notificações -->
     <script src="../js/notificacoes-utils.js"></script>
 
-    <!-- INÍCIO: Configuração do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>

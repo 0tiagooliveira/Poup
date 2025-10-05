@@ -1,0 +1,810 @@
+/* Reset e variáveis */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Garantir que elementos com cz-shortcut-listen ocupem toda a largura */
+[cz-shortcut-listen="true"] {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* Garantir que body e html ocupem toda a largura */
+html, body {
+    width: 100%;
+    max-width: none;
+    overflow-x: hidden;
+}
+
+:root {
+    --primary: #00B4D8;
+    --primary-dark: #0096C7;
+    --success: #21C25E;
+    --error: #EF233C;
+    --warning: #FFB800;
+    --text-primary: #2D3748;
+    --text-secondary: #718096;
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7FAFC;
+    --border: #E2E8F0;
+    --shadow: rgba(0, 0, 0, 0.1);
+    
+    /* Cores dos bancos */
+    --nubank: #820ad1;
+    --itau: #EC7000;
+    --bradesco: #CC092F;
+    --santander: #EC0000;
+    --caixa: #0070AF;
+    --banco-brasil: #FFEF38;
+    --picpay: #21C25E;
+    --carteira: #4CAF50;
+    --outros: #6B7280;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    min-height: 100vh;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Loading */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Container principal */
+.container-app {
+    width: 100vw;
+    max-width: none;
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg-primary);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Header */
+.header-detalhes {
+    background: var(--primary);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-voltar {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.btn-voltar:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.titulo-detalhes {
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-header-action {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.btn-header-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Seletor de Conta */
+.conta-selector {
+    background: var(--primary);
+    padding: 0 20px 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.conta-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.conta-info:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.conta-nome {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Cartão de Saldo */
+.saldo-card {
+    background: var(--bg-primary);
+    margin: -20px 20px 24px;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 20px var(--shadow);
+    position: relative;
+    z-index: 10;
+}
+
+.saldo-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.saldo-valor {
+    color: var(--text-primary);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.btn-reajustar {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 32px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.5px;
+}
+
+.btn-reajustar:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Grid de Informações - Layout igual à imagem */
+.info-section {
+    padding: 0 20px;
+    margin-top: 24px;
+}
+
+/* Instituição bancária - com ícone circular */
+.info-item.full-width {
+    width: 100%;
+    margin-bottom: 24px;
+    background: var(--bg-primary);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.info-item.full-width .info-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.banco-icone {
+    width: 60px;
+    height: 60px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+/* Classes específicas para cores dos bancos */
+.banco-icone.nubank { background: var(--nubank); }
+.banco-icone.itau { background: var(--itau); }
+.banco-icone.bradesco { background: var(--bradesco); }
+.banco-icone.santander { background: var(--santander); }
+.banco-icone.caixa { background: var(--caixa); }
+.banco-icone.banco-brasil { background: var(--banco-brasil); color: #000; }
+.banco-icone.picpay { background: var(--picpay); }
+.banco-icone.carteira { background: var(--carteira); }
+.banco-icone.outros { background: var(--outros); }
+
+.banco-icone img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.banco-icone .material-icons-round {
+    font-size: 24px;
+    color: white;
+}
+
+.banco-info {
+    flex: 1;
+}
+
+.banco-info .info-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.banco-info .info-value {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Grid 2x2 para tipo da conta/saldo inicial e despesas/receitas */
+.info-grid-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.info-item.half-width {
+    flex: 1;
+    background: var(--bg-primary);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+}
+
+.info-item.half-width:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+    border-color: var(--primary);
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.info-header .material-icons-round {
+    font-size: 20px;
+    color: var(--text-secondary);
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.info-value.despesas {
+    color: var(--error);
+}
+
+.info-value.receitas {
+    color: var(--success);
+}
+
+/* Toggle Switch */
+.toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--border);
+    border-radius: 14px;
+    transition: 0.3s;
+}
+
+.toggle-switch label:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + label {
+    background: var(--primary);
+}
+
+.toggle-switch input:checked + label:before {
+    transform: translateX(22px);
+}
+
+/* Popups */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-overlay.show {
+    display: flex;
+}
+
+.popup-content {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px;
+    max-width: 350px;
+    width: 100%;
+    text-align: center;
+}
+
+.popup-content h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.popup-content p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.input-valor {
+    width: 100%;
+    padding: 16px 16px 16px 48px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    background: var(--bg-secondary);
+}
+
+.input-valor:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.popup-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-cancelar, .btn-confirmar {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    flex: 1;
+}
+
+.btn-cancelar {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.btn-cancelar:hover {
+    background: var(--border);
+}
+
+.btn-confirmar {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-confirmar:hover {
+    background: var(--primary-dark);
+}
+
+/* Selector de Conta */
+.selector-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.contas-lista {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.conta-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+}
+
+.conta-item:hover {
+    background: var(--bg-secondary);
+}
+
+.conta-item.active {
+    background: rgba(0, 180, 216, 0.1);
+    border: 2px solid var(--primary);
+}
+
+.conta-item-info {
+    flex: 1;
+    text-align: left;
+}
+
+.conta-item-nome {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    font-size: 1rem;
+}
+
+.conta-item-banco {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+.conta-item-saldo {
+    font-size: 0.9rem;
+    color: var(--primary);
+    font-weight: 500;
+    display: block;
+    margin-top: 4px;
+}
+
+.conta-item-selected {
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.conta-svg-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    /* Removido o filtro para testar se é isso que está causando problema */
+}
+
+.no-contas {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    font-style: italic;
+}
+
+.loading-contas {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container-app {
+        max-width: 100%;
+    }
+    
+    .saldo-card {
+        margin: -20px 16px 24px;
+    }
+    
+    .info-grid {
+        padding: 0 16px;
+    }
+    
+    .btn-editar {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container-app {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.info-item {
+    transition: all 0.3s;
+}
+
+.info-item:hover {
+    background: var(--bg-secondary);
+}
+
+/* RESPONSIVIDADE - Media Queries */
+/* Para telas pequenas, mantém o layout normal */
+
+/* A partir de tablets, deixa tudo full-width */
+@media (min-width: 768px) {
+    /* Remover qualquer limitação de largura */
+    .container-app {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    /* Header ocupa toda a largura */
+    .header-detalhes {
+        width: 100%;
+        padding: 20px 40px;
+    }
+    
+    .titulo-detalhes {
+        font-size: 1.4rem;
+    }
+    
+    /* Seletor de conta ocupa toda a largura */
+    .conta-selector {
+        width: 100%;
+        padding: 0 40px 24px;
+    }
+    
+    /* Seção de informações ocupa toda a largura */
+    .info-section {
+        width: 100%;
+        padding: 0 40px;
+        max-width: none;
+    }
+    
+    /* Cartão de saldo */
+    .saldo-card {
+        margin: -20px 40px 24px;
+        padding: 24px;
+    }
+    
+    /* Grid melhorado */
+    .info-grid-row {
+        gap: 24px;
+    }
+    
+    .info-item.half-width {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    /* Tudo full-width para desktop */
+    .container-app {
+        width: 100%;
+        max-width: none;
+    }
+    
+    /* Header ocupa toda a largura */
+    .header-detalhes {
+        width: 100%;
+        padding: 24px 60px;
+    }
+    
+    .titulo-detalhes {
+        font-size: 1.6rem;
+    }
+    
+    /* Seletor de conta ocupa toda a largura */
+    .conta-selector {
+        width: 100%;
+        padding: 0 60px 28px;
+    }
+    
+    .conta-nome {
+        font-size: 1.2rem;
+    }
+    
+    /* Seção de informações ocupa toda a largura */
+    .info-section {
+        width: 100%;
+        padding: 0 60px;
+        max-width: none;
+    }
+    
+    /* Cartão de saldo */
+    .saldo-card {
+        margin: -20px 60px 32px;
+        padding: 32px;
+        max-width: none;
+    }
+    
+    .saldo-valor {
+        font-size: 2.8rem;
+    }
+    
+    /* Grid mais espaçoso */
+    .info-grid-row {
+        gap: 32px;
+        margin-bottom: 32px;
+    }
+    
+    .info-item {
+        padding: 24px;
+    }
+    
+    .info-item.half-width {
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .banco-icone {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .banco-icone img {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (min-width: 1200px) {
+    /* Tudo full-width para telas grandes */
+    .container-app {
+        width: 100%;
+        max-width: none;
+    }
+    
+    /* Header ocupa toda a largura */
+    .header-detalhes {
+        width: 100%;
+        padding: 24px 80px;
+    }
+    
+    /* Seletor de conta ocupa toda a largura */
+    .conta-selector {
+        width: 100%;
+        padding: 0 80px 32px;
+    }
+    
+    /* Seção de informações ocupa toda a largura */
+    .info-section {
+        width: 100%;
+        padding: 0 80px;
+        max-width: none;
+    }
+    
+    /* Cartão de saldo */
+    .saldo-card {
+        margin: -20px 80px 40px;
+        padding: 40px;
+        max-width: none;
+    }
+    
+    /* Grid ainda mais espaçoso */
+    .info-grid-row {
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+}

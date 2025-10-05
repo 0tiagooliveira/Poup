@@ -6,31 +6,30 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let currentUser = null;
 let despesaParaExcluirId = null; // Armazena o ID da despesa para o popup
-let despesaAtual = null; // Variável para armazenar a despesa atualmente selecionada no modal
 
 // MAPEAMENTO COMPLETO DE CATEGORIAS COM ÍCONES E CORES
 const categoryDetails = {
-    'alimentação': { icon: 'restaurant', background: '#ef4444' },
-    'transporte': { icon: 'directions_car', background: '#f59e0b' },
-    'moradia': { icon: 'home', background: '#8b5cf6' },
-    'saúde': { icon: 'local_hospital', background: '#ec4899' },
-    'educação': { icon: 'school', background: '#06b6d4' },
-    'lazer': { icon: 'sports_esports', background: '#10b981' },
-    'vestuário': { icon: 'checkroom', background: '#64748b' },
-    'compras': { icon: 'shopping_cart', background: '#f59e0b' },
-    'contas': { icon: 'receipt', background: '#ef4444' },
-    'investimentos': { icon: 'trending_up', background: '#22c55e' },
-    'impostos': { icon: 'account_balance', background: '#991b1b' },
-    'seguros': { icon: 'security', background: '#1e40af' },
-    'empréstimos': { icon: 'account_balance_wallet', background: '#7c2d12' },
-    'cartão de crédito': { icon: 'credit_card', background: '#be185d' },
-    'transferências': { icon: 'swap_horiz', background: '#059669' },
-    'doações': { icon: 'volunteer_activism', background: '#dc2626' },
-    'pets': { icon: 'pets', background: '#ca8a04' },
-    'viagem': { icon: 'flight', background: '#0284c7' },
-    'tecnologia': { icon: 'devices', background: '#7c3aed' },
-    'outros': { icon: 'more_horiz', background: '#64748b' },
-    'default': { icon: 'payment', background: '#64748b' }
+    'processo cedaspy': { icon: 'trending_up', background: '#D32F2F' },
+    'rendimentos de processos': { icon: 'trending_up', background: '#D32F2F' },
+    'pis': { icon: 'stars', background: '#8b5cf6' },
+    'pagamento abono salarial': { icon: 'stars', background: '#8b5cf6' },
+    'bonificação': { icon: 'stars', background: '#8b5cf6' },
+    'salário': { icon: 'attach_money', background: '#ef4444' },
+    'salario': { icon: 'attach_money', background: '#ef4444' },
+    'salário ionlab': { icon: 'attach_money', background: '#ef4444' },
+    'freelance': { icon: 'work', background: '#f59e0b' },
+    'investimentos': { icon: 'analytics', background: '#14b8a6' },
+    'dividendos': { icon: 'analytics', background: '#14b8a6' },
+    'vendas': { icon: 'shopping_cart', background: '#D32F2F' },
+    'comissão': { icon: 'percent', background: '#D32F2F' },
+    'prêmio': { icon: 'emoji_events', background: '#f59e0b' },
+    'reembolso': { icon: 'cached', background: '#6366f1' },
+    'aluguel': { icon: 'home', background: '#D32F2F' },
+    'pensão': { icon: 'account_balance', background: '#64748b' },
+    'aposentadoria': { icon: 'elderly', background: '#64748b' },
+    'auxílio': { icon: 'help', background: '#06b6d4' },
+    'benefício': { icon: 'favorite', background: '#ec4899' },
+    'default': { icon: 'receipt_long', background: '#D32F2F' }
 };
 
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -39,11 +38,6 @@ const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
     initializeUI();
-    
-    // Inicializar menu de ações após um pequeno delay
-    setTimeout(() => {
-        window.menuAcoes = new MenuAcoes();
-    }, 100);
 });
 
 function initializeAuth() {
@@ -61,6 +55,14 @@ function initializeAuth() {
 function initializeUI() {
     document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
     document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+    
+    // Listener para o botão adicionar da barra de navegação
+    const botaoAdicionar = document.querySelector('.botao-adicionar');
+    if (botaoAdicionar) {
+        botaoAdicionar.addEventListener('click', () => {
+            window.location.href = '../Nova-Despesa/Nova-Despesa.html';
+        });
+    }
     
     // Listeners do popup de exclusão
     document.getElementById('popup-cancelar').addEventListener('click', () => {
@@ -114,6 +116,23 @@ function setupBusca() {
 }
 
 let todasDespesas = []; // Armazenar todas as despesas para busca
+let mapaContas = {}; // cache id -> nome da conta
+
+// Carrega contas do usuário uma única vez para mapear IDs em nomes
+async function carregarContasUsuario() {
+    if (!currentUser) return;
+    try {
+        const snap = await db.collection('contas').where('userId', '==', currentUser.uid).get();
+        mapaContas = {};
+        snap.forEach(doc => {
+            const data = doc.data() || {};
+            const nome = data.nome || data.descricao || data.banco || data.nomeConta || 'Conta';
+            mapaContas[doc.id] = nome;
+        });
+    } catch (e) {
+        console.warn('Não foi possível carregar contas para mapear nomes:', e);
+    }
+}
 
 function buscarDespesas(termo) {
     if (!termo.trim()) {
@@ -121,19 +140,13 @@ function buscarDespesas(termo) {
         updateTotals(todasDespesas);
         return;
     }
-    
     const termoLower = termo.toLowerCase();
     const despesasFiltradas = todasDespesas.filter(despesa => {
         const descricao = (despesa.descricao || '').toLowerCase();
         const categoria = (despesa.categoria || '').toLowerCase();
         const conta = (despesa.conta || '').toLowerCase();
-        
-        return descricao.includes(termoLower) || 
-               categoria.includes(termoLower) || 
-               conta.includes(termoLower);
+        return descricao.includes(termoLower) || categoria.includes(termoLower) || conta.includes(termoLower);
     });
-    
-    console.log('Despesas filtradas:', despesasFiltradas.length);
     renderDespesas(despesasFiltradas);
     updateTotals(despesasFiltradas);
 }
@@ -169,11 +182,11 @@ function createDropdown() {
     dropdown.id = 'dropdown-menu';
     dropdown.className = 'dropdown-menu';
     dropdown.innerHTML = `
-        <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
+        <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item active">
             <span class="material-icons">trending_up</span>
             Receitas
         </a>
-        <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item active">
+        <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
             <span class="material-icons">trending_down</span>
             Despesas
         </a>
@@ -218,9 +231,13 @@ async function loadDespesas(filtros = null) {
         const firstDay = new Date(currentYear, currentMonth, 1);
         const lastDay = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
 
-        const querySnapshot = await db.collection('despesas').where('userId', '==', currentUser.uid).get();
-        
-        const despesas = [];
+        // Garantir que temos o mapa de contas carregado
+        if (Object.keys(mapaContas).length === 0) {
+            await carregarContasUsuario();
+        }
+
+    const querySnapshot = await db.collection('despesas').where('userId', '==', currentUser.uid).get();
+    const despesas = [];
         // helper to parse many possible date formats into a Date object
         function parseDateField(field) {
             if (!field && field !== 0) return null;
@@ -260,7 +277,7 @@ async function loadDespesas(filtros = null) {
             console.log('Data bruta:', data);
             console.log('Campo data:', data.data);
             console.log('Campo valor:', data.valor);
-            console.log('Campo pago:', data.pago);
+            console.log('Campo concluida:', data.concluida);
             
             const despesaDate = parseDateField(data.data) || new Date();
             console.log('Data parseada:', despesaDate);
@@ -269,7 +286,6 @@ async function loadDespesas(filtros = null) {
             console.log('Data está no range?:', despesaDate >= firstDay && despesaDate <= lastDay);
             
             if (despesaDate >= firstDay && despesaDate <= lastDay) {
-                // normalize: store data as Date object for later use
                 const despesa = { id: doc.id, ...data, data: despesaDate };
                 console.log('Despesa adicionada:', despesa);
                 despesas.push(despesa);
@@ -286,7 +302,7 @@ async function loadDespesas(filtros = null) {
 
         // sort by normalized Date (desc) ou pela ordem escolhida
         const ordem = filtros?.ordem || 'data-desc';
-        despesasFiltradas.sort((a, b) => {
+    despesasFiltradas.sort((a, b) => {
             switch (ordem) {
                 case 'data-asc':
                     return a.data - b.data;
@@ -305,21 +321,20 @@ async function loadDespesas(filtros = null) {
 
         console.log('=== DESPESAS FINAIS ===');
         console.log('Total de despesas encontradas:', despesasFiltradas.length);
-        despesasFiltradas.forEach((d, i) => {
+        despesasFiltradas.forEach((r, i) => {
             console.log(`Despesa ${i+1}:`, {
-                id: d.id,
-                descricao: d.descricao,
-                valor: d.valor,
-                pago: d.pago,
-                data: d.data
+                id: r.id,
+                descricao: r.descricao,
+                valor: r.valor,
+                concluida: r.concluida,
+                data: r.data
             });
         });
 
         // Armazenar para busca
-        todasDespesas = despesasFiltradas;
-
-        renderDespesas(despesasFiltradas);
-        updateTotals(despesasFiltradas);
+    todasDespesas = despesasFiltradas;
+    renderDespesas(despesasFiltradas);
+    updateTotals(despesasFiltradas);
 
     } catch (error) {
         console.error('Erro ao carregar despesas:', error);
@@ -329,67 +344,45 @@ async function loadDespesas(filtros = null) {
 // Função para aplicar filtros nas despesas
 function aplicarFiltros(despesas, filtros) {
     let despesasFiltradas = [...despesas];
-    
-    // Filtro por situação
     if (filtros.situacao && filtros.situacao !== 'todos') {
         switch (filtros.situacao) {
             case 'efetuadas':
-                despesasFiltradas = despesasFiltradas.filter(d => d.pago === true);
+                despesasFiltradas = despesasFiltradas.filter(d => d.pago === true || d.concluida === true);
                 break;
             case 'pendentes':
-                despesasFiltradas = despesasFiltradas.filter(d => d.pago !== true);
+                despesasFiltradas = despesasFiltradas.filter(d => d.pago !== true && d.concluida !== true);
                 break;
             case 'ignoradas':
-                // Você pode implementar a lógica para despesas ignoradas
-                // Por exemplo, se tiver um campo 'ignorada'
                 despesasFiltradas = despesasFiltradas.filter(d => d.ignorada === true);
                 break;
         }
     }
-    
-    // Filtro por categoria
     if (filtros.categoria && filtros.categoria !== 'todos') {
-        despesasFiltradas = despesasFiltradas.filter(r => 
-            r.categoria && r.categoria.toLowerCase().includes(filtros.categoria.toLowerCase())
-        );
+        despesasFiltradas = despesasFiltradas.filter(d => d.categoria && d.categoria.toLowerCase().includes(filtros.categoria.toLowerCase()));
     }
-    
-    // Filtro por conta
     if (filtros.conta && filtros.conta !== 'todos') {
-        despesasFiltradas = despesasFiltradas.filter(r => {
-            const contaNome = typeof r.conta === 'object' && r.conta !== null 
-                ? (r.conta.nome || r.conta.nomeExibicao || '')
-                : (r.conta || '');
+        despesasFiltradas = despesasFiltradas.filter(d => {
+            const contaNome = typeof d.conta === 'object' && d.conta !== null ? (d.conta.nome || d.conta.nomeExibicao || '') : (d.conta || '');
             return contaNome.toLowerCase().includes(filtros.conta.toLowerCase());
         });
     }
-    
-    // Filtro por tag
     if (filtros.tag && filtros.tag !== 'todos') {
-        despesasFiltradas = despesasFiltradas.filter(r => 
-            r.tags && Array.isArray(r.tags) && r.tags.some(tag => 
-                tag.toLowerCase().includes(filtros.tag.toLowerCase())
-            )
-        );
+        despesasFiltradas = despesasFiltradas.filter(d => d.tags && Array.isArray(d.tags) && d.tags.some(tag => tag.toLowerCase().includes(filtros.tag.toLowerCase())));
     }
-    
-    console.log('Filtros aplicados:', filtros);
-    console.log('Despesas antes do filtro:', despesas.length);
-    console.log('Despesas após filtro:', despesasFiltradas.length);
-    
     return despesasFiltradas;
 }
 
-// --- RENDERIZAÇÃO (Adaptada para o novo design) ---
+// --- RENDERIZAÇÃO (Despesas) ---
 function renderDespesas(despesas) {
     const container = document.getElementById('despesas-list');
+    if (!container) return;
     container.innerHTML = '';
 
-    if (despesas.length === 0) {
+    if (!despesas || despesas.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; padding: 3rem 2rem; color: #6b7280;">
                 <div style="margin-bottom: 1rem;">
-                    <span class="material-icons-round" style="font-size: 3rem; opacity: 0.3;">shopping_cart</span>
+                    <span class="material-icons-round" style="font-size: 3rem; opacity: 0.3;">trending_down</span>
                 </div>
                 <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">Nenhuma despesa encontrada</p>
                 <p style="margin-bottom: 2rem; font-size: 0.9rem; opacity: 0.7;">Comece registrando sua primeira despesa</p>
@@ -404,17 +397,13 @@ function renderDespesas(despesas) {
         return;
     }
 
-    const groupedDespesas = groupByDate(despesas);
-    const sortedDates = Object.keys(groupedDespesas).sort((a, b) => new Date(b) - new Date(a));
-
+    const grouped = groupByDate(despesas);
+    const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
     sortedDates.forEach(dateKey => {
         const grupo = document.createElement('div');
         grupo.className = 'grupo-data';
         grupo.innerHTML = `<h3 class="titulo-data">${formatDateGroup(dateKey)}</h3>`;
-        
-        groupedDespesas[dateKey].forEach(despesa => {
-            grupo.appendChild(createDespesaItem(despesa));
-        });
+        grouped[dateKey].forEach(d => grupo.appendChild(createDespesaItem(d)));
         container.appendChild(grupo);
     });
 }
@@ -423,76 +412,64 @@ function createDespesaItem(despesa) {
     const item = document.createElement('div');
     item.className = 'despesa-item';
 
-    // PRIORIDADE: Usar categoria salva na despesa, senão fallback para descrição
     const categoriaKey = (despesa.categoria || despesa.descricao || 'default').toLowerCase();
-    
-    // SISTEMA DE ÍCONES E CORES PERSONALIZADOS:
-    // 1º - Verificar se há ícone e cor salvos na despesa (prioridade)
-    // 2º - Usar mapeamento padrão baseado na categoria/descrição
     let icon, background;
-    
     if (despesa.iconeCategoria && despesa.corCategoria) {
-        // Usar ícone e cor salvos diretamente na despesa
         icon = despesa.iconeCategoria;
         background = despesa.corCategoria;
-        console.log(`Usando ícone/cor salvos: ${icon} / ${background}`);
     } else {
-        // Fallback para mapeamento padrão
         const categoryInfo = categoryDetails[categoriaKey] || categoryDetails.default;
         icon = categoryInfo.icon;
         background = categoryInfo.background;
-        console.log(`Usando mapeamento padrão: ${icon} / ${background} para categoria: ${categoriaKey}`);
     }
-    
-    // Mostrar categoria e conta em uma linha separados por "|"
+
     const categoria = despesa.categoria || '';
     let conta = '';
-    if (typeof despesa.carteira === 'object' && despesa.carteira !== null) {
-        conta = despesa.carteira.nome || despesa.carteira.nomeExibicao || '';
-    } else {
-        conta = despesa.carteira || '';
+    if (despesa.conta && typeof despesa.conta === 'object') {
+        conta = despesa.conta.nome || despesa.conta.nomeExibicao || '';
+    } else if (despesa.carteira && mapaContas[despesa.carteira]) {
+        conta = mapaContas[despesa.carteira];
+    } else if (typeof despesa.conta === 'string') {
+        conta = despesa.conta;
     }
-    
-    // Criar string com categoria | conta
-    const detalhes = [categoria, conta].filter(Boolean).join(' | ');
-
-    // Verificar se é despesa automática
-    const isAutomatica = despesa.origem === 'automatica';
-    const indicadorAutomatico = isAutomatica ? '<span class="indicador-automatico" title="Despesa gerada automaticamente">🔄</span>' : '';
+    const iconeBanco = obterIconeBanco(conta);
+    const statusClasse = despesa.pago ? 'badge-status-ok' : 'badge-status-pendente';
+    const statusIcone = despesa.pago ? 'check_circle' : 'radio_button_unchecked';
 
     item.innerHTML = `
         <div class="despesa-icone" style="background-color: ${background};">
             <span class="material-icons">${icon}</span>
         </div>
         <div class="despesa-conteudo">
-            <span class="despesa-titulo">${despesa.descricao} ${indicadorAutomatico}</span>
+            <span class="despesa-titulo">${despesa.descricao || 'Sem descrição'}</span>
             <div class="despesa-detalhes">
-                ${detalhes ? `<span class="detalhes-linha">${detalhes}</span>` : ''}
+                ${categoria ? `<span class=\"detalhes-categoria\">${categoria}</span>` : ''}
             </div>
         </div>
         <div class="despesa-acoes">
             <span class="despesa-valor">${formatCurrency(parseValueToNumber(despesa.valor))}</span>
-            <button class="botao-acao botao-status ${despesa.pago ? 'concluido' : ''}" onclick="toggleDespesa('${despesa.id}', ${!despesa.pago})">
-                <span class="material-icons">check_circle</span>
-            </button>
-        </div>
-    `;
+            <div class="despesa-badges">
+                ${conta ? `<span class=\"badge-circular badge-conta\">${iconeBanco}</span>` : ''}
+                <button class="badge-circular badge-status ${statusClasse}" onclick="event.stopPropagation(); toggleDespesa('${despesa.id}', ${!despesa.pago})">
+                    <span class="material-icons">${statusIcone}</span>
+                </button>
+            </div>
+        </div>`;
 
-    // Adicionar event listener para abrir modal de detalhes
+    // Abrir modal
     item.addEventListener('click', (e) => {
-        // Prevenir que cliques nos botões de ação abram o modal
-        if (!e.target.closest('.botao-acao')) {
-            abrirModalDetalhes(despesa);
-        }
+        if (!e.target.closest('.botao-acao')) abrirModalDetalhesDespesa(despesa);
     });
 
-    // Adiciona listener para exclusão com clique longo (melhor UX)
+    // Clique longo para excluir
     let pressTimer;
-    item.addEventListener('mousedown', () => { pressTimer = window.setTimeout(() => promptDeleteDespesa(despesa.id), 800); });
-    item.addEventListener('mouseup', () => clearTimeout(pressTimer));
-    item.addEventListener('mouseleave', () => clearTimeout(pressTimer));
-    item.addEventListener('touchstart', () => { pressTimer = window.setTimeout(() => promptDeleteDespesa(despesa.id), 800); });
-    item.addEventListener('touchend', () => clearTimeout(pressTimer));
+    const startPress = () => { pressTimer = window.setTimeout(() => promptDeleteDespesa(despesa.id), 800); };
+    const cancelPress = () => clearTimeout(pressTimer);
+    item.addEventListener('mousedown', startPress);
+    item.addEventListener('mouseup', cancelPress);
+    item.addEventListener('mouseleave', cancelPress);
+    item.addEventListener('touchstart', startPress);
+    item.addEventListener('touchend', cancelPress);
 
     return item;
 }
@@ -501,7 +478,8 @@ function createDespesaItem(despesa) {
 // --- FUNÇÕES UTILITÁRIAS (Mantidas do seu código original) ---
 function groupByDate(despesas) {
     return despesas.reduce((groups, despesa) => {
-        const dateKey = despesa.data.toDateString(); // data já é objeto Date normalizado
+        const dataObj = despesa.data instanceof Date ? despesa.data : new Date(despesa.data);
+        const dateKey = isNaN(dataObj) ? 'Data inválida' : dataObj.toDateString();
         if (!groups[dateKey]) groups[dateKey] = [];
         groups[dateKey].push(despesa);
         return groups;
@@ -560,52 +538,19 @@ function parseValueToNumber(value) {
 }
 
 function updateTotals(despesas) {
-    console.log('=== ATUALIZANDO TOTAIS ===');
-    console.log('Despesas recebidas:', despesas);
-    console.log('Quantidade de despesas:', despesas.length);
-    
-    // Calcular total previsto (todas as despesas)
-    const totalPrevisto = despesas.reduce((sum, r) => {
-        const valor = parseValueToNumber(r.valor);
-        console.log(`Despesa ${r.descricao}: valor=${r.valor}, convertido=${valor}`);
-        return sum + valor;
-    }, 0);
-    
-    // Calcular total pago (apenas despesas pagas)
-    const despesasPagas = despesas.filter(r => r.pago === true);
-    console.log('Despesas pagas filtradas:', despesasPagas.length);
-    
-    const totalPago = despesasPagas.reduce((sum, r) => {
-        const valor = parseValueToNumber(r.valor);
-        console.log(`Despesa paga ${r.descricao}: valor original=${r.valor}, convertido=${valor}`);
-        return sum + valor;
-    }, 0);
-
-    console.log('Total previsto calculado:', totalPrevisto);
-    console.log('Total pago calculado:', totalPago);
-    
+    let totalPago = 0;
+    let totalPendente = 0;
+    despesas.forEach(d => {
+        const valor = parseValueToNumber(d.valor);
+        const efetivada = (d.pago === true) || (d.concluida === true);
+        if (efetivada) totalPago += valor; else totalPendente += valor;
+    });
     const pagoFormatted = formatCurrency(totalPago);
-    const previstoFormatted = formatCurrency(totalPrevisto);
-    
-    console.log('Pago formatado:', pagoFormatted);
-    console.log('Previsto formatado:', previstoFormatted);
-
-    const pagoElement = document.getElementById('total-recebido');
-    const previstoElement = document.getElementById('total-previsto');
-    
-    if (pagoElement) {
-        pagoElement.textContent = pagoFormatted;
-        console.log('Elemento total-recebido atualizado');
-    } else {
-        console.error('Elemento total-recebido não encontrado');
-    }
-    
-    if (previstoElement) {
-        previstoElement.textContent = previstoFormatted;
-        console.log('Elemento total-previsto atualizado');
-    } else {
-        console.error('Elemento total-previsto não encontrado');
-    }
+    const pendenteFormatted = formatCurrency(totalPendente);
+    const pagoElement = document.getElementById('total-recebido'); // reutilizando id existente no HTML
+    const pendenteElement = document.getElementById('total-previsto');
+    if (pagoElement) pagoElement.textContent = pagoFormatted; else console.warn('Elemento total-recebido não encontrado');
+    if (pendenteElement) pendenteElement.textContent = pendenteFormatted; else console.warn('Elemento total-previsto não encontrado');
 }
 
 function formatCurrency(value) {
@@ -648,124 +593,96 @@ async function toggleDespesa(despesaId, novoStatus) {
     }
 }
 
-// Tornar funções globais para onclick
 window.toggleDespesa = toggleDespesa;
+window.confirmDeleteDespesa = confirmDeleteDespesa;
+
+// Retorna ícone (SVG ou material) para a conta baseada no nome
+function obterIconeBanco(nomeConta = '') {
+    const n = (nomeConta || '').toLowerCase();
+    if (!n) return '<span class="material-icons">account_balance</span>';
+    if (n.includes('nubank')) return '<img src="../Icon/Nubank.svg" alt="Nubank" />';
+    if (n.includes('bradesco')) return '<img src="../Icon/bradesco.svg" alt="Bradesco" />';
+    if (n.includes('itau') || n.includes('itaú')) return '<img src="../Icon/itau.svg" alt="Itaú" />';
+    if (n.includes('santander')) return '<img src="../Icon/santander.svg" alt="Santander" />';
+    if (n.includes('caixa')) return '<img src="../Icon/caixa.svg" alt="Caixa" />';
+    if (n.includes('banco do brasil') || n.includes('bb')) return '<img src="../Icon/banco-do-brasil.svg" alt="Banco do Brasil" />';
+    if (n.includes('picpay')) return '<img src="../Icon/picpay.svg" alt="PicPay" />';
+    return '<span class="material-icons">account_balance</span>';
+}
 
 // === FUNÇÕES DO MODAL DE DETALHES ===
+let despesaAtual = null;
 
-function abrirModalDetalhes(despesa) {
+function abrirModalDetalhesDespesa(despesa) {
     despesaAtual = despesa;
-    
-    // Preencher os dados no modal com dados reais da despesa
     document.getElementById('modal-descricao').textContent = despesa.descricao || 'Sem descrição';
     document.getElementById('modal-valor').textContent = formatCurrency(parseValueToNumber(despesa.valor));
     document.getElementById('modal-data').textContent = formatarData(despesa.data);
-    
-    // Exibir nome da conta corretamente - verificar várias propriedades possíveis
+    // Conta
     let nomeContaExibicao = '';
-    if (typeof despesa.conta === 'object' && despesa.conta !== null) {
-        nomeContaExibicao = despesa.conta.nome || 
-                           despesa.conta.nomeExibicao || 
-                           despesa.conta.banco || 
-                           despesa.conta.nomeCompleto ||
-                           despesa.conta.nomeBanco ||
-                           despesa.conta.id ||
-                           'Conta não informada';
-    } else if (typeof despesa.carteira === 'object' && despesa.carteira !== null) {
-        // Tentar usar carteira se conta não estiver disponível
-        nomeContaExibicao = despesa.carteira.nome || 
-                           despesa.carteira.nomeExibicao || 
-                           despesa.carteira.banco || 
-                           despesa.carteira.nomeCompleto ||
-                           despesa.carteira.nomeBanco ||
-                           despesa.carteira.id ||
-                           'Conta não informada';
-    } else {
-        nomeContaExibicao = despesa.conta || despesa.carteira || 'Conta não informada';
+    if (despesa.conta && typeof despesa.conta === 'object') {
+        nomeContaExibicao = despesa.conta.nome || despesa.conta.nomeExibicao || '';
+    } else if (despesa.carteira && mapaContas[despesa.carteira]) {
+        nomeContaExibicao = mapaContas[despesa.carteira];
+    } else if (typeof despesa.conta === 'string') {
+        nomeContaExibicao = despesa.conta;
     }
-    document.getElementById('modal-conta').textContent = nomeContaExibicao;
-    
+    if (!nomeContaExibicao) nomeContaExibicao = 'Conta não informada';
+    const contaEl = document.getElementById('modal-conta');
+    if (contaEl) contaEl.textContent = nomeContaExibicao;
     document.getElementById('modal-categoria').textContent = despesa.categoria || 'Sem categoria';
     document.getElementById('modal-tags').textContent = despesa.tags || 'Nenhuma tag';
     document.getElementById('modal-lembrete').textContent = despesa.lembrete || 'Nenhum';
     document.getElementById('modal-observacao').textContent = despesa.observacao || 'Nenhuma';
-    
-    // Configurar ícone da categoria baseado no sistema existente
+    // Ícone categoria
     const categoriaIcone = document.querySelector('.detalhe-linha:nth-child(3) .detalhe-item-lado:first-child .material-icons');
     const categoriaKey = (despesa.categoria || despesa.descricao || 'default').toLowerCase();
-    
     let iconCategory;
     if (despesa.iconeCategoria) {
-        // Usar ícone salvo na despesa
         iconCategory = despesa.iconeCategoria;
     } else {
-        // Usar mapeamento padrão
         const categoryInfo = categoryDetails[categoriaKey] || categoryDetails.default;
         iconCategory = categoryInfo.icon;
     }
-    
-    if (categoriaIcone) {
-        categoriaIcone.textContent = iconCategory;
-    }
-    
-    // Configurar ícone da conta baseado na conta real
+    if (categoriaIcone) categoriaIcone.textContent = iconCategory;
+    // Ícone conta
     const contaIcone = document.getElementById('modal-conta-icone');
-    let contaNome = '';
-    
-    // Verificar se despesa.conta é um objeto ou string
-    if (typeof despesa.conta === 'object' && despesa.conta !== null) {
-        contaNome = (despesa.conta.nome || despesa.conta.nomeExibicao || '').toLowerCase();
-    } else {
-        contaNome = (despesa.conta || '').toLowerCase();
+    let contaNome = (nomeContaExibicao || '').toLowerCase();
+    const bancos = [
+        { chave:['nubank'], cor:'#8b5cf6', svg:'../Icon/Nubank.svg' },
+        { chave:['bradesco'], cor:'#e53e3e', svg:'../Icon/bradesco.svg' },
+        { chave:['itau','itaú'], cor:'#ff8c00', svg:'../Icon/itau.svg' },
+        { chave:['santander'], cor:'#e53e3e', svg:'../Icon/santander.svg' },
+        { chave:['caixa'], cor:'#0066cc', svg:'../Icon/caixa.svg' },
+        { chave:['banco do brasil','bb'], cor:'#ffdd00', svg:'../Icon/banco-do-brasil.svg' },
+        { chave:['picpay'], cor:'#21c25e', svg:'../Icon/picpay.svg' }
+    ];
+    if (contaIcone) {
+        let aplicado = false;
+        for (const b of bancos) {
+            if (b.chave.some(k => contaNome.includes(k))) {
+                contaIcone.style.background = b.cor;
+                contaIcone.innerHTML = `<img src="${b.svg}" alt="Conta" style="width:16px;height:16px;object-fit:contain;" />`;
+                aplicado = true; break;
+            }
+        }
+        if (!aplicado) {
+            contaIcone.style.background = '#64748b';
+            contaIcone.innerHTML = '<span class="material-icons" style="font-size:16px;">account_balance</span>';
+        }
     }
-    
-    if (contaNome.includes('nubank')) {
-        contaIcone.style.background = '#8b5cf6'; // Roxo do Nubank
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('bradesco')) {
-        contaIcone.style.background = '#e53e3e'; // Vermelho do Bradesco
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('itau') || contaNome.includes('itaú')) {
-        contaIcone.style.background = '#ff8c00'; // Laranja do Itaú
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('santander')) {
-        contaIcone.style.background = '#e53e3e'; // Vermelho do Santander
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('caixa')) {
-        contaIcone.style.background = '#0066cc'; // Azul da Caixa
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('banco do brasil') || contaNome.includes('bb')) {
-        contaIcone.style.background = '#ffdd00'; // Amarelo do BB
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else if (contaNome.includes('picpay')) {
-        contaIcone.style.background = '#21c25e'; // Verde do PicPay
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    } else {
-        contaIcone.style.background = '#64748b'; // Cinza padrão
-        contaIcone.innerHTML = '<span class="material-icons">account_balance</span>';
-    }
-    
-    // Configurar status do botão "Pago"
+    // Status pago
     const statusPago = document.getElementById('status-pago');
-    if (despesa.pago) {
-        statusPago.classList.add('active');
-    } else {
-        statusPago.classList.remove('active');
-    }
-    
-    // Configurar toggle de ignorar
+    if (statusPago) statusPago.classList.toggle('active', !!despesa.pago);
+    // Toggle ignorar
     const toggleIgnorar = document.getElementById('ignorar-despesa');
-    toggleIgnorar.checked = despesa.ignorada || false;
-    
-    // Atualizar totais no header (calcular com base nas despesas carregadas)
-    calcularTotaisModal();
-    
-    // Mostrar modal
+    if (toggleIgnorar) toggleIgnorar.checked = despesa.ignorada || false;
     document.getElementById('modal-detalhes-despesa').style.display = 'flex';
 }
 
-function fecharModalDetalhes() {
-    document.getElementById('modal-detalhes-despesa').style.display = 'none';
+function fecharModalDetalhesDespesa() {
+    const modal = document.getElementById('modal-detalhes-despesa');
+    if (modal) modal.style.display = 'none';
     despesaAtual = null;
 }
 
@@ -792,76 +709,42 @@ function formatarData(dataString) {
 
 // Event listeners para o modal
 document.addEventListener('DOMContentLoaded', () => {
-    // ... código existente ...
-    
-    // Event listeners do modal
-    const fecharModalBtn = document.getElementById('fechar-modal-detalhes');
-    if (fecharModalBtn) {
-        fecharModalBtn.addEventListener('click', fecharModalDetalhes);
-    }
-    
-    // Fechar modal ao clicar no overlay
-    const modalDetalhes = document.getElementById('modal-detalhes-despesa');
-    if (modalDetalhes) {
-        modalDetalhes.addEventListener('click', (e) => {
-            if (e.target.id === 'modal-detalhes-despesa') {
-                fecharModalDetalhes();
+    // Listeners do modal de despesa
+    const fechar = document.getElementById('fechar-modal-detalhes');
+    if (fechar) fechar.addEventListener('click', fecharModalDetalhesDespesa);
+    const overlay = document.getElementById('modal-detalhes-despesa');
+    if (overlay) overlay.addEventListener('click', (e) => { if (e.target.id === 'modal-detalhes-despesa') fecharModalDetalhesDespesa(); });
+    const editar = document.getElementById('botao-editar-despesa');
+    if (editar) editar.addEventListener('click', () => {
+        if (despesaAtual) {
+            localStorage.setItem('despesaParaEditar', JSON.stringify(despesaAtual));
+            // Página de edição de despesa (ajustar quando existir)
+            window.location.href = `../Editar-Despesa/Editar-Despesa.html?id=${despesaAtual.id}`;
+        }
+    });
+    const ignorar = document.getElementById('ignorar-despesa');
+    if (ignorar) ignorar.addEventListener('change', async (e) => {
+        if (despesaAtual) {
+            try {
+                await db.collection('despesas').doc(despesaAtual.id).update({ ignorada: e.target.checked });
+                despesaAtual.ignorada = e.target.checked;
+            } catch (err) {
+                console.error('Erro ao ignorar despesa:', err);
+                e.target.checked = !e.target.checked;
             }
-        });
-    }
-    
-    // Botão editar despesa
-    const botaoEditarDespesa = document.getElementById('botao-editar-despesa');
-    if (botaoEditarDespesa) {
-        botaoEditarDespesa.addEventListener('click', () => {
-            if (despesaAtual) {
-                // Redirecionar para página de edição com os dados da despesa
-                localStorage.setItem('despesaParaEditar', JSON.stringify(despesaAtual));
-                window.location.href = `../Editar-Despesa/Editar-Despesa.html?id=${despesaAtual.id}`;
-            }
-        });
-    }
-    
-    // Toggle ignorar despesa
-    const toggleIgnorarDespesa = document.getElementById('ignorar-despesa');
-    if (toggleIgnorarDespesa) {
-        toggleIgnorarDespesa.addEventListener('change', async (e) => {
-            if (despesaAtual) {
-                try {
-                    await db.collection('despesas').doc(despesaAtual.id).update({ 
-                        ignorada: e.target.checked 
-                    });
-                    despesaAtual.ignorada = e.target.checked;
-                } catch (error) {
-                    console.error('Erro ao atualizar status de ignorar:', error);
-                    e.target.checked = !e.target.checked; // Reverter o toggle
-                }
-            }
-        });
-    }
-    
-    // Status filters
-    document.getElementById('status-pago').addEventListener('click', async () => {
+        }
+    });
+    const statusPagoBtn = document.getElementById('status-pago');
+    if (statusPagoBtn) statusPagoBtn.addEventListener('click', async () => {
         if (despesaAtual) {
             try {
                 const novoStatus = !despesaAtual.pago;
-                await db.collection('despesas').doc(despesaAtual.id).update({ 
-                    pago: novoStatus 
-                });
+                await db.collection('despesas').doc(despesaAtual.id).update({ pago: novoStatus });
                 despesaAtual.pago = novoStatus;
-                
-                // Atualizar visual
-                const btn = document.getElementById('status-pago');
-                if (novoStatus) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-                
-                // Recarregar lista
+                statusPagoBtn.classList.toggle('active', novoStatus);
                 loadDespesas();
-            } catch (error) {
-                console.error('Erro ao atualizar status da receita:', error);
+            } catch (err) {
+                console.error('Erro ao atualizar status pago:', err);
             }
         }
     });
@@ -1054,92 +937,4 @@ function aplicarFiltrosDespesas() {
     
     // Mostrar mensagem de sucesso
     mostrarPopup('Filtros aplicados com sucesso!');
-}
-
-// Menu de Ações Flutuante
-class MenuAcoes {
-    constructor() {
-        this.menuElement = document.getElementById('menu-acoes');
-        this.overlayElement = document.getElementById('overlay-menu');
-        this.botaoAdicionar = document.querySelector('.botao-adicionar');
-        this.isMenuAberto = false;
-        this.init();
-    }
-
-    init() {
-        if (!this.menuElement || !this.botaoAdicionar) {
-            console.warn('Elementos do menu de ações não encontrados');
-            console.log('menuElement:', this.menuElement);
-            console.log('botaoAdicionar:', this.botaoAdicionar);
-            return;
-        }
-
-        console.log('Inicializando menu de ações na Lista de Despesas');
-
-        // Event listener para o botão adicionar
-        this.botaoAdicionar.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Botão + clicado - abrindo menu de ações');
-            this.toggleMenu();
-        });
-
-        // Event listener para o overlay (fechar ao clicar fora)
-        this.overlayElement?.addEventListener('click', () => {
-            this.fecharMenu();
-        });
-
-        // Event listener para ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isMenuAberto) {
-                this.fecharMenu();
-            }
-        });
-
-        // Event listeners para as ações
-        const acaoItems = this.menuElement?.querySelectorAll('.acao-item');
-        acaoItems?.forEach(item => {
-            item.addEventListener('click', (e) => {
-                // Permitir navegação normal
-                this.fecharMenu();
-            });
-        });
-    }
-
-    toggleMenu() {
-        if (this.isMenuAberto) {
-            this.fecharMenu();
-        } else {
-            this.abrirMenu();
-        }
-    }
-
-    abrirMenu() {
-        this.isMenuAberto = true;
-        this.menuElement.style.display = 'block';
-        // Pequeno delay para permitir a transição
-        setTimeout(() => {
-            this.menuElement.classList.add('ativo');
-        }, 10);
-        
-        // Bloquear scroll do body
-        document.body.style.overflow = 'hidden';
-        
-        console.log('Menu de ações aberto');
-    }
-
-    fecharMenu() {
-        this.isMenuAberto = false;
-        this.menuElement.classList.remove('ativo');
-        
-        // Aguardar animação antes de esconder
-        setTimeout(() => {
-            this.menuElement.style.display = 'none';
-        }, 300);
-        
-        // Restaurar scroll do body
-        document.body.style.overflow = '';
-        
-        console.log('Menu de ações fechado');
-    }
 }

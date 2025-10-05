@@ -305,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const repetir = elementos.toggleRepetir.checked;
         const receitaFixa = document.getElementById('toggle-receita-fixa')?.checked || false;
         
+        // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
         const novaReceita = {
             valor: elementos.valorReceita.textContent,
             recebido: elementos.checkboxRecebido.checked,
@@ -320,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timestamp: Date.now()
         };
 
-        console.log('Nova receita a ser salva:', novaReceita);
+    // Preparando persistência da nova receita (log detalhado removido)
 
         // Salvar em lote para melhor performance
         Promise.all([
@@ -383,8 +384,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const receitaFirestore = { ...receita, userId: user.uid };
             firebase.firestore().collection('receitas').add(receitaFirestore)
-                .then(() => {
+                .then((docRef) => {
                     console.log('Receita salva no Firestore!');
+                    
+                    // Criar notificação de nova receita
+                    const receitaComId = { ...receitaFirestore, id: docRef.id };
+                    if (typeof window.criarNotificacaoNovaReceita === 'function') {
+                        window.criarNotificacaoNovaReceita(receitaComId).catch(err => {
+                            console.error('Erro ao criar notificação de receita:', err);
+                        });
+                    }
+                    
                     resolve();
                 })
                 .catch(reject);
@@ -453,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 Promise.all(promessas)
                     .then(() => {
-                        console.log(`${receitasFuturas.length} receitas futuras criadas com sucesso!`);
+                        // Quantidade de receitas futuras criadas
                         resolve();
                     })
                     .catch(reject);
@@ -482,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!existeReceita) {
                     receitas.push(receita);
                     localStorage.setItem('receitas', JSON.stringify(receitas));
-                    console.log(`Receita futura salva no localStorage: ${receita.data}`);
+                    // Receita futura salva no localStorage para data
                 }
                 
                 resolve();
@@ -525,12 +535,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         const receitaFirestore = { ...receita, userId: user.uid };
                         return firebase.firestore().collection('receitas').add(receitaFirestore);
                     } else {
-                        console.log(`Receita já existe para ${mesAno}, pulando...`);
+                        // Receita duplicada para o mês detectada e ignorada
                         return Promise.resolve();
                     }
                 })
                 .then(() => {
-                    console.log(`Receita futura salva no Firestore: ${receita.data}`);
+                    // Receita futura salva no Firestore
                     resolve();
                 })
                 .catch(reject);
@@ -573,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funções da calculadora otimizadas
     function abrirCalculadora() {
-        console.log('Abrindo calculadora...');
+    // Abrindo calculadora
         elementos.calculadoraContainer.style.display = 'block';
         const valorTexto = elementos.valorReceita.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
         estado.valorAtual = valorTexto || '0';
@@ -582,18 +592,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fecharCalculadora() {
-        console.log('Fechando calculadora');
+    // Fechando calculadora
         elementos.calculadoraContainer.style.display = 'none';
     }
 
     function cancelarCalculadora() {
-        console.log('Calculadora cancelada');
+    // Cancelando calculadora
         fecharCalculadora();
     }
 
     function confirmarCalculadora() {
         const valorFormatado = formatarMoeda(estado.valorAtual);
-        console.log('Valor confirmado na calculadora:', valorFormatado);
+    // Valor confirmado na calculadora
         elementos.valorReceita.textContent = `R$ ${valorFormatado}`;
         fecharCalculadora();
     }
@@ -608,13 +618,13 @@ document.addEventListener('DOMContentLoaded', function() {
             estado.valorAtual = numero;
         } else {
             if (estado.valorAtual.includes('.') && estado.valorAtual.split('.')[1].length >= 2) {
-                console.log('Limite de casas decimais atingido');
+                // Limite de casas decimais atingido
                 return;
             }
             estado.valorAtual += numero;
         }
         
-        console.log('Valor atual:', estado.valorAtual);
+    // Atualizando valor em edição
         elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
     }
 
@@ -625,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
             estado.valorAtual = '0';
             estado.digitandoValor = false;
         }
-        console.log('Apagando valor - novo valor:', estado.valorAtual);
+    // Backspace no valor atual
         elementos.calculadoraDisplay.value = formatarValor(estado.valorAtual);
     }
 
