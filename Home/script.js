@@ -415,7 +415,13 @@ async function atualizarSaldoMes(uid) {
 
 // Função principal de inicialização dos componentes da Home
 async function inicializarComponentes(user) {
-    console.log('Inicializando componentes para o usuário:', user.uid);
+    console.log('[Home] 🎯 INÍCIO inicializarComponentes');
+    console.log('[Home] 👤 User objeto:', {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        isAnonymous: user.isAnonymous
+    });
 
     const elementos = {
         avatarUsuarioBtn: document.getElementById('avatar-usuario-btn'),
@@ -433,10 +439,13 @@ async function inicializarComponentes(user) {
             nomeExibicao = nomeExibicao.charAt(0).toUpperCase() + nomeExibicao.slice(1);
         }
         elementos.nomeUsuario.textContent = nomeExibicao || 'Usuário';
+        console.log('[Home] 📛 Nome definido como:', nomeExibicao);
     }
 
     configurarEventos(elementos);
     atualizarSeletorMes(); // Definir mês atual no seletor
+    
+    console.log('[Home] 🔄 Disparando carregarDadosDaHome...');
     carregarDadosDaHome(user.uid);
     
     // Configurar event listeners dos modais
@@ -571,12 +580,28 @@ function configurarEventos(elementos) {
 
 // Carrega todos os dados necessários para a Home
 function carregarDadosDaHome(userId) {
-    console.log(`Buscando dados da home para o usuário: ${userId}`);
-    carregarContasHome(userId);
-    carregarResumoReceitas(userId);
-    carregarReceitasHome(userId);
-    carregarDespesasHome(userId);
-    carregarCartoesCreditoHome(userId);
+    console.log(`[Home] 🚀 INÍCIO carregarDadosDaHome para userId: ${userId}`);
+    console.log('[Home] 🔍 Verificações do estado:');
+    console.log('[Home] - Firebase disponível:', !!firebase);
+    console.log('[Home] - Firestore disponível:', !!firebase?.firestore);
+    console.log('[Home] - auth.currentUser:', !!auth?.currentUser);
+    console.log('[Home] - userId válido:', !!userId);
+    
+    if (!userId) {
+        console.log('[Home] ❌ ERRO: userId não fornecido!');
+        return;
+    }
+    
+    try {
+        carregarContasHome(userId);
+        carregarResumoReceitas(userId);
+        carregarReceitasHome(userId);
+        carregarDespesasHome(userId);
+        carregarCartoesCreditoHome(userId);
+        console.log('[Home] ✅ Todas as funções de carregamento disparadas');
+    } catch (error) {
+        console.error('[Home] 💥 Erro em carregarDadosDaHome:', error);
+    }
 }
 
 // [FUNÇÃO REMOVIDA - DUPLICADA]
