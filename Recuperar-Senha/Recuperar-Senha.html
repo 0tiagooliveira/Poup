@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Recuperar Senha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="../Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <div class="auth-card">
+                <!-- Cabeçalho -->
+                <div class="recovery-header">
+                    <button class="btn-back" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2>Recuperar Senha</h2>
+                </div>
+
+                <!-- Conteúdo da Recuperação -->
+                <div class="recovery-content">
+                    <div class="form-container">
+                        <div class="recovery-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        
+                        <h3>Esqueceu sua senha?</h3>
+                        <p class="subtitle">Não se preocupe! Digite seu email abaixo e enviaremos um link para redefinir sua senha.</p>
+
+                        <form id="form-recuperar-senha">
+                            <div class="form-group">
+                                <label for="email-recuperar">Email</label>
+                                <input type="email" id="email-recuperar" placeholder="Digite seu email" required>
+                            </div>
+
+                            <button type="submit" class="btn-primary" id="btn-enviar">
+                                <span class="btn-text">Enviar Link de Recuperação</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Enviando...
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Mensagem de Sucesso -->
+                        <div class="success-message" id="success-message" style="display: none;">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h4>Email Enviado!</h4>
+                            <p>Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.</p>
+                            <button class="btn-secondary" onclick="history.back()">Voltar ao Login</button>
+                        </div>
+
+                        <!-- Links de Ajuda -->
+                        <div class="help-links">
+                            <p>Não recebeu o email?</p>
+                            <button type="button" class="btn-link" id="reenviar-email" style="display: none;">
+                                Reenviar email
+                            </button>
+                            <a href="../index.html" class="btn-link">Voltar ao login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

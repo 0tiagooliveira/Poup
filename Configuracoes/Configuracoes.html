@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ Configurações</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <button class="btn-voltar" onclick="window.history.back()">
+                <img src="../Icon/anterior.svg" alt="Voltar" class="icon-voltar">
+            </button>
+            <h1 class="header-title">Configurações</h1>
+            <div class="header-spacer"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Seção Perfil -->
+            <section class="config-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Perfil</h2>
+                        <p class="section-desc">Gerencie suas informações pessoais</p>
+                    </div>
+                </div>
+                <div class="config-items">
+                    <div class="config-item" onclick="abrirPopup('popup-editar-perfil')">
+                        <div class="item-info">
+                            <i class="fas fa-edit item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Editar Perfil</span>
+                                <span class="item-desc">Nome, email e foto</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                    <div class="config-item" onclick="abrirPopup('popup-alterar-senha')">
+                        <div class="item-info">
+                            <i class="fas fa-lock item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Alterar Senha</span>
+                                <span class="item-desc">Atualizar sua senha de acesso</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Aplicativo -->
+            <section class="config-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Aplicativo</h2>
+                        <p class="section-desc">Personalize sua experiência</p>
+                    </div>
+                </div>
+                <div class="config-items">
+                    <div class="config-item">
+                        <div class="item-info">
+                            <i class="fas fa-moon item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Modo Escuro</span>
+                                <span class="item-desc">Ativar tema escuro</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-dark-mode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <div class="item-info">
+                            <i class="fas fa-bell item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Notificações</span>
+                                <span class="item-desc">Receber alertas e lembretes</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-notifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="config-item" onclick="abrirPopup('popup-moeda')">
+                        <div class="item-info">
+                            <i class="fas fa-dollar-sign item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Moeda</span>
+                                <span class="item-desc" id="moeda-atual">Real Brasileiro (R$)</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Privacidade -->
+            <section class="config-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Privacidade</h2>
+                        <p class="section-desc">Controle seus dados</p>
+                    </div>
+                </div>
+                <div class="config-items">
+                    <div class="config-item" onclick="abrirPopup('popup-exportar-dados')">
+                        <div class="item-info">
+                            <i class="fas fa-download item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Exportar Dados</span>
+                                <span class="item-desc">Baixar suas informações</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                    <div class="config-item" onclick="abrirPopup('popup-excluir-conta')">
+                        <div class="item-info">
+                            <i class="fas fa-trash item-icon danger"></i>
+                            <div class="item-text">
+                                <span class="item-title danger">Excluir Conta</span>
+                                <span class="item-desc">Remover permanentemente sua conta</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Suporte -->
+            <section class="config-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Suporte</h2>
+                        <p class="section-desc">Ajuda e informações</p>
+                    </div>
+                </div>
+                <div class="config-items">
+                    <div class="config-item" onclick="abrirPopup('popup-sobre')">
+                        <div class="item-info">
+                            <i class="fas fa-info-circle item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Sobre o Poup+</span>
+                                <span class="item-desc">Versão e informações do app</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right item-arrow"></i>
+                    </div>
+                    <div class="config-item" onclick="window.open('mailto:suporte@poupapp.com', '_blank')">
+                        <div class="item-info">
+                            <i class="fas fa-envelope item-icon"></i>
+                            <div class="item-text">
+                                <span class="item-title">Contato</span>
+                                <span class="item-desc">Fale conosco</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-external-link-alt item-arrow"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botão Sair -->
+            <section class="config-section logout-section">
+                <button class="btn-logout" onclick="fazerLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair da Conta
+                </button>
+            </section>
+        </div>
+    </main>
+
+    <!-- Popups -->
+    
+    <!-- Popup Editar Perfil -->
+    <div class="popup-overlay" id="popup-editar-perfil">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon info">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="popup-title">Editar Perfil</h3>
+                <p class="popup-texto">Atualize suas informações pessoais</p>
+            </div>
+            <div class="popup-body">
+                <form id="form-editar-perfil">
+                    <div class="popup-campo">
+                        <label class="popup-label">Nome Completo</label>
+                        <input type="text" class="popup-input" id="nome-perfil" placeholder="Digite seu nome">
+                    </div>
+                    <div class="popup-campo">
+                        <label class="popup-label">Email</label>
+                        <input type="email" class="popup-input" id="email-perfil" placeholder="seu@email.com" readonly>
+                    </div>
+                </form>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-editar-perfil')">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-popup primario" onclick="salvarPerfil()">
+                        <span class="btn-text">Salvar</span>
+                        <div class="popup-loading">
+                            <div class="spinner"></div>
+                            Salvando...
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Alterar Senha -->
+    <div class="popup-overlay" id="popup-alterar-senha">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon warning">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="popup-title">Alterar Senha</h3>
+                <p class="popup-texto">Digite sua senha atual e a nova senha</p>
+            </div>
+            <div class="popup-body">
+                <form id="form-alterar-senha">
+                    <div class="popup-campo">
+                        <label class="popup-label">Senha Atual</label>
+                        <input type="password" class="popup-input" id="senha-atual" placeholder="Digite sua senha atual">
+                    </div>
+                    <div class="popup-campo">
+                        <label class="popup-label">Nova Senha</label>
+                        <input type="password" class="popup-input" id="nova-senha" placeholder="Digite a nova senha">
+                    </div>
+                    <div class="popup-campo">
+                        <label class="popup-label">Confirmar Nova Senha</label>
+                        <input type="password" class="popup-input" id="confirmar-senha" placeholder="Confirme a nova senha">
+                    </div>
+                </form>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-alterar-senha')">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-popup primario" onclick="alterarSenha()">
+                        <span class="btn-text">Alterar</span>
+                        <div class="popup-loading">
+                            <div class="spinner"></div>
+                            Alterando...
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Moeda -->
+    <div class="popup-overlay" id="popup-moeda">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon info">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h3 class="popup-title">Selecionar Moeda</h3>
+                <p class="popup-texto">Escolha a moeda padrão do aplicativo</p>
+            </div>
+            <div class="popup-body">
+                <div class="moeda-options">
+                    <div class="moeda-option active" data-moeda="BRL">
+                        <div class="moeda-info">
+                            <span class="moeda-simbolo">R$</span>
+                            <div class="moeda-text">
+                                <span class="moeda-nome">Real Brasileiro</span>
+                                <span class="moeda-codigo">BRL</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-check moeda-check"></i>
+                    </div>
+                    <div class="moeda-option" data-moeda="USD">
+                        <div class="moeda-info">
+                            <span class="moeda-simbolo">$</span>
+                            <div class="moeda-text">
+                                <span class="moeda-nome">Dólar Americano</span>
+                                <span class="moeda-codigo">USD</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-check moeda-check"></i>
+                    </div>
+                    <div class="moeda-option" data-moeda="EUR">
+                        <div class="moeda-info">
+                            <span class="moeda-simbolo">€</span>
+                            <div class="moeda-text">
+                                <span class="moeda-nome">Euro</span>
+                                <span class="moeda-codigo">EUR</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-check moeda-check"></i>
+                    </div>
+                </div>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-moeda')">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-popup primario" onclick="salvarMoeda()">
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Excluir Conta -->
+    <div class="popup-overlay" id="popup-excluir-conta">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="popup-title">Excluir Conta</h3>
+                <p class="popup-texto">Esta ação não pode ser desfeita. Todos os seus dados serão permanentemente removidos.</p>
+            </div>
+            <div class="popup-body">
+                <div class="popup-warning">
+                    <p><strong>O que será excluído:</strong></p>
+                    <ul>
+                        <li>Todas as suas contas e transações</li>
+                        <li>Histórico financeiro</li>
+                        <li>Configurações personalizadas</li>
+                        <li>Dados de backup</li>
+                    </ul>
+                </div>
+                <div class="popup-campo">
+                    <label class="popup-label">Digite "EXCLUIR" para confirmar</label>
+                    <input type="text" class="popup-input" id="confirmar-exclusao" placeholder="Digite EXCLUIR">
+                </div>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-excluir-conta')">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-popup danger" onclick="excluirConta()" id="btn-excluir-conta" disabled>
+                        <span class="btn-text">Excluir Conta</span>
+                        <div class="popup-loading">
+                            <div class="spinner"></div>
+                            Excluindo...
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Sobre -->
+    <div class="popup-overlay" id="popup-sobre">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon info">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 class="popup-title">Sobre o Poup+</h3>
+                <p class="popup-texto">Controle financeiro inteligente</p>
+            </div>
+            <div class="popup-body">
+                <div class="sobre-info">
+                    <div class="sobre-logo">
+                        <img src="../Icon/LogoPoup.svg" alt="Poup+" class="logo-sobre">
+                    </div>
+                    <div class="sobre-details">
+                        <p><strong>Versão:</strong> 1.0.0</p>
+                        <p><strong>Desenvolvido por:</strong> Equipe Poup+</p>
+                        <p><strong>Última atualização:</strong> Outubro 2025</p>
+                    </div>
+                    <div class="sobre-desc">
+                        <p>O Poup+ é um aplicativo de controle financeiro pessoal que ajuda você a gerenciar suas finanças de forma inteligente e organizada.</p>
+                    </div>
+                </div>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup primario" onclick="fecharPopup('popup-sobre')">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Exportar Dados -->
+    <div class="popup-overlay" id="popup-exportar-dados">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon info">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3 class="popup-title">Exportar Dados</h3>
+                <p class="popup-texto">Baixe uma cópia dos seus dados financeiros</p>
+            </div>
+            <div class="popup-body">
+                <div class="export-options">
+                    <div class="export-option">
+                        <input type="checkbox" id="export-contas" checked>
+                        <label for="export-contas">Contas Bancárias</label>
+                    </div>
+                    <div class="export-option">
+                        <input type="checkbox" id="export-transacoes" checked>
+                        <label for="export-transacoes">Transações</label>
+                    </div>
+                    <div class="export-option">
+                        <input type="checkbox" id="export-categorias" checked>
+                        <label for="export-categorias">Categorias</label>
+                    </div>
+                </div>
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-exportar-dados')">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-popup primario" onclick="exportarDados()">
+                        <span class="btn-text">Exportar</span>
+                        <div class="popup-loading">
+                            <div class="spinner"></div>
+                            Exportando...
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Notificação -->
+    <div class="popup-overlay" id="popup-notificacao">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon" id="popup-notificacao-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 class="popup-title" id="popup-notificacao-titulo">Notificação</h3>
+                <p class="popup-texto" id="popup-notificacao-texto">Mensagem de notificação.</p>
+            </div>
+            <div class="popup-body">
+                <div class="popup-botoes">
+                    <button type="button" class="botao-popup primario" onclick="fecharPopup('popup-notificacao')">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

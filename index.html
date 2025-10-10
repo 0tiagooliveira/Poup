@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Login/Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="Icon/LogoPoup.svg">
+
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="../Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <div class="auth-card">
+                <!-- Abas -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="criar-conta">Criar conta</div>
+                    <div class="tab" data-tab="login">Login</div>
+                </div>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content">
+                    <!-- Criar Conta -->
+                    <div class="tab-pane active" id="criar-conta">
+                        <div class="form-container">
+                            <h2>Criando conta</h2>
+                            <p class="subtitle">Vamos começar preenchendo o formulário abaixo.</p>
+
+                            <form id="form-criar-conta">
+                                <div class="form-group">
+                                    <label for="nome-criar">Nome</label>
+                                    <input type="text" id="nome-criar" placeholder="Seu nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email-criar">Email</label>
+                                    <input type="email" id="email-criar" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-criar">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-criar" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Começar</button>
+
+                                <div class="divider">
+                                    <span>Ou cadastre-se com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Login -->
+                    <div class="tab-pane" id="login">
+                        <div class="form-container">
+                            <h2>Bem-vindo de volta!</h2>
+                            <p class="subtitle">Preencha as informações abaixo para acessar sua conta.</p>
+
+                            <form id="form-login">
+                                <div class="form-group">
+                                    <label for="email-login">E-mail</label>
+                                    <input type="email" id="email-login" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-login">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-login" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Entrar</button>
+
+                                <div class="divider">
+                                    <span>Ou entre com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple-login">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+
+                                <button type="button" class="btn-link">Esqueceu sua senha?</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Popup de Sucesso -->
+    <div id="popup-sucesso" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="popup-title">Sucesso!</h3>
+            <p class="popup-message">Login com Google realizado com sucesso!</p>
+            <button class="popup-button" onclick="fecharPopup()">OK</button>
+        </div>
+    </div>
+
+    <!-- Popup de Erro -->
+    <div id="popup-erro" class="popup-overlay" style="display: none;">
+        <div class="popup-content popup-erro">
+            <div class="popup-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="popup-title">Erro</h3>
+            <p class="popup-message" id="popup-erro-message">Ocorreu um erro.</p>
+            <button class="popup-button" onclick="fecharPopupErro()">OK</button>
+        </div>
+    </div>
+
+    <!-- Popup de Informação -->
+    <div id="popup-info" class="popup-overlay" style="display: none;">
+        <div class="popup-content popup-info">
+            <div class="popup-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 class="popup-title">Informação</h3>
+            <p class="popup-message" id="popup-info-message">Informação importante.</p>
+            <button class="popup-button" onclick="fecharPopupInfo()">OK</button>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+
+</html>

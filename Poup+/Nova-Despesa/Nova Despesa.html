@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Despesa</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="aplicativo">
+        <!-- Cabeçalho -->
+        <header class="cabecalho">
+            <button class="botao-voltar" aria-label="Voltar">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Nova Despesa</h1>
+        </header>
+
+        <!-- Seção do Valor -->
+        <section class="secao-valor" id="secao-valor">
+            <p>Valor da despesa</p>
+            <h2 id="valor-despesa">R$ 0,00</h2>
+        </section>
+
+        <!-- Formulário -->
+        <main class="formulario-receita">
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">paid</span>
+                    <span>Pago</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="pago" checked>
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="campo-formulario campo-data" id="campo-data">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">calendar_today</span>
+                    <span id="data-selecionada">Selecione a data</span>
+                </div>
+                <div class="calendario" id="calendario"></div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">description</span>
+                    <input type="text" id="descricao" placeholder="Descrição da despesa">
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">category</span>
+                    <div class="seletor-categoria" id="seletor-categoria">
+                        <div class="opcao-selecionada">
+                            <span>Selecione uma categoria</span>
+                        </div>
+                        <div class="opcoes-categoria">
+                            <div class="opcao-categoria" data-value="alimentacao">
+                                <span class="icone-categoria">🍕</span>
+                                <span>Alimentação</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="moradia">
+                                <span class="icone-categoria">🏠</span>
+                                <span>Moradia</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="transporte">
+                                <span class="icone-categoria">🚗</span>
+                                <span>Transporte</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="lazer">
+                                <span class="icone-categoria">🎮</span>
+                                <span>Lazer</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="outros">
+                                <span class="icone-categoria">✨</span>
+                                <span>Outros</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">account_balance</span>
+                    <div class="seletor-carteira" id="seletor-carteira">
+                        <div class="opcao-selecionada">
+                            <span>Selecione uma conta</span>
+                        </div>
+                        <div class="opcoes-carteira"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">attach_file</span>
+                    <input type="file" id="anexo" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                    <button class="botao-anexo" id="botao-anexo">Adicionar Anexo</button>
+                </div>
+                <span class="nome-arquivo" id="nome-arquivo"></span>
+            </div>
+
+            <button class="botao-primario" id="botao-salvar">Salvar Despesa</button>
+        </main>
+
+        <!-- Calculadora -->
+        <div class="calculadora-container" id="calculadora-container">
+            <div class="input-container">
+                <input type="text" class="calculadora-display" id="calculadora-display" readonly>
+                <button class="apagar" id="botao-apagar">
+                    <span class="material-icons">backspace</span>
+                </button>
+            </div>
+            <div class="calculadora-botoes">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>+</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>-</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>×</button>
+                <button>,</button>
+                <button>0</button>
+                <button>=</button>
+                <button>÷</button>
+                <button class="btn-cancelar-calculadora">Cancelar</button>
+                <button class="btn-confirmar-calculadora">Confirmar</button>
+            </div>
+        </div>
+
+        <!-- Popup -->
+        <div id="popup-mensagem">
+            <div>
+                <span id="popup-texto"></span>
+                <button id="popup-botao">OK</button>
+            </div>
+        </div>
+    </div>
+    <script src="script-despesa.js"></script>
+</body>
+</html>

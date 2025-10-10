@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gráficos - Poup+</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+    
+    <!-- Firebase SDK v8 (compatibilidade) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="cabecalho">
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <div class="titulo-pagina">
+                    <h1>Gráficos</h1>
+                    <span class="material-icons">expand_more</span>
+                </div>
+                <div class="acoes-cabecalho">
+                    <button class="botao-icone" id="botao-filtros">
+                        <span class="material-icons">tune</span>
+                    </button>
+                    <button class="botao-icone" id="botao-menu">
+                        <span class="material-icons">more_vert</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="conteudo-principal">
+            <!-- Tipos de Gráficos -->
+            <div class="tipos-graficos">
+                <button class="tipo-grafico ativo" data-tipo="donut">
+                    <span class="material-icons-round">donut_large</span>
+                    <span class="tipo-texto">Rosca</span>
+                </button>
+                <button class="tipo-grafico" data-tipo="linha">
+                    <span class="material-icons-round">timeline</span>
+                    <span class="tipo-texto">Linha</span>
+                </button>
+                <button class="tipo-grafico" data-tipo="colunas">
+                    <span class="material-icons-round">bar_chart</span>
+                    <span class="tipo-texto">Barras</span>
+                </button>
+            </div>
+
+            <!-- Filtros de Categoria -->
+            <div class="filtros-wrapper">
+                <div class="filtros-categoria" id="filtros-donut">
+                    <button class="filtro-categoria ativo" data-categoria="despesas-categoria">Despesas por categoria</button>
+                    <button class="filtro-categoria" data-categoria="despesas-conta">Despesas por conta</button>
+                    <button class="filtro-categoria" data-categoria="receitas-categoria">Receitas por categoria</button>
+                    <button class="filtro-categoria" data-categoria="receitas-conta">Receitas por conta</button>
+                    <button class="filtro-categoria" data-categoria="saldos-conta">Saldos por conta</button>
+                    <button class="filtro-categoria" data-categoria="despesas-fixas-variaveis">Despesas fixas x variáveis</button>
+                    <button class="filtro-categoria" data-categoria="receitas-fixas-variaveis">Receitas fixas x variáveis</button>
+                </div>
+            </div>
+
+            <div class="filtros-wrapper">
+                <div class="filtros-categoria" id="filtros-linha" style="display: none;">
+                    <button class="filtro-categoria ativo" data-categoria="despesas-semana">Despesas da semana</button>
+                    <button class="filtro-categoria" data-categoria="despesas-mes">Despesas do mês</button>
+                    <button class="filtro-categoria" data-categoria="despesas-ano">Despesas por ano</button>
+                </div>
+            </div>
+
+            <div class="filtros-wrapper">
+                <div class="filtros-categoria" id="filtros-colunas" style="display: none;">
+                    <button class="filtro-categoria ativo" data-categoria="balanco-mensal">Balanço mensal</button>
+                    <button class="filtro-categoria" data-categoria="fluxo-caixa-anual">Fluxo de caixa anual</button>
+                    <button class="filtro-categoria" data-categoria="despesas-dia-semana">Despesas x dia semana</button>
+                </div>
+            </div>
+
+            <!-- Período -->
+            <div class="periodo-container">
+                <button class="botao-periodo anterior">
+                    <span class="material-icons-round">chevron_left</span>
+                </button>
+                <span class="periodo-texto" id="periodo-texto">SETEMBRO</span>
+                <button class="botao-periodo proximo">
+                    <span class="material-icons-round">chevron_right</span>
+                </button>
+            </div>
+
+            <!-- Container do Gráfico -->
+            <div class="grafico-container">
+                <canvas id="grafico-principal"></canvas>
+                <div class="valor-total" id="valor-total">
+                    <span class="valor">R$ 0,00</span>
+                    <span class="total-texto">Total <span class="material-icons-round">expand_more</span></span>
+                </div>
+            </div>
+
+            <!-- Lista de Itens -->
+            <div class="lista-itens" id="lista-itens">
+                <!-- Será preenchida dinamicamente -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
