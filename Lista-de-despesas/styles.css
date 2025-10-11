@@ -187,6 +187,12 @@ body[cz-shortcut-listen="true"] {
     gap: 48px;
     margin-bottom: 12px;
     flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: var(--cor-fundo-conteudo);
+    z-index: 10;
+    padding: 16px 0;
+    margin: -16px 0 12px 0;
 }
 
 .card-resumo {
@@ -199,11 +205,11 @@ body[cz-shortcut-listen="true"] {
 
 /* Compact new style */
 .secao-resumo.compacta { 
-    padding: 4px 0 0; 
+    padding: 16px 0 4px; 
     justify-content: center; 
     gap: 56px; 
     width: fit-content; 
-    margin: 0 auto 12px; 
+    margin: -16px auto 12px; 
     border: none; 
 }
 
@@ -254,12 +260,16 @@ body[cz-shortcut-listen="true"] {
     flex-direction: column;
     gap: 20px;
     padding-bottom: 80px; /* Espaço para o FAB não cobrir o último item */
+    width: 100% !important; /* Garantir largura total */
 }
 
 .grupo-data {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100% !important; /* Garantir largura total */
+    max-width: 100% !important;
+    clear: both; /* Evitar float */
 }
 
 .titulo-data {
@@ -1362,10 +1372,11 @@ input:checked + .slider:before {
         margin-bottom: 32px;
     }
     
-    /* Grid de itens em desktop */
-    .lista-receitas {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Lista em coluna única */
+    .lista-receitas,
+    .lista-despesas {
+        display: flex;
+        flex-direction: column;
         gap: 24px;
     }
     
@@ -1402,9 +1413,11 @@ input:checked + .slider:before {
         margin-bottom: 40px;
     }
     
-    /* Grid otimizado para telas grandes */
-    .lista-receitas {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    /* Lista em coluna única */
+    .lista-receitas,
+    .lista-despesas {
+        display: flex;
+        flex-direction: column;
         gap: 32px;
     }
 }

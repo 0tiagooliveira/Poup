@@ -195,6 +195,12 @@ body[cz-shortcut-listen="true"] {
     gap: 48px;
     margin-bottom: 12px;
     flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: var(--cor-fundo-conteudo);
+    z-index: 10;
+    padding: 16px 0;
+    margin: -16px 0 12px 0;
 }
 
 .card-resumo {
