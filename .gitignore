@@ -22,3 +22,9 @@ Thumbs.db
 # Temporários
 *.tmp
 *.temp
+
+# Scripts de deploy
+deploy.bat
+deploy.sh
+*.bat
+*.sh

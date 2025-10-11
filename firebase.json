@@ -11,7 +11,11 @@
       "**/node_modules/**",
       "**/*.md",
       ".git/**",
-      ".github/**"
+      ".github/**",
+      "**/*.bat",
+      "**/*.sh",
+      "deploy.bat",
+      "deploy.sh"
     ],
     "headers": [
       {
