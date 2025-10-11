@@ -16,13 +16,14 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const db = firebase.firestore();
-const auth = firebase.auth();
+// Usar instâncias existentes ou criar novas (sem redeclarar)
+const notifDb = firebase.firestore();
+const notifAuth = firebase.auth();
 
 // Função para salvar notificação diretamente no Firestore
 async function salvarNotificacaoFirestore(notificacao) {
     try {
-        const user = auth.currentUser;
+        const user = notifAuth.currentUser;
         if (!user) {
             console.warn('⚠️ Usuário não autenticado, salvando no localStorage');
             return false;
@@ -35,7 +36,7 @@ async function salvarNotificacaoFirestore(notificacao) {
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        const docRef = await db.collection('notificacoes').add(notificacaoData);
+        const docRef = await notifDb.collection('notificacoes').add(notificacaoData);
         console.log('✅ Notificação salva no Firestore:', docRef.id);
         return true;
     } catch (error) {
