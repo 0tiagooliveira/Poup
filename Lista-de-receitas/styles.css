@@ -257,17 +257,22 @@ body[cz-shortcut-listen="true"] {
 }
 
 /* --- LISTA DE DESPESAS --- */
-.lista-despesas {
+.lista-despesas,
+.lista-receitas {
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding-bottom: 80px; /* Espaço para o FAB não cobrir o último item */
+    width: 100%; /* Garantir largura total */
 }
 
 .grupo-data {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100% !important; /* Garantir largura total */
+    max-width: 100% !important;
+    clear: both; /* Evitar float */
 }
 
 .titulo-data {
