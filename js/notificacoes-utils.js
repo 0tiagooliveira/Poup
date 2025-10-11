@@ -1,6 +1,49 @@
 // ===== UTILITÁRIOS DE NOTIFICAÇÕES GLOBAIS =====
 // Este arquivo pode ser incluído em qualquer página para usar o sistema de notificações da Home
 
+// Configuração do Firebase (mesma que usamos em todo o app)
+const firebaseConfig = {
+    apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+    authDomain: "poup-beta.firebaseapp.com",
+    projectId: "poup-beta",
+    storageBucket: "poup-beta.appspot.com",
+    messagingSenderId: "954695915981",
+    appId: "1:954695915981:web:d31b216f79eac178094c84"
+};
+
+// Inicializar Firebase se ainda não foi
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Função para salvar notificação diretamente no Firestore
+async function salvarNotificacaoFirestore(notificacao) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.warn('⚠️ Usuário não autenticado, salvando no localStorage');
+            return false;
+        }
+
+        const notificacaoData = {
+            ...notificacao,
+            userId: user.uid,
+            lida: false,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const docRef = await db.collection('notificacoes').add(notificacaoData);
+        console.log('✅ Notificação salva no Firestore:', docRef.id);
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao salvar notificação no Firestore:', error);
+        return false;
+    }
+}
+
 // Função para verificar se o sistema de notificações está disponível
 function verificarSistemaNotificacoes() {
     return typeof window !== 'undefined' && 
@@ -23,17 +66,24 @@ window.criarNotificacaoNovaConta = async function(conta) {
         
         console.log('📝 Dados da notificação:', notificacaoData);
         
-        // Se estamos na Home, usar o sistema local
+        // Tentar salvar diretamente no Firestore
+        const salvouFirestore = await salvarNotificacaoFirestore(notificacaoData);
+        
+        if (salvouFirestore) {
+            console.log('✅ Notificação salva no Firestore');
+            return;
+        }
+        
+        // Se não conseguiu salvar no Firestore, tentar sistema da Home
         if (window.notificacoesManager) {
             console.log('🏠 Criando notificação diretamente na Home');
             await window.notificacoesManager.criarNotificacao(notificacaoData);
         }
-        // Se estamos em outra página, tentar usar o sistema da Home
         else if (verificarSistemaNotificacoes()) {
             console.log('🔗 Tentando usar sistema da Home parent');
             await window.parent.notificacoesManager.criarNotificacao(notificacaoData);
         }
-        // Fallback para localStorage para ser processado depois
+        // Fallback para localStorage
         else {
             console.log('💾 Salvando no localStorage como pendente');
             const notificacoesPendentes = JSON.parse(localStorage.getItem('notificacoesPendentes') || '[]');
@@ -54,8 +104,6 @@ window.criarNotificacaoNovaConta = async function(conta) {
 window.criarNotificacaoNovaReceita = async function(receita) {
     console.log('📢 [notificacoes-utils] criarNotificacaoNovaReceita chamada');
     console.log('📢 [notificacoes-utils] Dados da receita:', receita);
-    console.log('📢 [notificacoes-utils] window.notificacoesManager existe?', !!window.notificacoesManager);
-    console.log('📢 [notificacoes-utils] window.parent.notificacoesManager existe?', !!(window.parent && window.parent.notificacoesManager));
     
     try {
         const valor = receita.valor || 0;
@@ -77,13 +125,20 @@ window.criarNotificacaoNovaReceita = async function(receita) {
         
         console.log('📢 [notificacoes-utils] Objeto da notificação:', notificacao);
 
-        // Se estamos na Home, usar o sistema local
+        // Tentar salvar diretamente no Firestore
+        const salvouFirestore = await salvarNotificacaoFirestore(notificacao);
+        
+        if (salvouFirestore) {
+            console.log('✅ [notificacoes-utils] Notificação salva no Firestore');
+            return;
+        }
+
+        // Se não conseguiu salvar no Firestore, tentar sistema da Home
         if (window.notificacoesManager) {
             console.log('✅ [notificacoes-utils] Usando notificacoesManager local (estamos na Home)');
             await window.notificacoesManager.criarNotificacao(notificacao);
             console.log('✅ [notificacoes-utils] Notificação criada com sucesso!');
         }
-        // Se estamos em outra página, tentar usar o sistema da Home
         else if (verificarSistemaNotificacoes()) {
             console.log('🔗 [notificacoes-utils] Usando notificacoesManager do parent');
             await window.parent.notificacoesManager.criarNotificacao(notificacao);
@@ -107,6 +162,7 @@ window.criarNotificacaoNovaReceita = async function(receita) {
 
 // Função para criar notificação de nova despesa
 window.criarNotificacaoNovaDespesa = async function(despesa) {
+    console.log('💸 Criando notificação de nova despesa:', despesa);
     try {
         const valor = despesa.valor || 0;
         const formatCurrency = (val) => {
@@ -125,11 +181,18 @@ window.criarNotificacaoNovaDespesa = async function(despesa) {
             dados: { despesaId: despesa.id }
         };
 
-        // Se estamos na Home, usar o sistema local
+        // Tentar salvar diretamente no Firestore
+        const salvouFirestore = await salvarNotificacaoFirestore(notificacao);
+        
+        if (salvouFirestore) {
+            console.log('✅ Notificação salva no Firestore');
+            return;
+        }
+
+        // Se não conseguiu salvar no Firestore, tentar sistema da Home
         if (window.notificacoesManager) {
             await window.notificacoesManager.criarNotificacao(notificacao);
         }
-        // Se estamos em outra página, tentar usar o sistema da Home
         else if (verificarSistemaNotificacoes()) {
             await window.parent.notificacoesManager.criarNotificacao(notificacao);
         }
@@ -143,7 +206,7 @@ window.criarNotificacaoNovaDespesa = async function(despesa) {
             localStorage.setItem('notificacoesPendentes', JSON.stringify(notificacoesPendentes));
         }
     } catch (error) {
-        console.error('Erro ao criar notificação de nova despesa:', error);
+        console.error('❌ Erro ao criar notificação de nova despesa:', error);
     }
 };
 
