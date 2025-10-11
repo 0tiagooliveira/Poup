@@ -63,8 +63,8 @@ let dadosBrutos = {
 };
 
 // Estado atual dos gráficos
-let tipoAtivo = 'donut';
-let categoriaAtiva = 'despesas-categoria';
+let tipoAtivo = 'linha'; // Inicia com gráfico de linha
+let categoriaAtiva = 'despesas-mes'; // Mostra o mês atual
 let graficoAtual = null;
 
 // Período selecionado
@@ -165,6 +165,9 @@ async function carregarDadosReais() {
         
         // Processar dados
         processarDadosParaGraficos(dadosCarregados);
+        
+        // Inicializar UI com gráfico de linha selecionado
+        inicializarUIInicial();
         
         // Criar gráfico inicial
         criarGrafico();
@@ -550,6 +553,34 @@ function mapearCategoria(categoria) {
     };
     
     return mapeamento[categoria] || categoria;
+}
+
+// === INICIALIZAÇÃO DA UI ===
+function inicializarUIInicial() {
+    // Ativar botão de linha
+    document.querySelectorAll('.tipo-grafico').forEach(btn => {
+        if (btn.dataset.tipo === 'linha') {
+            btn.classList.add('ativo');
+        } else {
+            btn.classList.remove('ativo');
+        }
+    });
+    
+    // Ativar filtro de despesas do mês
+    document.querySelectorAll('.filtro-categoria').forEach(btn => {
+        if (btn.dataset.categoria === 'despesas-mes') {
+            btn.classList.add('ativo');
+        } else {
+            btn.classList.remove('ativo');
+        }
+    });
+    
+    // Mostrar filtros de linha, ocultar os outros
+    document.getElementById('filtros-donut').style.display = 'none';
+    document.getElementById('filtros-linha').style.display = 'flex';
+    document.getElementById('filtros-colunas').style.display = 'none';
+    
+    logInfo('✅', 'UI inicializada com gráfico de linha (mês atual)');
 }
 
 // === CONTROLES ===
