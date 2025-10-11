@@ -1,19 +1,24 @@
 // ===== UTILITÁRIOS DE NOTIFICAÇÕES GLOBAIS =====
 // Este arquivo pode ser incluído em qualquer página para usar o sistema de notificações da Home
 
-// Configuração do Firebase (mesma que usamos em todo o app)
-const firebaseConfig = {
-    apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
-    authDomain: "poup-beta.firebaseapp.com",
-    projectId: "poup-beta",
-    storageBucket: "poup-beta.appspot.com",
-    messagingSenderId: "954695915981",
-    appId: "1:954695915981:web:d31b216f79eac178094c84"
-};
+// Verificar se Firebase já foi inicializado
+if (typeof firebase === 'undefined') {
+    console.error('❌ Firebase não está carregado! Certifique-se de incluir os scripts do Firebase antes deste arquivo.');
+}
 
-// Inicializar Firebase se ainda não foi
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+// Verificar se Firebase já foi inicializado pela página
+if (firebase && !firebase.apps.length) {
+    console.warn('⚠️ Firebase não foi inicializado pela página. Inicializando agora...');
+    // Configuração do Firebase (mesma que usamos em todo o app)
+    const notifFirebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84"
+    };
+    firebase.initializeApp(notifFirebaseConfig);
 }
 
 // Usar instâncias existentes ou criar novas (sem redeclarar)

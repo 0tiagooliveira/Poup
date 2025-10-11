@@ -361,11 +361,7 @@
             </div>
         </div>
     </div>
-        <script src="script.js"></script>
     
-    <!-- Script de notificações -->
-    <script src="../js/notificacoes-utils.js"></script>
-
     <!-- Configuração do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -388,6 +384,14 @@
       } else {
          firebase.app(); // if already initialized, use that one
       }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+    
+    <!-- Script de notificações (DEPOIS do Firebase) -->
+    <script src="../js/notificacoes-utils.js"></script>
+    
+    <!-- Script principal da página -->
+    <script src="script.js"></script>
     </script>
     <!-- FIM: Configuração do Firebase -->
 </body>
