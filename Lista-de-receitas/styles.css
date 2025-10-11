@@ -1370,10 +1370,10 @@ input:checked + .slider:before {
         margin-bottom: 32px;
     }
     
-    /* Grid de itens em desktop */
+    /* Lista em coluna única */
     .lista-receitas {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 24px;
     }
     
@@ -1410,9 +1410,10 @@ input:checked + .slider:before {
         margin-bottom: 40px;
     }
     
-    /* Grid otimizado para telas grandes */
+    /* Lista em coluna única */
     .lista-receitas {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 32px;
     }
 }
