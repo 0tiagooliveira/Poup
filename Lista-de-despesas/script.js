@@ -77,8 +77,10 @@ function initializeAuth() {
 }
 
 function initializeUI() {
-    document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
-    document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+    const prevMonth = document.getElementById('prev-month');
+    const nextMonth = document.getElementById('next-month');
+    if (prevMonth) prevMonth.addEventListener('click', () => changeMonth(-1));
+    if (nextMonth) nextMonth.addEventListener('click', () => changeMonth(1));
     
     // Configurar menu adicionar
     configurarMenuAdicionar();
@@ -87,9 +89,13 @@ function initializeUI() {
     initializeModalListeners();
     
     // Listeners do popup de exclusão
-    document.getElementById('popup-cancelar').addEventListener('click', () => {
-        document.getElementById('popup-confirmacao').style.display = 'none';
-    });
+    const popupCancelar = document.getElementById('popup-cancelar');
+    if (popupCancelar) {
+        popupCancelar.addEventListener('click', () => {
+            const popupConfirmacao = document.getElementById('popup-confirmacao');
+            if (popupConfirmacao) popupConfirmacao.style.display = 'none';
+        });
+    }
 }
 
 function setupBusca() {
@@ -217,7 +223,10 @@ function changeMonth(direction) {
 }
 
 function updateMonthDisplay() {
-    document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    const currentMonthEl = document.getElementById('current-month');
+    if (currentMonthEl) {
+        currentMonthEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    }
 }
 
 // --- LÓGICA DE DADOS (Mantida do seu código original) ---
