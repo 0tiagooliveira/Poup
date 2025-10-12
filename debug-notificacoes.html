@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Notificações Históricas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #21C25E 0%, #1a9d4d 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #21C25E;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #21C25E;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .timeline {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #ddd;
+        }
+        
+        .timeline-item.receita {
+            border-left-color: #21C25E;
+        }
+        
+        .timeline-item.despesa {
+            border-left-color: #D32F2F;
+        }
+        
+        .timeline-item.conta {
+            border-left-color: #2196F3;
+        }
+        
+        .timeline-item.transferencia {
+            border-left-color: #FF9800;
+        }
+        
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .timeline-icon.receita {
+            background: #21C25E;
+        }
+        
+        .timeline-icon.despesa {
+            background: #D32F2F;
+        }
+        
+        .timeline-icon.conta {
+            background: #2196F3;
+        }
+        
+        .timeline-icon.transferencia {
+            background: #FF9800;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        
+        .timeline-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .timeline-value {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .timeline-value.receita {
+            color: #21C25E;
+        }
+        
+        .timeline-value.despesa {
+            color: #D32F2F;
+        }
+        
+        .timeline-value.transferencia {
+            color: #FF9800;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #21C25E;
+            background: white;
+            color: #21C25E;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active {
+            background: #21C25E;
+            color: white;
+        }
+        
+        .filter-btn:hover {
+            background: #21C25E;
+            color: white;
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="../firebase-config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Notificações Históricas - Poup+</h1>
+            <div class="user-info" id="user-info">
+                <div>👤 Carregando informações do usuário...</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-receitas">-</div>
+                    <div class="stat-label">Receitas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-despesas">-</div>
+                    <div class="stat-label">Despesas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-contas">-</div>
+                    <div class="stat-label">Contas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-geral">-</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">🔄 Todas</button>
+                <button class="filter-btn" data-filter="receita">💰 Receitas</button>
+                <button class="filter-btn" data-filter="despesa">💸 Despesas</button>
+                <button class="filter-btn" data-filter="conta">🏦 Contas</button>
+            </div>
+            
+            <div class="timeline" id="timeline">
+                <div class="loading">
+                    <div>⏳ Carregando histórico completo...</div>
+                    <div style="margin-top: 8px; font-size: 0.9rem;">Buscando todas as transações do usuário</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados globais
+        let allNotifications = [];
+        let currentFilter = 'all';
+        let currentUser = null;
+
+        // Inicializar Firebase
+        console.log('🔥 Inicializando Firebase...');
+        
+        // Aguardar autenticação
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('👤 Usuário autenticado:', user.uid);
+                document.getElementById('user-info').innerHTML = `
+                    <div><strong>👤 Usuário:</strong> ${user.email || 'N/A'}</div>
+                    <div><strong>🆔 ID:</strong> ${user.uid}</div>
+                `;
+                
+                await carregarHistoricoCompleto(user.uid);
+            } else {
+                console.log('❌ Usuário não autenticado');
+                document.getElementById('user-info').innerHTML = `
+                    <div style="color: #ff6b6b;">❌ Usuário não autenticado</div>
+                `;
+            }
+        });
+
+        // Carregar histórico completo
+        async function carregarHistoricoCompleto(userId) {
+            try {
+                console.log('📊 Carregando dados completos do usuário:', userId);
+                
+                const db = firebase.firestore();
+                allNotifications = [];
+
+                // Buscar todas as coleções em paralelo
+                const [receitasSnapshot, despesasSnapshot, contasSnapshot] = await Promise.all([
+                    db.collection('receitas').where('userId', '==', userId).orderBy('data', 'desc').get(),
+                    db.collection('despesas').where('userId', '==', userId).orderBy('data', 'desc').get(),
+                    db.collection('contas').where('userId', '==', userId).get()
+                ]);
+
+                console.log(`📈 Receitas encontradas: ${receitasSnapshot.size}`);
+                console.log(`📉 Despesas encontradas: ${despesasSnapshot.size}`);
+                console.log(`🏦 Contas encontradas: ${contasSnapshot.size}`);
+
+                // Processar receitas
+                receitasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allNotifications.push({
+                        type: 'receita',
+                        id: doc.id,
+                        title: `Nova receita criada`,
+                        description: data.descricao || 'Sem descrição',
+                        value: data.valor || 'R$ 0,00',
+                        timestamp: data.data ? data.data.toDate() : new Date(),
+                        category: data.categoria || 'Não categorizado',
+                        received: data.recebido || false,
+                        raw: data
+                    });
+                });
+
+                // Processar despesas
+                despesasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allNotifications.push({
+                        type: 'despesa',
+                        id: doc.id,
+                        title: `Nova despesa criada`,
+                        description: data.descricao || 'Sem descrição',
+                        value: data.valor || 'R$ 0,00',
+                        timestamp: data.data ? data.data.toDate() : new Date(),
+                        category: data.categoria || 'Não categorizado',
+                        paid: data.pago || false,
+                        raw: data
+                    });
+                });
+
+                // Processar contas
+                contasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allNotifications.push({
+                        type: 'conta',
+                        id: doc.id,
+                        title: `Nova conta criada`,
+                        description: `${data.nomeConta || 'Conta'} - ${data.banco || 'Banco não informado'}`,
+                        value: data.saldoInicial || 'R$ 0,00',
+                        timestamp: data.dataCriacao ? data.dataCriacao.toDate() : new Date(),
+                        bank: data.banco || 'Não informado',
+                        raw: data
+                    });
+                });
+
+                // Ordenar por data (mais recente primeiro)
+                allNotifications.sort((a, b) => b.timestamp - a.timestamp);
+
+                console.log(`📋 Total de notificações geradas: ${allNotifications.length}`);
+
+                // Atualizar estatísticas
+                atualizarEstatisticas();
+                
+                // Renderizar timeline
+                renderizarTimeline();
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar histórico:', error);
+                document.getElementById('timeline').innerHTML = `
+                    <div class="loading" style="color: #ff6b6b;">
+                        <div>❌ Erro ao carregar dados</div>
+                        <div style="margin-top: 8px; font-size: 0.9rem;">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Atualizar estatísticas
+        function atualizarEstatisticas() {
+            const receitas = allNotifications.filter(n => n.type === 'receita').length;
+            const despesas = allNotifications.filter(n => n.type === 'despesa').length;
+            const contas = allNotifications.filter(n => n.type === 'conta').length;
+            
+            document.getElementById('total-receitas').textContent = receitas;
+            document.getElementById('total-despesas').textContent = despesas;
+            document.getElementById('total-contas').textContent = contas;
+            document.getElementById('total-geral').textContent = receitas + despesas + contas;
+        }
+
+        // Renderizar timeline
+        function renderizarTimeline() {
+            const timeline = document.getElementById('timeline');
+            
+            // Filtrar notificações
+            const filtered = currentFilter === 'all' 
+                ? allNotifications 
+                : allNotifications.filter(n => n.type === currentFilter);
+
+            if (filtered.length === 0) {
+                timeline.innerHTML = `
+                    <div class="loading">
+                        <div>📭 Nenhuma notificação encontrada</div>
+                        <div style="margin-top: 8px; font-size: 0.9rem;">Filtro: ${currentFilter}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = filtered.map(notification => {
+                const icon = getIcon(notification.type);
+                const timeStr = notification.timestamp.toLocaleString('pt-BR');
+                
+                return `
+                    <div class="timeline-item ${notification.type}">
+                        <div class="timeline-icon ${notification.type}">
+                            ${icon}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${notification.title}</div>
+                            <div class="timeline-desc">${notification.description}</div>
+                            ${notification.value ? `<div class="timeline-value ${notification.type}">${notification.value}</div>` : ''}
+                            <div class="timeline-time">📅 ${timeStr}</div>
+                            ${getExtraInfo(notification)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            timeline.innerHTML = html;
+        }
+
+        // Obter ícone por tipo
+        function getIcon(type) {
+            const icons = {
+                receita: '💰',
+                despesa: '💸',
+                conta: '🏦',
+                transferencia: '🔄'
+            };
+            return icons[type] || '📝';
+        }
+
+        // Obter informações extras
+        function getExtraInfo(notification) {
+            let extra = [];
+            
+            if (notification.type === 'receita') {
+                extra.push(`📂 ${notification.category}`);
+                extra.push(notification.received ? '✅ Recebida' : '⏳ Pendente');
+            } else if (notification.type === 'despesa') {
+                extra.push(`📂 ${notification.category}`);
+                extra.push(notification.paid ? '✅ Paga' : '⏳ Pendente');
+            } else if (notification.type === 'conta') {
+                extra.push(`🏛️ ${notification.bank}`);
+            }
+            
+            return extra.length > 0 ? `<div style="margin-top: 8px; font-size: 0.8rem; color: #888;">${extra.join(' • ')}</div>` : '';
+        }
+
+        // Event listeners para filtros
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remover classe active de todos
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // Adicionar classe active ao clicado
+                    btn.classList.add('active');
+                    
+                    // Atualizar filtro
+                    currentFilter = btn.dataset.filter;
+                    
+                    // Re-renderizar
+                    renderizarTimeline();
+                });
+            });
+        });
+
+        console.log('🚀 Script de debug carregado!');
+    </script>
+</body>
+</html>

@@ -178,32 +178,10 @@
             
 
             <div class="campo-formulario">
-                <div class="linha-campo" id="linha-repetir">
+                <div class="linha-campo" id="linha-repetir" style="cursor: pointer;" onclick="abrirModalRepetir()">
                     <span class="material-icons icone-campo">repeat</span>
                     <span>Repetir</span>
-                    <label class="alternador">
-                        <input type="checkbox" id="toggle-repetir" onchange="gerenciarToggles('repetir')">
-                        <span class="controle-alternador"></span>
-                    </label>
-                </div>
-                <div id="campos-repetir" style="display: none;">
-                    <div>
-                        <label for="quantidade-repeticoes">Quantidade de Repetições:</label>
-                        <div class="input-group">
-                            <button type="button" onclick="alterarQuantidade(-1)">-</button>
-                            <input type="number" id="quantidade-repeticoes" value="1" min="1" step="1">
-                            <button type="button" onclick="alterarQuantidade(1)">+</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="frequencia-repeticoes">Frequência:</label>
-                        <select id="frequencia-repeticoes">
-                            <option value="dias">Dias</option>
-                            <option value="semanas">Semanas</option>
-                            <option value="meses">Meses</option>
-                            <option value="anos">Anos</option>
-                        </select>
-                    </div>
+                    <span class="material-icons" style="margin-left: auto; color: #666;">chevron_right</span>
                 </div>
             </div>
 
@@ -215,6 +193,55 @@
                         <input type="checkbox" id="toggle-despesa-fixa" onchange="gerenciarToggles('fixa')">
                         <span class="controle-alternador"></span>
                     </label>
+                </div>
+            </div>
+
+            <!-- Modal de Repetição -->
+            <div id="modal-repetir" class="modal-overlay" style="display: none;">
+                <div class="modal-repetir-content">
+                    <div class="modal-repetir-header">
+                        <h3>Como sua transação se repete?</h3>
+                    </div>
+                    
+                    <div class="modal-repetir-body">
+                        <!-- Quantidade -->
+                        <div class="repeticao-campo">
+                            <span class="material-icons">content_copy</span>
+                            <div class="repeticao-info">
+                                <span class="repeticao-label">Quantidade</span>
+                                <div class="quantidade-controles">
+                                    <button type="button" class="btn-quantidade" onclick="alterarQuantidadeModal(-1)">-</button>
+                                    <input type="number" id="quantidade-repeticoes-modal" value="2" min="1" readonly>
+                                    <button type="button" class="btn-quantidade" onclick="alterarQuantidadeModal(1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Período -->
+                        <div class="repeticao-campo" onclick="togglePeriodoDropdown()">
+                            <span class="material-icons">sync</span>
+                            <div class="repeticao-info">
+                                <span class="repeticao-label">Período</span>
+                                <div class="periodo-selecionado">
+                                    <span id="periodo-texto">Mensal</span>
+                                    <span class="material-icons">expand_more</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Período -->
+                        <div id="periodo-dropdown" class="periodo-dropdown" style="display: none;">
+                            <div class="periodo-opcao" onclick="selecionarPeriodo('Mensal', 'meses')">Mensal</div>
+                            <div class="periodo-opcao" onclick="selecionarPeriodo('Diário', 'dias')">Diário</div>
+                            <div class="periodo-opcao" onclick="selecionarPeriodo('Semanal', 'semanas')">Semanal</div>
+                            <div class="periodo-opcao" onclick="selecionarPeriodo('Anual', 'anos')">Anual</div>
+                            <div class="periodo-opcao" onclick="selecionarPeriodo('Personalizado', 'personalizado')">Personalizado</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-repetir-footer">
+                        <button type="button" class="btn-modal-repetir btn-concluido" onclick="confirmarRepetir()">CONCLUÍDO</button>
+                    </div>
                 </div>
             </div>
 
@@ -356,7 +383,7 @@
                 </div>
                 <div style="display:flex; gap:16px; justify-content:center;">
                     <button id="popup-criar-categoria-cancelar" style="padding:10px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Cancelar</button>
-                    <button id="popup-criar-categoria-salvar" style="padding:10px 24px; background-color:#21C25E; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Salvar</button>
+                    <button id="popup-criar-categoria-salvar" style="padding:10px 24px; background-color:#D32F2F; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Salvar</button>
                 </div>
             </div>
         </div>

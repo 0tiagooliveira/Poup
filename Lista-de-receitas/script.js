@@ -34,7 +34,28 @@ const categoryDetails = {
 
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-// --- INICIALIZAÇÃO ---
+// Configurar menu adicionar
+function configurarMenuAdicionar() {
+    const botaoAdicionar = document.getElementById('botao-adicionar-receitas');
+    const menu = document.getElementById('menu-adicionar-receitas');
+
+    if (!botaoAdicionar || !menu) return;
+
+    botaoAdicionar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (menu.style.display === 'none' || !menu.style.display) {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && e.target !== botaoAdicionar && !botaoAdicionar.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+}// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
     initializeUI();
@@ -56,13 +77,11 @@ function initializeUI() {
     document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
     document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
     
-    // Listener para o botão adicionar da barra de navegação
-    const botaoAdicionar = document.querySelector('.botao-adicionar');
-    if (botaoAdicionar) {
-        botaoAdicionar.addEventListener('click', () => {
-            window.location.href = '../Nova-Receita/Nova-Receita.html';
-        });
-    }
+    // Configurar menu adicionar
+    configurarMenuAdicionar();
+    
+    // Configurar listeners do modal
+    initializeModalListeners();
     
     // Listeners do popup de exclusão
     document.getElementById('popup-cancelar').addEventListener('click', () => {
@@ -164,17 +183,6 @@ function setupDropdownAndFilters() {
             hideDropdown();
         }
     });
-}
-
-function toggleDropdown() {
-    const dropdown = document.getElementById('dropdown-menu');
-    
-    if (!dropdown) {
-        createDropdown();
-    } else {
-        const isVisible = dropdown.style.display === 'block';
-        dropdown.style.display = isVisible ? 'none' : 'block';
-    }
 }
 
 function createDropdown() {
@@ -684,8 +692,8 @@ function formatarData(dataString) {
     }
 }
 
-// Event listeners para o modal
-document.addEventListener('DOMContentLoaded', () => {
+// Event listeners para o modal - Consolidado na inicialização principal
+function initializeModalListeners() {
     // Listeners do modal de receita
     const fechar = document.getElementById('fechar-modal-detalhes');
     if (fechar) fechar.addEventListener('click', fecharModalDetalhesReceita);
@@ -734,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-});
+}
 
 // Função para mostrar popup de mensagem
 function mostrarPopup(mensagem, callback) {
@@ -924,4 +932,38 @@ function aplicarFiltrosReceitas() {
     // Mostrar mensagem de sucesso
     mostrarPopup('Filtros aplicados com sucesso!');
 }
+
+// Funções do Dropdown de Navegação
+function toggleDropdown() {
+    const dropdown = document.getElementById('dropdown-menu');
+    const isVisible = dropdown.style.display === 'block';
+    
+    // Fechar todos os dropdowns primeiro
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+    
+    // Abrir/fechar o dropdown atual
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    
+    // Rotacionar ícone
+    const icon = document.querySelector('.titulo-pagina .material-icons');
+    icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function navegarPara(url) {
+    window.location.href = url;
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('dropdown-menu');
+    const tituloPagina = document.querySelector('.titulo-pagina');
+    
+    if (!tituloPagina.contains(event.target)) {
+        dropdown.style.display = 'none';
+        const icon = document.querySelector('.titulo-pagina .material-icons');
+        icon.style.transform = 'rotate(0deg)';
+    }
+});
 

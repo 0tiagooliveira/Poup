@@ -102,10 +102,6 @@
             <!-- Container do Gráfico -->
             <div class="grafico-container">
                 <canvas id="grafico-principal"></canvas>
-                <div class="valor-total" id="valor-total">
-                    <span class="valor">R$ 0,00</span>
-                    <span class="total-texto">Total <span class="material-icons-round">expand_more</span></span>
-                </div>
             </div>
 
             <!-- Lista de Itens -->
@@ -113,6 +109,45 @@
                 <!-- Será preenchida dinamicamente -->
             </div>
         </main>
+    </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-graficos">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao ativo">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar-graficos" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="alert('Transferência em breve!')">
+            <span class="material-icons">swap_horiz</span>
+            <span>Transferência</span>
+        </div>
     </div>
 
     <script src="script.js"></script>

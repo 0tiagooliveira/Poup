@@ -22,9 +22,20 @@
                 <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
                     <span class="material-icons">arrow_back</span>
                 </button>
-                <div class="titulo-pagina">
+                <div class="titulo-pagina" onclick="toggleDropdown()">
                     <h1>Despesas</h1>
                     <span class="material-icons">expand_more</span>
+                </div>
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
+                    <div class="dropdown-item" onclick="navegarPara('../Lista-de-receitas/Lista-de-receitas.html')">
+                        <span class="material-icons">trending_up</span>
+                        <span>Receitas</span>
+                    </div>
+                    <div class="dropdown-item" onclick="navegarPara('../Transações/Transações.html')">
+                        <span class="material-icons">swap_horiz</span>
+                        <span>Transações</span>
+                    </div>
                 </div>
                 <div class="acoes-cabecalho">
                     <button class="botao-icone" id="botao-busca"><span class="material-icons">search</span></button>
@@ -85,9 +96,6 @@
                 <span class="material-icons-round">receipt_long</span>
                 <span>Transações</span>
             </a>
-            <div class="botao-adicionar">
-                <span class="material-icons-round">add</span>
-            </div>
             <a href="#" class="item-navegacao">
                 <span class="material-icons-round">bar_chart</span>
                 <span>Relatórios</span>
@@ -338,6 +346,45 @@
             <button class="botao-fechar-modal" id="fechar-modal-detalhes">
                 <span class="material-icons">close</span>
             </button>
+        </div>
+    </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu botao-despesa" id="botao-adicionar-despesas">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar-despesas" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="alert('Transferência em breve!')">
+            <span class="material-icons">swap_horiz</span>
+            <span>Transferência</span>
         </div>
     </div>
 

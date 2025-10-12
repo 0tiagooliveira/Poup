@@ -300,13 +300,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Coleta dados de forma otimizada
-        const repetir = elementos.toggleRepetir.checked;
+        const repetir = elementos.toggleRepetir ? elementos.toggleRepetir.checked : false;
         const despesaFixa = document.getElementById('toggle-despesa-fixa')?.checked || false;
         
         // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
         const novaDespesa = {
             valor: elementos.valorDespesa.textContent,
-            pago: elementos.checkboxPago.checked,
+            pago: elementos.checkboxPago ? elementos.checkboxPago.checked : false,
             data: elementos.dataSelecionada.textContent,
             descricao: elementos.inputDescricao.value.trim(),
             categoria: estado.categoriaSelecionada,
@@ -1318,3 +1318,78 @@ function mostrarOpcaoCriarConta() {
     });
     opcoesCarteira.appendChild(opcaoCrear);
 }
+
+// === FUNÇÕES DO MODAL DE REPETIÇÃO ===
+let quantidadeRepetir = 1;
+let periodoRepetir = 'meses';
+let periodoTextoRepetir = 'Mensal';
+
+function abrirModalRepetir() {
+    const modal = document.getElementById('modal-repetir');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('quantidade-repeticoes-modal').value = quantidadeRepetir;
+        document.getElementById('periodo-texto').textContent = periodoTextoRepetir;
+    }
+}
+
+function fecharModalRepetir() {
+    const modal = document.getElementById('modal-repetir');
+    if (modal) {
+        modal.style.display = 'none';
+        const dropdown = document.getElementById('periodo-dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    }
+}
+
+function alterarQuantidadeModal(delta) {
+    const input = document.getElementById('quantidade-repeticoes-modal');
+    let valor = parseInt(input.value) || 1;
+    valor += delta;
+    if (valor < 1) valor = 1;
+    input.value = valor;
+    quantidadeRepetir = valor;
+}
+
+function togglePeriodoDropdown() {
+    const dropdown = document.getElementById('periodo-dropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+}
+
+function selecionarPeriodo(texto, valor) {
+    periodoTextoRepetir = texto;
+    periodoRepetir = valor;
+    document.getElementById('periodo-texto').textContent = texto;
+    document.getElementById('periodo-dropdown').style.display = 'none';
+}
+
+function confirmarRepetir() {
+    document.getElementById('quantidade-repeticoes').value = quantidadeRepetir;
+    document.getElementById('frequencia-repeticoes').value = periodoRepetir;
+    fecharModalRepetir();
+    
+    // Mostrar confirmação visual no trigger
+    const trigger = document.querySelector('.repeticao-campo');
+    if (trigger) {
+        const labelSpan = trigger.querySelector('.repeticao-label');
+        const valoresDiv = trigger.querySelector('.repeticao-info > div');
+        
+        if (valoresDiv) {
+            valoresDiv.innerHTML = `<span style="font-size: 1rem; font-weight: 600; color: #333;">${quantidadeRepetir}x ${periodoTextoRepetir}</span>`;
+        }
+    }
+}
+
+// Event listener para fechar modal ao clicar fora
+document.addEventListener('DOMContentLoaded', function() {
+    const modalOverlay = document.getElementById('modal-repetir');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                fecharModalRepetir();
+            }
+        });
+    }
+});

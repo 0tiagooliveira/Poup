@@ -2,53 +2,227 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transações Financeiras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Transações</title>
+
     <link rel="stylesheet" href="styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
     <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 </head>
 <body>
-    <div class="aplicativo">
-        <!-- Cabeçalho -->
+    <div class="app-container">
         <header class="cabecalho">
-            <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
-                <span class="material-icons-round">arrow_back_ios</span>
-            </button>
-            <h1>Transações</h1>
-            <button id="botao-nova-transacao" class="botao-cabecalho-direita">
-                <span class="material-icons-round">add</span>
-            </button>
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <div class="titulo-pagina" onclick="toggleDropdown()">
+                    <h1>Transações</h1>
+                    <span class="material-icons">expand_more</span>
+                </div>
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
+                    <div class="dropdown-item" onclick="navegarPara('../Lista-de-despesas/Lista-de-despesas.html')">
+                        <span class="material-icons">trending_down</span>
+                        <span>Despesas</span>
+                    </div>
+                    <div class="dropdown-item" onclick="navegarPara('../Lista-de-receitas/Lista-de-receitas.html')">
+                        <span class="material-icons">trending_up</span>
+                        <span>Receitas</span>
+                    </div>
+                </div>
+                <div class="acoes-cabecalho">
+                    <button class="botao-icone" id="botao-busca"><span class="material-icons">search</span></button>
+                    <button class="botao-icone" id="botao-filtros"><span class="material-icons">filter_list</span></button>
+                </div>
+            </div>
+            <nav class="navegacao-mes">
+                <button class="botao-navegacao" id="prev-month">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <h2 class="mes-atual" id="current-month">Carregando...</h2>
+                <button class="botao-navegacao" id="next-month">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </nav>
         </header>
 
-        <!-- Seletor de mês -->
-        <div id="transacoes-mes"></div>
-
-        <!-- Resumo -->
-        <div id="transacoes-resumo"></div>
-
-        <!-- Lista de transações -->
-        <div id="transacoes-lista"></div>
-
-        <!-- Popups -->
-        <div id="popup-confirmacao" class="popup-overlay">
-            <div class="popup-container">
-                <span id="popup-confirmacao-texto" class="popup-texto">Tem certeza que deseja excluir esta transação?</span>
-                <div class="popup-botoes">
-                    <button id="popup-confirmacao-cancelar" class="botao-popup secundario">Cancelar</button>
-                    <button id="popup-confirmacao-excluir" class="botao-popup erro">Excluir</button>
-                </div>
+        <!-- Barra de Busca (inicialmente oculta) -->
+        <div class="barra-busca" id="barra-busca" style="display: none;">
+            <div class="input-busca-container">
+                <span class="material-icons">search</span>
+                <input type="text" id="input-busca" placeholder="Buscar transações..." />
+                <button class="botao-fechar-busca" id="fechar-busca">
+                    <span class="material-icons">close</span>
+                </button>
             </div>
         </div>
 
-        <div id="popup-mensagem" class="popup-overlay">
-            <div class="popup-container">
-                <span id="popup-texto" class="popup-texto"></span>
-                <button id="popup-botao" class="botao-popup primario">OK</button>
+        <main class="conteudo-principal">
+            <section class="secao-resumo compacta">
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">account_balance_wallet</span>
+                        <span>Saldo atual</span>
+                    </div>
+                    <span class="resumo-valor" id="saldo-atual">R$ 0,00</span>
+                </div>
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">wallet</span>
+                        <span>Balanço mensal</span>
+                    </div>
+                    <span class="resumo-valor" id="balanco-mensal">R$ 0,00</span>
+                </div>
+            </section>
+
+            <div class="lista-receitas" id="transacoes-list">
+            </div>
+        </main>
+
+        <!-- Barra de navegação inferior -->
+        <nav class="barra-navegacao-inferior">
+            <a href="../Home/home.html" class="item-navegacao">
+                <span class="material-icons-round">home</span>
+                <span>Principal</span>
+            </a>
+            <a href="../Transações/Transações.html" class="item-navegacao ativo">
+                <span class="material-icons-round">swap_horiz</span>
+                <span>Transações</span>
+            </a>
+            <div class="botao-adicionar-menu" id="botao-adicionar-transacoes">
+                <span class="material-icons-round">add</span>
+            </div>
+            <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+                <span class="material-icons-round">bar_chart</span>
+                <span>Gráficos</span>
+            </a>
+            <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+                <span class="material-icons-round">settings</span>
+                <span>Configurações</span>
+            </a>
+        </nav>
+
+        <!-- Menu de seleção ao clicar no botão + -->
+        <div class="menu-adicionar" id="menu-adicionar-transacoes" style="display: none;">
+            <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+                <span class="material-icons">trending_up</span>
+                <span>Nova Receita</span>
+            </div>
+            <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+                <span class="material-icons">trending_down</span>
+                <span>Nova Despesa</span>
+            </div>
+            <div class="menu-opcao" onclick="alert('Transferência em breve!')">
+                <span class="material-icons">swap_horiz</span>
+                <span>Transferência</span>
             </div>
         </div>
     </div>
+
+    <div class="popup-overlay" id="popup-confirmacao" style="display: none;">
+        <div class="popup-conteudo">
+            <p class="popup-texto">Tem certeza que deseja excluir esta transação?</p>
+            <div class="popup-botoes">
+                <button class="popup-botao cancelar" id="popup-cancelar">Cancelar</button>
+                <button class="popup-botao excluir" id="popup-excluir">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Mensagem -->
+    <div id="popup-mensagem">
+        <div>
+            <span id="popup-texto"></span>
+            <button id="popup-botao">OK</button>
+        </div>
+    </div>
+
+    <!-- Popup de Filtros -->
+    <div id="popup-filtros" class="popup-filtros-overlay" style="display: none;">
+        <div class="popup-filtros-container">
+            <!-- Cabeçalho -->
+            <div class="popup-filtros-header">
+                <button class="popup-filtros-voltar" id="filtros-voltar">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <h2 class="popup-filtros-titulo">Filtrar</h2>
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="popup-filtros-content">
+                <!-- Tipo -->
+                <div class="filtro-secao">
+                    <h3 class="filtro-titulo">Tipo</h3>
+                    <div class="filtro-opcoes">
+                        <button class="filtro-chip active" data-filtro="tipo" data-valor="todos">Todos</button>
+                        <button class="filtro-chip" data-filtro="tipo" data-valor="receita">Receitas</button>
+                        <button class="filtro-chip" data-filtro="tipo" data-valor="despesa">Despesas</button>
+                        <button class="filtro-chip" data-filtro="tipo" data-valor="transferencia">Transferências</button>
+                    </div>
+                </div>
+
+                <!-- Situação -->
+                <div class="filtro-secao">
+                    <h3 class="filtro-titulo">Situação</h3>
+                    <div class="filtro-opcoes">
+                        <button class="filtro-chip active" data-filtro="situacao" data-valor="todos">Todos</button>
+                        <button class="filtro-chip" data-filtro="situacao" data-valor="efetuadas">Efetuadas</button>
+                        <button class="filtro-chip" data-filtro="situacao" data-valor="pendentes">Pendentes</button>
+                    </div>
+                </div>
+
+                <!-- Ordenar -->
+                <div class="filtro-secao">
+                    <h3 class="filtro-titulo">Ordenar</h3>
+                    <div class="filtro-dropdown">
+                        <button class="filtro-dropdown-btn" id="ordenar-dropdown">
+                            <span class="material-icons">sort</span>
+                            <span class="dropdown-texto">Data Decrescente</span>
+                            <span class="material-icons dropdown-arrow">expand_more</span>
+                        </button>
+                        <div class="filtro-dropdown-menu" id="ordenar-menu" style="display: none;">
+                            <button class="dropdown-item active" data-ordem="data-desc">Data Decrescente</button>
+                            <button class="dropdown-item" data-ordem="data-asc">Data Crescente</button>
+                            <button class="dropdown-item" data-ordem="valor-desc">Valor Decrescente</button>
+                            <button class="dropdown-item" data-ordem="valor-asc">Valor Crescente</button>
+                            <button class="dropdown-item" data-ordem="descricao">Descrição</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de aplicar -->
+            <div class="popup-filtros-footer">
+                <button class="filtros-aplicar-btn" id="aplicar-filtros">
+                    <span class="material-icons">check</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>

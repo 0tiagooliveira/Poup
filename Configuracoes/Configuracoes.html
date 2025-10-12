@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poup+ Configurações</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
@@ -209,6 +210,26 @@
             </div>
             <div class="popup-body">
                 <form id="form-editar-perfil">
+                    <!-- Seção da Foto de Perfil -->
+                    <div class="popup-campo">
+                        <label class="popup-label">Foto de Perfil</label>
+                        <div class="foto-perfil-container">
+                            <div class="foto-perfil-preview" id="foto-perfil-preview">
+                                <span class="material-icons-round">account_circle</span>
+                            </div>
+                            <div class="foto-perfil-actions">
+                                <input type="file" id="input-foto-perfil" accept="image/*" style="display: none;">
+                                <button type="button" class="btn-foto-perfil" onclick="document.getElementById('input-foto-perfil').click()">
+                                    <span class="material-icons-round">photo_camera</span>
+                                    Escolher Foto
+                                </button>
+                                <button type="button" class="btn-foto-perfil remover" onclick="removerFotoPerfil()" id="btn-remover-foto" style="display: none;">
+                                    <span class="material-icons-round">delete</span>
+                                    Remover
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="popup-campo">
                         <label class="popup-label">Nome Completo</label>
                         <input type="text" class="popup-input" id="nome-perfil" placeholder="Digite seu nome">
@@ -461,6 +482,45 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-config">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao ativo">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar-config" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="alert('Transferência em breve!')">
+            <span class="material-icons">swap_horiz</span>
+            <span>Transferência</span>
         </div>
     </div>
 

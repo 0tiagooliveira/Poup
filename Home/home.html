@@ -34,7 +34,7 @@
         <header class="cabecalho">
             <div class="cabecalho-conteudo">
                 <div class="usuario-info-container"> <!-- Container para posicionamento -->
-                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;">
+                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;" title="Clique para alterar foto de perfil">
                         <div class="avatar-usuario">
                             <span class="material-icons-round">account_circle</span>
                         </div>
@@ -107,7 +107,9 @@
                             <div class="icone-container receita">
                                 <span class="material-icons-round">savings</span>
                             </div>
-                            <span class="valor-receitas">R$ 0,00</span>
+                            <div class="valor-container">
+                                <span class="valor-receitas" title="Receitas do mês">R$ 0,00</span>
+                            </div>
                         </div>
                     </a>
                     <a href="../Lista-de-despesas/Lista-de-despesas.html" class="cartao cartao-despesas">
@@ -119,7 +121,9 @@
                             <div class="icone-container despesa">
                                 <span class="material-icons-round">shopping_cart</span>
                             </div>
-                            <span class="valor-despesas">R$ 0,00</span>
+                            <div class="valor-container">
+                                <span class="valor-despesas" title="Despesas do mês">R$ 0,00</span>
+                            </div>
                         </div>
                     </a>
                 </div>
@@ -165,7 +169,9 @@
                                 <div class="icone-container receita">
                                     <span class="material-icons-round">savings</span>
                                 </div>
-                                <span class="valor-receitas">R$ 0,00</span>
+                                <div class="valor-container">
+                                    <span class="valor-receitas" title="Receitas do mês">R$ 0,00</span>
+                                </div>
                             </div>
                             <div id="lista-receitas-home" class="lista-mini-ux"></div>
                             <a href="../Lista-de-receitas/Lista-de-receitas.html" class="botao-primario botao-mini-ux">Ver todas</a>
@@ -181,7 +187,9 @@
                                 <div class="icone-container despesa">
                                     <span class="material-icons-round">shopping_cart</span>
                                 </div>
-                                <span class="valor-despesas">R$ 0,00</span>
+                                <div class="valor-container">
+                                    <span class="valor-despesas" title="Despesas do mês">R$ 0,00</span>
+                                </div>
                             </div>
                             <div id="lista-despesas-home" class="lista-mini-ux"></div>
                             <a href="../Lista-de-despesas/Lista-de-despesas.html" class="botao-primario botao-mini-ux">Ver todas</a>
@@ -209,11 +217,6 @@
                 <div class="secao">
                     <div class="secao-cabecalho">
                         <h2 class="titulo-secao">Receitas por categoria</h2>
-                        <div class="filtros-categoria">
-                            <button class="botao-filtro-receita ativo" data-filtro="atual">Atual</button>
-                            <button class="botao-filtro-receita" data-filtro="anterior">Anterior</button>
-                            <button class="botao-filtro-receita" data-filtro="todos">Todos</button>
-                        </div>
                     </div>
                     <div id="container-receitas-categoria">
                         <!-- Estado vazio será inserido dinamicamente -->
@@ -246,11 +249,6 @@
                 <div class="secao">
                     <div class="secao-cabecalho">
                         <h2 class="titulo-secao">Despesas por categoria</h2>
-                        <div class="filtros-categoria">
-                            <button class="botao-filtro ativo" data-filtro="atual">Atual</button>
-                            <button class="botao-filtro" data-filtro="anterior">Anterior</button>
-                            <button class="botao-filtro" data-filtro="todos">Todos</button>
-                        </div>
                     </div>
 
                     <!-- Container dinâmico para gráfico -->
@@ -403,6 +401,45 @@
                 <button class="btn-cancelar" id="btn-cancelar-limpeza">Cancelar</button>
                 <button class="btn-confirmar" id="btn-confirmar-limpeza">Limpar Todas</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao ativo">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-home">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar-home" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons-round">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons-round">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="alert('Transferência em breve!')">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transferência</span>
         </div>
     </div>
 </body>
