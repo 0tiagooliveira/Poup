@@ -947,7 +947,15 @@ function aplicarFiltrosReceitas() {
 
 // Funções do Dropdown de Navegação
 function toggleDropdown() {
+    console.log('toggleDropdown chamado!');
+    
     const dropdown = document.getElementById('dropdown-menu');
+    if (!dropdown) {
+        console.error('Elemento dropdown-menu não encontrado');
+        return;
+    }
+    
+    console.log('Estado atual do dropdown:', dropdown.style.display);
     const isVisible = dropdown.style.display === 'block';
     
     // Fechar todos os dropdowns primeiro
@@ -956,11 +964,17 @@ function toggleDropdown() {
     });
     
     // Abrir/fechar o dropdown atual
-    dropdown.style.display = isVisible ? 'none' : 'block';
+    const newDisplay = isVisible ? 'none' : 'block';
+    dropdown.style.display = newDisplay;
     
     // Rotacionar ícone
     const icon = document.querySelector('.titulo-pagina .material-icons');
-    icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+    if (icon) {
+        icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        console.log('Ícone rotacionado:', icon.style.transform);
+    }
+    
+    console.log('Novo estado do dropdown:', dropdown.style.display);
 }
 
 function navegarPara(url) {
