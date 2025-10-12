@@ -89,6 +89,8 @@ function initializeUI() {
     // Listeners do popup de exclusão
     document.getElementById('popup-cancelar').addEventListener('click', () => {
         document.getElementById('popup-confirmacao').style.display = 'none';
+    });
+}
 
 function setupBusca() {
     const botaoBusca = document.getElementById('botao-busca');
