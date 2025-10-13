@@ -293,18 +293,39 @@ function salvarPerfil() {
                     fotoURL = null; // Remover foto
                 } else if (typeof fotoPerfilAtual === 'object') {
                     // Nova foto selecionada - converter para Base64
-                    fotoURL = await fileToBase64(fotoPerfilAtual);
+                    try {
+                        fotoURL = await fileToBase64(fotoPerfilAtual);
+                        
+                        // Verificar tamanho da string Base64 (Firebase Auth tem limite)
+                        if (fotoURL.length > 100000) { // ~100KB limit
+                            throw new Error('Imagem muito grande. Tente uma imagem menor.');
+                        }
+                    } catch (imageError) {
+                        console.error('Erro ao processar imagem:', imageError);
+                        mostrarLoading('btn-salvar-perfil', false);
+                        mostrarErro('Erro na Imagem', imageError.message || 'Erro ao processar a imagem. Tente uma imagem menor.');
+                        return;
+                    }
                 } else if (typeof fotoPerfilAtual === 'string') {
                     // Manter foto atual
                     fotoURL = fotoPerfilAtual;
                 }
             }
             
-            // Atualizar profile do Firebase Auth
-            await user.updateProfile({
-                displayName: nome,
-                photoURL: fotoURL
-            });
+            // Preparar dados para Firebase Auth (apenas se houver mudanças)
+            const authUpdateData = { displayName: nome };
+            if (fotoURL !== undefined) {
+                authUpdateData.photoURL = fotoURL;
+            }
+            
+            // Atualizar profile do Firebase Auth apenas se necessário
+            try {
+                await user.updateProfile(authUpdateData);
+                console.log('✅ Firebase Auth profile atualizado');
+            } catch (authError) {
+                console.error('❌ Erro no Firebase Auth:', authError);
+                // Continue mesmo com erro no Auth, tente salvar no Firestore
+            }
             
             // Preparar dados para Firestore
             const updateData = {
@@ -314,7 +335,8 @@ function salvarPerfil() {
             
             if (fotoPerfilAtual === 'removed') {
                 updateData.fotoPerfilURL = firebase.firestore.FieldValue.delete();
-            } else if (fotoURL) {
+            } else if (fotoURL && typeof fotoPerfilAtual === 'object') {
+                // Só atualizar se for nova foto
                 updateData.fotoPerfilURL = fotoURL;
             }
             
@@ -329,9 +351,27 @@ function salvarPerfil() {
             atualizarAvatarHome(fotoURL);
             
         } catch (error) {
-            console.error('Erro ao atualizar perfil:', error);
+            console.error('❌ Erro ao atualizar perfil:', error);
+            console.error('❌ Detalhes do erro:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
+            
             mostrarLoading('btn-salvar-perfil', false);
-            mostrarErro('Erro', 'Não foi possível atualizar o perfil. Tente novamente.');
+            
+            // Mensagem de erro mais específica
+            let mensagemErro = 'Não foi possível atualizar o perfil. Tente novamente.';
+            
+            if (error.code === 'auth/invalid-photo-url') {
+                mensagemErro = 'Formato de imagem inválido. Tente uma imagem JPG ou PNG.';
+            } else if (error.code === 'auth/argument-error') {
+                mensagemErro = 'Dados inválidos. Verifique se todos os campos estão preenchidos corretamente.';
+            } else if (error.message && error.message.includes('imagem')) {
+                mensagemErro = error.message;
+            }
+            
+            mostrarErro('Erro', mensagemErro);
         }
     }
     
@@ -622,14 +662,20 @@ function removerFotoPerfil() {
 // Converter arquivo para Base64 comprimido para salvar no Firestore
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
+        // Verificar tamanho do arquivo (máximo 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            reject(new Error('Arquivo muito grande. Máximo 5MB.'));
+            return;
+        }
+        
         // Criar canvas para compressão
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
         
         img.onload = function() {
-            // Definir tamanho máximo (200x200 para avatars)
-            const maxSize = 200;
+            // Definir tamanho máximo menor para avatar (150x150)
+            const maxSize = 150;
             let { width, height } = img;
             
             // Calcular proporções
@@ -652,12 +698,21 @@ function fileToBase64(file) {
             // Desenhar imagem redimensionada
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Converter para Base64 com qualidade reduzida
-            const base64 = canvas.toDataURL('image/jpeg', 0.7);
+            // Converter para Base64 com qualidade mais baixa para reduzir tamanho
+            let quality = 0.5;
+            let base64 = canvas.toDataURL('image/jpeg', quality);
+            
+            // Se ainda muito grande, reduzir qualidade
+            while (base64.length > 50000 && quality > 0.1) {
+                quality -= 0.1;
+                base64 = canvas.toDataURL('image/jpeg', quality);
+            }
+            
+            console.log(`📷 Imagem processada: ${Math.round(base64.length/1024)}KB, qualidade: ${Math.round(quality*100)}%`);
             resolve(base64);
         };
         
-        img.onerror = () => reject(new Error('Erro ao processar imagem'));
+        img.onerror = () => reject(new Error('Formato de imagem inválido'));
         
         // Carregar arquivo
         const reader = new FileReader();
