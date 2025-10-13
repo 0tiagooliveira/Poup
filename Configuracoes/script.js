@@ -312,11 +312,8 @@ function salvarPerfil() {
                 }
             }
             
-            // Preparar dados para Firebase Auth (apenas se houver mudanças)
+            // Preparar dados para Firebase Auth (apenas nome, sem foto devido ao limite de tamanho)
             const authUpdateData = { displayName: nome };
-            if (fotoURL !== undefined) {
-                authUpdateData.photoURL = fotoURL;
-            }
             
             // Atualizar profile do Firebase Auth apenas se necessário
             try {
@@ -340,8 +337,27 @@ function salvarPerfil() {
                 updateData.fotoPerfilURL = fotoURL;
             }
             
-            // Salvar no Firestore
-            await db.collection('users').doc(user.uid).update(updateData);
+            // Salvar no Firestore (criar se não existir)
+            try {
+                await db.collection('users').doc(user.uid).set(updateData, { merge: true });
+                console.log('✅ Documento de usuário salvo/atualizado no Firestore');
+            } catch (firestoreError) {
+                console.error('❌ Erro ao salvar no Firestore:', firestoreError);
+                // Se falhar o update, tentar criar
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        name: nome,
+                        email: user.email,
+                        fotoPerfilURL: fotoURL || null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Documento de usuário criado no Firestore');
+                } catch (createError) {
+                    console.error('❌ Erro ao criar documento no Firestore:', createError);
+                    throw createError;
+                }
+            }
             
             mostrarLoading('btn-salvar-perfil', false);
             fecharPopup('popup-editar-perfil');

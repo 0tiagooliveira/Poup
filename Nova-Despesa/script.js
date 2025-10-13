@@ -341,12 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? 'Despesa salva com sucesso! Despesas futuras foram geradas automaticamente.'
                 : 'Despesa salva com sucesso!';
 
-            if (typeof window.criarNotificacaoNovaDespesa === 'function') {
-                window.criarNotificacaoNovaDespesa(novaDespesa).catch(err => {
-                    console.error('Erro ao criar notificação de despesa:', err);
-                });
-            }
-
             mostrarPopup(mensagem, () => {
                 limparFormulario();
                 window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
@@ -564,23 +558,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${dia}/${mes}/${ano}`;
     }
 
-    // Função otimizada para limpar formulário
     function limparFormulario() {
     elementos.valorDespesa.textContent = 'R$ 0,00';
-    elementos.checkboxPago.checked = true;
-        elementos.inputDescricao.value = '';
-        elementos.opcaoSelecionadaCategoria.innerHTML = '<span>Selecione uma categoria</span>';
-        elementos.opcaoSelecionadaCarteira.innerHTML = '<span>Selecione uma conta</span>';
-        elementos.nomeArquivo.textContent = '';
-        elementos.inputAnexo.value = '';
+    
+    if (elementos.checkboxPago) {
+        elementos.checkboxPago.checked = true;
+    }
+    
+    elementos.inputDescricao.value = '';
+    elementos.opcaoSelecionadaCategoria.innerHTML = '<span>Selecione uma categoria</span>';
+    elementos.opcaoSelecionadaCarteira.innerHTML = '<span>Selecione uma conta</span>';
+    elementos.nomeArquivo.textContent = '';
+    elementos.inputAnexo.value = '';
+    
+    if (elementos.toggleRepetir) {
         elementos.toggleRepetir.checked = false;
+    }
+    if (elementos.camposRepetir) {
         elementos.camposRepetir.style.display = 'none';
-        
-        estado.categoriaSelecionada = null;
-        estado.carteiraSelecionada = null;
-        estado.dataSelecionada = new Date();
-        
-        atualizarDataSelecionada();
+    }
+    
+    estado.categoriaSelecionada = null;
+    estado.carteiraSelecionada = null;
+    estado.dataSelecionada = new Date();
+    
+    atualizarDataSelecionada();
     }
 
     // Funções da calculadora otimizadas
@@ -1366,8 +1368,16 @@ function selecionarPeriodo(texto, valor) {
 }
 
 function confirmarRepetir() {
-    document.getElementById('quantidade-repeticoes').value = quantidadeRepetir;
-    document.getElementById('frequencia-repeticoes').value = periodoRepetir;
+    const quantidadeInput = document.getElementById('quantidade-repeticoes');
+    const frequenciaInput = document.getElementById('frequencia-repeticoes');
+    
+    if (quantidadeInput) {
+        quantidadeInput.value = quantidadeRepetir;
+    }
+    if (frequenciaInput) {
+        frequenciaInput.value = periodoRepetir;
+    }
+    
     fecharModalRepetir();
     
     // Mostrar confirmação visual no trigger

@@ -3016,7 +3016,12 @@ if (typeof window.criarNotificacaoNovaDespesa !== 'function') {
                 titulo: 'Despesa registrada',
                 descricao: `${despesa.descricao || 'Despesa'} de ${formatCurrency(valorNum)}${complementoConta}`,
                 valor: `-${formatCurrency(valorNum)}`,
-                acao: { tipo: 'navegacao', url: '../Lista-de-despesas/Lista-de-despesas.html' }
+                acao: { tipo: 'navegacao', url: '../Lista-de-despesas/Lista-de-despesas.html' },
+                dados: { 
+                    despesaId: despesa.id || null,
+                    tipo: 'despesa',
+                    categoria: despesa.categoria || 'Sem categoria'
+                }
             });
         } catch (error) {
             console.error('Erro ao criar notificação de nova despesa:', error);
