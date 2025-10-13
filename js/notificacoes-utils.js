@@ -131,7 +131,7 @@ window.criarNotificacaoNovaReceita = async function(receita) {
         
         // Criar mensagem com categoria em vez de valor
         const categoria = receita.categoria || 'Categoria não definida';
-        const mensagem = `Receita "${receita.descricao || 'Nova receita'}" foi criada na categoria #${categoria}#!`;
+        const mensagem = `Receita "${receita.descricao || 'Nova receita'}" foi criada na categoria ${categoria}!`;
         
         const notificacao = {
             tipo: 'receita_criada',
@@ -203,7 +203,7 @@ window.criarNotificacaoNovaDespesa = async function(despesa) {
         
         // Criar mensagem com categoria em vez de valor
         const categoria = despesa.categoria || 'Categoria não definida';
-        const mensagem = `Despesa "${despesa.descricao || 'Nova despesa'}" foi criada na categoria #${categoria}#!`;
+        const mensagem = `Despesa "${despesa.descricao || 'Nova despesa'}" foi criada na categoria ${categoria}!`;
         
         const notificacao = {
             tipo: 'despesa_criada',
