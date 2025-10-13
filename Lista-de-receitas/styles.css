@@ -144,9 +144,14 @@ body[cz-shortcut-listen="true"] {
     box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     border: 1px solid #e0e0e0;
     min-width: 180px;
-    z-index: 1000;
+    z-index: 9999;
     overflow: hidden;
     margin-top: 8px;
+    display: none; /* Inicialmente oculto */
+}
+
+.dropdown-menu[style*="block"] {
+    display: block !important;
 }
 
 .dropdown-item {

@@ -987,11 +987,27 @@ function toggleDropdown() {
     }
     
     console.log('Estado atual do dropdown:', dropdown.style.display);
+    console.log('Posição do dropdown:', dropdown.getBoundingClientRect());
+    
     const isVisible = dropdown.style.display === 'block';
     
     // Abrir/fechar o dropdown atual
-    const newDisplay = isVisible ? 'none' : 'block';
-    dropdown.style.display = newDisplay;
+    if (isVisible) {
+        dropdown.style.display = 'none';
+        console.log('Dropdown fechado');
+    } else {
+        dropdown.style.display = 'block';
+        dropdown.style.visibility = 'visible';
+        dropdown.style.opacity = '1';
+        console.log('Dropdown aberto');
+        
+        // Log de debug para verificar se está visível
+        setTimeout(() => {
+            const rect = dropdown.getBoundingClientRect();
+            console.log('Posição após abrir:', rect);
+            console.log('Estilos computados:', window.getComputedStyle(dropdown));
+        }, 100);
+    }
     
     // Rotacionar ícone
     const icon = document.querySelector('.titulo-pagina .material-icons');
@@ -1004,6 +1020,7 @@ function toggleDropdown() {
 }
 
 function navegarPara(url) {
+    console.log('Navegando para:', url);
     window.location.href = url;
 }
 
@@ -1013,6 +1030,7 @@ document.addEventListener('click', function(event) {
     const tituloPagina = document.querySelector('.titulo-pagina');
     
     if (dropdown && tituloPagina && !tituloPagina.contains(event.target)) {
+        console.log('Clicou fora do dropdown, fechando');
         dropdown.style.display = 'none';
         const icon = document.querySelector('.titulo-pagina .material-icons');
         if (icon) {

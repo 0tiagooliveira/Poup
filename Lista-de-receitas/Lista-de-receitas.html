@@ -25,16 +25,16 @@
                 <div class="titulo-pagina" onclick="toggleDropdown()">
                     <h1>Receitas</h1>
                     <span class="material-icons">expand_more</span>
-                </div>
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
-                    <div class="dropdown-item" onclick="navegarPara('../Lista-de-despesas/Lista-de-despesas.html')">
-                        <span class="material-icons">trending_down</span>
-                        <span>Despesas</span>
-                    </div>
-                    <div class="dropdown-item" onclick="navegarPara('../Transações/Transações.html')">
-                        <span class="material-icons">swap_horiz</span>
-                        <span>Transações</span>
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
+                        <div class="dropdown-item" onclick="event.stopPropagation(); navegarPara('../Lista-de-despesas/Lista-de-despesas.html')">
+                            <span class="material-icons">trending_down</span>
+                            <span>Despesas</span>
+                        </div>
+                        <div class="dropdown-item" onclick="event.stopPropagation(); navegarPara('../Transações/Transações.html')">
+                            <span class="material-icons">swap_horiz</span>
+                            <span>Transações</span>
+                        </div>
                     </div>
                 </div>
                 <div class="acoes-cabecalho">
