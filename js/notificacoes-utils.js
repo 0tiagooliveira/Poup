@@ -112,7 +112,15 @@ window.criarNotificacaoNovaReceita = async function(receita) {
     console.log('📢 [notificacoes-utils] Dados da receita:', receita);
     
     try {
-        const valor = receita.valor || 0;
+        // Converter valor para número se for string formatada
+        let valor = receita.valor || 0;
+        if (typeof valor === 'string') {
+            // Remove formatação e converte para número
+            valor = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+        }
+        
+        console.log('📢 [notificacoes-utils] Valor processado:', valor);
+        
         const formatCurrency = (val) => {
             const num = typeof val === 'number' ? val : parseFloat(val) || 0;
             return new Intl.NumberFormat('pt-BR', {
@@ -172,7 +180,15 @@ window.criarNotificacaoNovaReceita = async function(receita) {
 window.criarNotificacaoNovaDespesa = async function(despesa) {
     console.log('💸 Criando notificação de nova despesa:', despesa);
     try {
-        const valor = despesa.valor || 0;
+        // Converter valor para número se for string formatada
+        let valor = despesa.valor || 0;
+        if (typeof valor === 'string') {
+            // Remove formatação e converte para número
+            valor = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+        }
+        
+        console.log('💸 Valor processado para despesa:', valor);
+        
         const formatCurrency = (val) => {
             const num = typeof val === 'number' ? val : parseFloat(val) || 0;
             return new Intl.NumberFormat('pt-BR', {
