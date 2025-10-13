@@ -129,10 +129,14 @@ window.criarNotificacaoNovaReceita = async function(receita) {
             }).format(num);
         };
         
+        // Criar mensagem com categoria em vez de valor
+        const categoria = receita.categoria || 'Categoria não definida';
+        const mensagem = `Receita "${receita.descricao || 'Nova receita'}" foi criada na categoria #${categoria}#!`;
+        
         const notificacao = {
             tipo: 'receita_criada',
             titulo: 'Nova receita adicionada',
-            mensagem: `Receita "${receita.descricao || 'Nova receita'}" de ${formatCurrency(valor)} foi criada!`,
+            mensagem: mensagem,
             icone: receita.icone || receita.categoria?.icone || 'trending_up',
             cor: '#4CAF50', // Verde para receitas
             valor: valor,
@@ -197,10 +201,14 @@ window.criarNotificacaoNovaDespesa = async function(despesa) {
             }).format(num);
         };
         
+        // Criar mensagem com categoria em vez de valor
+        const categoria = despesa.categoria || 'Categoria não definida';
+        const mensagem = `Despesa "${despesa.descricao || 'Nova despesa'}" foi criada na categoria #${categoria}#!`;
+        
         const notificacao = {
             tipo: 'despesa_criada',
             titulo: 'Nova despesa adicionada',
-            mensagem: `Despesa "${despesa.descricao || 'Nova despesa'}" de ${formatCurrency(valor)} foi criada!`,
+            mensagem: mensagem,
             icone: despesa.icone || despesa.categoria?.icone || 'trending_down',
             cor: '#D32F2F', // Vermelho para despesas
             valor: valor,
