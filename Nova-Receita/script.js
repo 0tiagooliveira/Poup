@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             mostrarPopup(mensagem, () => {
                 limparFormulario();
-                window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
+                window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
             });
         }).catch(error => {
             console.error('Erro ao salvar:', error);

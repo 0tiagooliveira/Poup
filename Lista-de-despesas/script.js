@@ -88,6 +88,16 @@ function initializeUI() {
     // Configurar listeners do modal
     initializeModalListeners();
     
+    // Adicionar listener específico para botão despesa
+    const botaoDespesa = document.querySelector('.botao-despesa');
+    if (botaoDespesa) {
+        botaoDespesa.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = '../Nova-Despesa/Nova-Despesa.html';
+        });
+    }
+    
     // Listeners do popup de exclusão
     const popupCancelar = document.getElementById('popup-cancelar');
     if (popupCancelar) {

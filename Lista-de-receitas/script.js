@@ -82,6 +82,37 @@ function initializeUI() {
     // Configurar menu adicionar
     configurarMenuAdicionar();
     
+    // Adicionar listener para botão adicionar principal ir direto para Nova-Receita
+    const botaoAdicionarPrincipal = document.getElementById('botao-adicionar-receitas');
+    if (botaoAdicionarPrincipal) {
+        botaoAdicionarPrincipal.addEventListener('click', (e) => {
+            // Se for clique simples (não long press), ir direto para Nova-Receita
+            let pressTimer;
+            let isLongPress = false;
+            
+            const handleClick = () => {
+                if (!isLongPress) {
+                    window.location.href = '../Nova-Receita/Nova-Receita.html';
+                }
+            };
+            
+            botaoAdicionarPrincipal.addEventListener('mousedown', () => {
+                pressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    // Aqui o menu normal aparece
+                }, 500);
+            });
+            
+            botaoAdicionarPrincipal.addEventListener('mouseup', () => {
+                clearTimeout(pressTimer);
+                if (!isLongPress) {
+                    setTimeout(handleClick, 10);
+                }
+                setTimeout(() => { isLongPress = false; }, 100);
+            });
+        });
+    }
+    
     // Configurar listeners do modal
     initializeModalListeners();
     
