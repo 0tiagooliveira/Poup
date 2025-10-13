@@ -989,11 +989,6 @@ function toggleDropdown() {
     console.log('Estado atual do dropdown:', dropdown.style.display);
     const isVisible = dropdown.style.display === 'block';
     
-    // Fechar todos os dropdowns primeiro
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.style.display = 'none';
-    });
-    
     // Abrir/fechar o dropdown atual
     const newDisplay = isVisible ? 'none' : 'block';
     dropdown.style.display = newDisplay;
@@ -1017,10 +1012,12 @@ document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('dropdown-menu');
     const tituloPagina = document.querySelector('.titulo-pagina');
     
-    if (!tituloPagina.contains(event.target)) {
+    if (dropdown && tituloPagina && !tituloPagina.contains(event.target)) {
         dropdown.style.display = 'none';
         const icon = document.querySelector('.titulo-pagina .material-icons');
-        icon.style.transform = 'rotate(0deg)';
+        if (icon) {
+            icon.style.transform = 'rotate(0deg)';
+        }
     }
 });
 

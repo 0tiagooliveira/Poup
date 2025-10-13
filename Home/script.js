@@ -644,7 +644,7 @@ function configurarEventos(elementos) {
         configUsuarioBtn.addEventListener('click', function(e) {
             e.preventDefault();
             console.log('Redirecionando para Configurações...');
-            window.location.href = '../Configurações/Configuracoes.html';
+            window.location.href = '../Configuracoes/Configuracoes.html';
         });
     }
     
@@ -782,7 +782,7 @@ async function carregarNotificacoesTransacoes(userId) {
                 window.notificacoesManager.criarNotificacao({
                     tipo: 'receita_existente',
                     titulo: `${status} Receita registrada`,
-                    mensagem: `${receita.descricao || 'Receita'} - ${formatCurrency(valor)}`,
+                    descricao: `${receita.descricao || 'Receita'} - ${formatCurrency(valor)}`,
                     icone: 'trending_up',
                     dados: { receitaId: receita.id, tipo: 'receita' }
                 });
@@ -813,7 +813,7 @@ async function carregarNotificacoesTransacoes(userId) {
                 window.notificacoesManager.criarNotificacao({
                     tipo: 'despesa_existente',
                     titulo: `${status} Despesa registrada`,
-                    mensagem: `${despesa.descricao || 'Despesa'} - ${formatCurrency(valor)}`,
+                    descricao: `${despesa.descricao || 'Despesa'} - ${formatCurrency(valor)}`,
                     icone: 'trending_down',
                     dados: { despesaId: despesa.id, tipo: 'despesa' }
                 });
