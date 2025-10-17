@@ -319,10 +319,38 @@ function excluirConta(contaId) {
         });
 }
 
+// Função para verificar se notificações foram limpas recentemente
+function verificarStatusNotificacoes() {
+    const timestampLimpeza = localStorage.getItem('notificacoesLimpasEm');
+    
+    if (timestampLimpeza) {
+        const agora = Date.now();
+        const tempoDecorrido = agora - parseInt(timestampLimpeza);
+        const umaHora = 3600000; // 1 hora em millisegundos
+        
+        if (tempoDecorrido < umaHora) {
+            // Ainda dentro do período de 1 hora, manter bloqueadas
+            window.notificacoesLimpas = true;
+            const minutos = Math.ceil((umaHora - tempoDecorrido) / 60000);
+            console.log(`Notificações ainda bloqueadas por mais ${minutos} minutos`);
+        } else {
+            // Passou de 1 hora, reabilitar
+            window.notificacoesLimpas = false;
+            localStorage.removeItem('notificacoesLimpasEm');
+            console.log('Período de 1 hora expirado, notificações reabilitadas');
+        }
+    } else {
+        window.notificacoesLimpas = false;
+    }
+}
+
 // Inicialização principal com controle total
 document.addEventListener('DOMContentLoaded', function() {
     mostrarCarregamento();
     console.log('[INIT] Verificando autenticação...');
+    
+    // Verificar se notificações foram limpas recentemente
+    verificarStatusNotificacoes();
     
     // Configurar event listeners dos modais imediatamente
     configurarEventListenersModais();
@@ -746,9 +774,15 @@ async function carregarNotificacoesTransacoes(userId) {
         return;
     }
     
-    // Verificar se já carregou notificações nesta sessão
-    if (sessionStorage.getItem('notificacoesCarregadas')) {
+    // Verificar se já carregou notificações nesta sessão OU se foram limpas pelo usuário
+    if (sessionStorage.getItem('notificacoesCarregadas') && !window.notificacoesLimpas) {
         console.log('Notificações já foram carregadas nesta sessão');
+        return;
+    }
+    
+    // Se as notificações foram limpas, não carregar novamente
+    if (window.notificacoesLimpas) {
+        console.log('Notificações foram limpas pelo usuário, não recarregando');
         return;
     }
     
@@ -2409,29 +2443,36 @@ class NotificacoesManager {
         
         popup.style.display = 'flex';
         
+        // Remover listeners anteriores se existirem
+        const confirmarClone = btnConfirmar.cloneNode(true);
+        const cancelarClone = btnCancelar.cloneNode(true);
+        btnConfirmar.parentNode.replaceChild(confirmarClone, btnConfirmar);
+        btnCancelar.parentNode.replaceChild(cancelarClone, btnCancelar);
+
         // Event listeners para os botões
         const confirmarClick = () => {
+            console.log('Confirmando limpeza de notificações');
             popup.style.display = 'none';
             this.executarLimpeza();
-            btnConfirmar.removeEventListener('click', confirmarClick);
-            btnCancelar.removeEventListener('click', cancelarClick);
         };
         
         const cancelarClick = () => {
+            console.log('Cancelando limpeza de notificações');
             popup.style.display = 'none';
-            btnConfirmar.removeEventListener('click', confirmarClick);
-            btnCancelar.removeEventListener('click', cancelarClick);
         };
         
-        btnConfirmar.addEventListener('click', confirmarClick);
-        btnCancelar.addEventListener('click', cancelarClick);
+        confirmarClone.addEventListener('click', confirmarClick);
+        cancelarClone.addEventListener('click', cancelarClick);
         
         // Fechar ao clicar fora
-        popup.addEventListener('click', (e) => {
+        const fecharFora = (e) => {
             if (e.target === popup) {
+                console.log('Fechando popup ao clicar fora');
                 cancelarClick();
+                popup.removeEventListener('click', fecharFora);
             }
-        });
+        };
+        popup.addEventListener('click', fecharFora);
     }
 
     async executarLimpeza() {
@@ -2460,9 +2501,10 @@ class NotificacoesManager {
                 console.log('Todas as notificações deletadas do Firebase');
             }
             
-            // Limpar localStorage completamente
+            // Limpar localStorage e sessionStorage completamente
             localStorage.removeItem('notificacoes');
-            console.log('Notificações removidas do localStorage');
+            sessionStorage.removeItem('notificacoesCarregadas');
+            console.log('Notificações removidas do localStorage e sessionStorage');
             
             // Limpar todas as notificações locais
             this.notificacoes = [];
@@ -2476,9 +2518,15 @@ class NotificacoesManager {
             // Fechar o painel de notificações
             this.fecharPainel();
             
+            // Marcar timestamp da limpeza no localStorage para persistir entre sessões
+            const agora = Date.now();
+            localStorage.setItem('notificacoesLimpasEm', agora.toString());
+            console.log('Notificações limpas e timestamp salvo:', agora);
+            
             // Reabilitar notificações após 1 hora
             setTimeout(() => {
                 window.notificacoesLimpas = false;
+                localStorage.removeItem('notificacoesLimpasEm');
                 console.log('Notificações reabilitadas após 1 hora');
             }, 3600000); // 1 hora = 3600000ms
             
