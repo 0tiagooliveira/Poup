@@ -207,6 +207,130 @@
         </div>
     </div>
 
+    <!-- Modal de Detalhes da Transação -->
+    <div class="modal-overlay" id="modal-detalhes-transacao" style="display: none;">
+        <div class="modal-detalhes">
+            <!-- Filtros de status -->
+            <div class="status-filters">
+                <button class="status-btn active" id="status-pago">
+                    <span class="material-icons">check</span>
+                    <span>Pago</span>
+                </button>
+                <button class="status-btn" id="status-tipo">
+                    <span class="material-icons">trending_up</span>
+                    <span id="tipo-label">Receita</span>
+                </button>
+                <button class="status-btn" id="status-anexo">
+                    <span class="material-icons">attachment</span>
+                    <span>Anexo</span>
+                </button>
+                <button class="status-btn" id="status-favorita">
+                    <span class="material-icons">favorite_border</span>
+                    <span>Favorita</span>
+                </button>
+            </div>
+
+            <!-- Linha separadora -->
+            <div class="modal-divider"></div>
+
+            <!-- Detalhes da transação -->
+            <div class="receita-detalhes">
+                <!-- Linha 1: Descrição | Valor -->
+                <div class="detalhe-linha">
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">description</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Descrição</span>
+                            <span class="detalhe-value" id="modal-descricao">Descrição da transação</span>
+                        </div>
+                    </div>
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">attach_money</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Valor</span>
+                            <span class="detalhe-value" id="modal-valor">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linha 2: Data | Conta -->
+                <div class="detalhe-linha">
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">today</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Data</span>
+                            <span class="detalhe-value" id="modal-data">Data da transação</span>
+                        </div>
+                    </div>
+                    <div class="detalhe-item-lado">
+                        <div class="conta-icone" id="modal-conta-icone">
+                            <span class="material-icons">account_balance</span>
+                        </div>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Conta</span>
+                            <span class="detalhe-value" id="modal-conta">Nome da conta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linha 3: Categoria | Tags -->
+                <div class="detalhe-linha">
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">category</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Categoria</span>
+                            <span class="detalhe-value" id="modal-categoria">Categoria</span>
+                        </div>
+                    </div>
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">label</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Tags</span>
+                            <span class="detalhe-value" id="modal-tags">Nenhuma tag</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linha 4: Lembrete | Observação -->
+                <div class="detalhe-linha">
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">alarm</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Lembrete</span>
+                            <span class="detalhe-value" id="modal-lembrete">Nenhum</span>
+                        </div>
+                    </div>
+                    <div class="detalhe-item-lado">
+                        <span class="material-icons">notes</span>
+                        <div class="detalhe-info">
+                            <span class="detalhe-label">Observação</span>
+                            <span class="detalhe-value" id="modal-observacao">Nenhuma</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de ação -->
+            <div class="botoes-acoes">
+                <button class="botao-acao-modal" id="botao-editar-transacao">
+                    <span class="material-icons">edit</span>
+                    <span>Editar</span>
+                </button>
+                
+                <div class="toggle-wrapper">
+                    <label class="toggle-label" for="ignorar-transacao">Ignorar na soma</label>
+                    <input type="checkbox" id="ignorar-transacao" class="toggle-checkbox">
+                    <label for="ignorar-transacao" class="toggle-slider"></label>
+                </div>
+            </div>
+
+            <!-- Botão de fechar -->
+            <button class="botao-fechar-modal" id="fechar-modal-detalhes">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>

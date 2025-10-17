@@ -491,6 +491,20 @@ function updateTotals(transacoes) {
 
 // --- EVENT LISTENERS ---
 function attachEventListeners() {
+    // Clique nos itens de transação para abrir modal
+    document.querySelectorAll('.receita-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            // Não abrir modal se clicou em um botão
+            if (e.target.closest('.badge-circular') || e.target.closest('button')) {
+                return;
+            }
+            
+            const id = item.dataset.id;
+            const tipo = item.dataset.tipo;
+            abrirModalTransacao(id, tipo);
+        });
+    });
+
     // Status (Pago/Não Pago)
     document.querySelectorAll('.badge-circular.badge-status').forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -510,6 +524,152 @@ function attachEventListeners() {
         });
     });
 }
+
+// --- MODAL DE DETALHES ---
+let transacaoAtual = null;
+
+async function abrirModalTransacao(id, tipo) {
+    try {
+        // Buscar dados da transação
+        const colecao = tipo === 'receita' ? 'receitas' : 'despesas';
+        const docSnap = await db.collection(colecao).doc(id).get();
+        
+        if (!docSnap.exists) {
+            console.error('Transação não encontrada');
+            return;
+        }
+        
+        const transacao = { id: docSnap.id, ...docSnap.data(), tipo };
+        transacaoAtual = transacao;
+        
+        // Preencher dados no modal
+        document.getElementById('modal-descricao').textContent = transacao.descricao || 'Sem descrição';
+        document.getElementById('modal-valor').textContent = formatCurrency(parseValueToNumber(transacao.valor));
+        document.getElementById('modal-data').textContent = formatarData(transacao.data);
+        
+        // Conta
+        let nomeContaExibicao = '';
+        if (transacao.conta && typeof transacao.conta === 'object') {
+            nomeContaExibicao = transacao.conta.nome || transacao.conta.nomeExibicao || '';
+        } else if (transacao.carteira && mapaContas[transacao.carteira]) {
+            nomeContaExibicao = mapaContas[transacao.carteira];
+        } else if (typeof transacao.conta === 'string') {
+            nomeContaExibicao = transacao.conta;
+        }
+        if (!nomeContaExibicao) nomeContaExibicao = 'Conta não informada';
+        document.getElementById('modal-conta').textContent = nomeContaExibicao;
+        
+        document.getElementById('modal-categoria').textContent = transacao.categoria || 'Sem categoria';
+        document.getElementById('modal-tags').textContent = transacao.tags || 'Nenhuma tag';
+        document.getElementById('modal-lembrete').textContent = transacao.lembrete || 'Nenhum';
+        document.getElementById('modal-observacao').textContent = transacao.observacao || 'Nenhuma';
+        
+        // Atualizar ícone do tipo
+        const tipoBtn = document.getElementById('status-tipo');
+        const tipoLabel = document.getElementById('tipo-label');
+        const tipoIcon = tipoBtn.querySelector('.material-icons');
+        
+        if (tipo === 'receita') {
+            tipoIcon.textContent = 'trending_up';
+            tipoLabel.textContent = 'Receita';
+        } else {
+            tipoIcon.textContent = 'trending_down';
+            tipoLabel.textContent = 'Despesa';
+        }
+        
+        // Status pago
+        const statusPago = document.getElementById('status-pago');
+        const estaRecebida = transacao.pago === true || transacao.concluida === true || transacao.recebido === true;
+        statusPago.classList.toggle('active', estaRecebida);
+        
+        // Toggle ignorar
+        const toggleIgnorar = document.getElementById('ignorar-transacao');
+        if (toggleIgnorar) toggleIgnorar.checked = transacao.ignorada || false;
+        
+        // Mostrar modal
+        document.getElementById('modal-detalhes-transacao').style.display = 'flex';
+        
+    } catch (error) {
+        console.error('Erro ao abrir modal:', error);
+    }
+}
+
+function fecharModalTransacao() {
+    const modal = document.getElementById('modal-detalhes-transacao');
+    if (modal) modal.style.display = 'none';
+    transacaoAtual = null;
+}
+
+function formatarData(dataString) {
+    if (!dataString) return 'Data não informada';
+    
+    try {
+        const data = new Date(dataString);
+        const dia = data.getDate();
+        const mes = data.toLocaleDateString('pt-BR', { month: 'short' });
+        const ano = data.getFullYear();
+        
+        return `${dia} ${mes}. ${ano}`;
+    } catch (error) {
+        return dataString;
+    }
+}
+
+// Configurar eventos do modal
+document.addEventListener('DOMContentLoaded', function() {
+    const fecharBtn = document.getElementById('fechar-modal-detalhes');
+    if (fecharBtn) {
+        fecharBtn.addEventListener('click', fecharModalTransacao);
+    }
+    
+    const modal = document.getElementById('modal-detalhes-transacao');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) fecharModalTransacao();
+        });
+    }
+    
+    // Status pago no modal
+    const statusPagoBtn = document.getElementById('status-pago');
+    if (statusPagoBtn) {
+        statusPagoBtn.addEventListener('click', async () => {
+            if (transacaoAtual) {
+                const statusAtual = transacaoAtual.pago === true || transacaoAtual.concluida === true || transacaoAtual.recebido === true;
+                const novoStatus = !statusAtual;
+                
+                await togglePago(transacaoAtual.id, transacaoAtual.tipo, novoStatus);
+                
+                // Atualizar estado local
+                if (transacaoAtual.tipo === 'receita') {
+                    transacaoAtual.recebido = novoStatus;
+                } else {
+                    transacaoAtual.pago = novoStatus;
+                }
+                
+                statusPagoBtn.classList.toggle('active', novoStatus);
+            }
+        });
+    }
+    
+    // Toggle ignorar
+    const toggleIgnorar = document.getElementById('ignorar-transacao');
+    if (toggleIgnorar) {
+        toggleIgnorar.addEventListener('change', async (e) => {
+            if (transacaoAtual) {
+                try {
+                    const colecao = transacaoAtual.tipo === 'receita' ? 'receitas' : 'despesas';
+                    await db.collection(colecao).doc(transacaoAtual.id).update({ 
+                        ignorada: e.target.checked 
+                    });
+                    transacaoAtual.ignorada = e.target.checked;
+                } catch (err) {
+                    console.error('Erro ao ignorar transação:', err);
+                    e.target.checked = !e.target.checked;
+                }
+            }
+        });
+    }
+});
 
 // --- AÇÕES ---
 async function togglePago(id, tipo, novoStatus) {

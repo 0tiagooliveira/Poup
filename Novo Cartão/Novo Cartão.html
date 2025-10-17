@@ -3,253 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novo Cartão | Meu Financeiro</title>
+    <title>Adicionar Cartão | Poup+</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 </head>
 <body>
-    <div class="aplicativo">
-        <!-- Cabeçalho com gradiente -->
-        <header class="cabecalho cabecalho-gradient">
-            <button class="botao-voltar" aria-label="Voltar">
-                <span class="material-icons">arrow_back</span>
+    <!-- Etapa 1: Seleção de Instituição -->
+    <div class="container etapa-1" id="etapa-1">
+        <header class="header-gradient">
+            <button class="btn-voltar" onclick="voltar()">
+                <span class="material-icons-round">arrow_back</span>
             </button>
-            <h1>Novo Cartão</h1>
+            <h1 class="titulo-header">Adicionar Cartão</h1>
         </header>
 
-        <!-- Cartão 3D -->
-        <div class="cartao-container">
-            <div class="cartao" id="cartao">
-                <div class="cartao-frente">
-                    <div class="cartao-topo">
-                        <div class="chip"></div>
-                        <div class="bandeira" id="bandeira-visual"></div>
-                    </div>
-                    <div class="cartao-numero" id="numero-cartao-visual">•••• •••• •••• ••••</div>
-                    <div class="cartao-rodape">
-                        <div class="cartao-nome" id="nome-cartao-visual">SEU NOME AQUI</div>
-                        <div class="cartao-validade" id="validade-cartao-visual">MM/AA</div>
-                    </div>
+        <main class="conteudo-branco">
+            <section class="secao-instituicao">
+                <h2 class="titulo-secao">De onde você quer trazer seus dados?</h2>
+                <p class="subtitulo-secao">Escolha abaixo a instituição para acompanhar toda sua vida financeira aqui no Poup+.</p>
+                
+                <div class="campo-busca">
+                    <span class="material-icons-round">search</span>
+                    <input type="text" id="busca-instituicao" placeholder="Buscar por nome">
                 </div>
-                <div class="cartao-verso">
-                    <div class="cartao-faixa"></div>
-                    <div class="cartao-cvv">
-                        <div class="cvv-texto">CVV</div>
-                        <div class="cvv-numero" id="cvv-cartao-visual">•••</div>
-                    </div>
+
+                <div class="lista-instituicoes" id="lista-instituicoes">
+                    <!-- Instituições serão carregadas aqui -->
                 </div>
-            </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Etapa 2: Dados do Cartão -->
+    <div class="container etapa-2 hidden" id="etapa-2">
+        <header class="header-gradient">
+            <button class="btn-voltar" onclick="voltarEtapa1()">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h1 class="titulo-header">Novo cartão</h1>
+        </header>
+
+        <div class="secao-limite" onclick="abrirCalculadora()">
+            <p class="label-limite">Limite do cartão</p>
+            <h2 class="valor-limite" id="valor-limite-display">R$ 0,00</h2>
         </div>
 
-        <!-- Formulário com etapas -->
-        <main class="formulario-container">
-            <!-- Indicador de progresso -->
-            <div class="indicador-progresso">
-                <div class="etapa etapa-ativa" data-etapa="1">
-                    <div class="numero-etapa">1</div>
-                    <span>Dados</span>
+        <main class="conteudo-branco">
+            <div class="formulario-cartao">
+                <!-- Descrição -->
+                <div class="campo-form">
+                    <span class="material-icons-round icone-campo">description</span>
+                    <input type="text" id="descricao" placeholder="Descrição" class="input-form">
                 </div>
-                <div class="linha-progresso"></div>
-                <div class="etapa" data-etapa="2">
-                    <div class="numero-etapa">2</div>
-                    <span>Configurações</span>
-                </div>
-                <div class="linha-progresso"></div>
-                <div class="etapa" data-etapa="3">
-                    <div class="numero-etapa">3</div>
-                    <span>Finalizar</span>
-                </div>
-            </div>
 
-            <!-- Etapa 1: Dados do Cartão -->
-            <div class="etapa-formulario etapa-ativa" id="etapa-1">
-                <div class="card-formulario">
-                    <h3 class="titulo-card">Dados do Cartão</h3>
-                    
-                    <!-- Linha 1: Nome e Bandeira -->
-                    <div class="linha-campos">
-                        <div class="campo-formulario campo-expandido">
-                            <label for="nome-cartao" class="rotulo-campo">Nome no Cartão</label>
-                            <div class="container-input">
-                                <span class="material-icons icone-campo">person</span>
-                                <input type="text" id="nome-cartao" placeholder="Como aparece no cartão" 
-                                       maxlength="30" required>
-                            </div>
-                        </div>
-                        
-                        <div class="campo-formulario">
-                            <label class="rotulo-campo">Bandeira</label>
-                            <div class="seletor-bandeira" id="seletor-bandeira">
-                                <div class="opcao-selecionada" tabindex="0">
-                                    <span>Selecionar</span>
-                                    <span class="material-icons seta-dropdown">expand_more</span>
-                                </div>
-                                <div class="opcoes-bandeira">
-                                    <div class="opcao-bandeira" data-value="visa">
-                                        <i class="fab fa-cc-visa"></i>
-                                        <span>Visa</span>
-                                    </div>
-                                    <div class="opcao-bandeira" data-value="mastercard">
-                                        <i class="fab fa-cc-mastercard"></i>
-                                        <span>Mastercard</span>
-                                    </div>
-                                    <div class="opcao-bandeira" data-value="elo">
-                                        <i class="fab fa-cc-jcb"></i>
-                                        <span>Elo</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Linha 2: Número do Cartão -->
-                    <div class="campo-formulario">
-                        <label for="numero-cartao" class="rotulo-campo">Número do Cartão</label>
-                        <div class="container-input">
-                            <span class="material-icons icone-campo">credit_card</span>
-                            <input type="text" id="numero-cartao" placeholder="0000 0000 0000 0000" 
-                                   maxlength="19">
-                        </div>
-                    </div>
-
-                    <!-- Linha 3: Validade e CVV -->
-                    <div class="linha-campos">
-                        <div class="campo-formulario">
-                            <label class="rotulo-campo">Validade</label>
-                            <div class="container-input-duplo">
-                                <input type="text" id="validade-mes" placeholder="MM" maxlength="2">
-                                <span>/</span>
-                                <input type="text" id="validade-ano" placeholder="AA" maxlength="2">
-                            </div>
-                        </div>
-                        
-                        <div class="campo-formulario">
-                            <label for="cvv-cartao" class="rotulo-campo">CVV</label>
-                            <div class="container-input">
-                                <span class="material-icons icone-campo">lock</span>
-                                <input type="password" id="cvv-cartao" placeholder="•••" maxlength="4">
-                                <button type="button" class="botao-cvv" id="ver-cvv">
-                                    <span class="material-icons">visibility</span>
-                                </button>
-                            </div>
+                <!-- Bandeira -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorBandeira()">
+                    <span class="material-icons-round icone-campo">credit_card</span>
+                    <div class="conteudo-seletor">
+                        <div class="bandeira-selecionada" id="bandeira-display">
+                            <img src="../Icon/visa.svg" alt="Visa" class="bandeira-icone-mini">
+                            <span class="bandeira-texto">Visa</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Etapa 2: Configurações -->
-            <div class="etapa-formulario" id="etapa-2">
-                <div class="card-formulario">
-                    <h3 class="titulo-card">Configurações</h3>
-                    
-                    <!-- Linha 1: Conta e Limite -->
-                    <div class="linha-campos">
-                        <div class="campo-formulario campo-expandido">
-                            <label class="rotulo-campo">Conta Vinculada</label>
-                            <div class="seletor-conta" id="seletor-conta">
-                                <div class="opcao-selecionada" tabindex="0">
-                                    <span>Selecione uma conta</span>
-                                    <span class="material-icons seta-dropdown">expand_more</span>
-                                </div>
-                                <div class="opcoes-conta">
-                                    <!-- Opções carregadas dinamicamente -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="campo-formulario" id="secao-limite" tabindex="0">
-                            <label class="rotulo-campo">Limite</label>
-                            <div class="container-input">
-                                <span class="material-icons icone-campo">attach_money</span>
-                                <input type="text" id="valor-limite" placeholder="R$ 0,00" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Linha 2: Fechamento e Vencimento -->
-                    <div class="linha-campos">
-                        <div class="campo-formulario">
-                            <label class="rotulo-campo">Fechamento</label>
-                            <div class="seletor-dia" id="seletor-fechamento">
-                                <div class="opcao-selecionada" tabindex="0">
-                                    <span>Dia</span>
-                                    <span class="material-icons seta-dropdown">expand_more</span>
-                                </div>
-                                <div class="opcoes-dia"><!-- Dias 1-31 --></div>
-                            </div>
-                        </div>
-                        
-                        <div class="campo-formulario">
-                            <label class="rotulo-campo">Vencimento</label>
-                            <div class="seletor-dia" id="seletor-vencimento">
-                                <div class="opcao-selecionada" tabindex="0">
-                                    <span>Dia</span>
-                                    <span class="material-icons seta-dropdown">expand_more</span>
-                                </div>
-                                <div class="opcoes-dia"><!-- Dias 1-31 --></div>
-                            </div>
+                <!-- Conta -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorConta()">
+                    <span class="material-icons-round icone-campo">account_balance</span>
+                    <div class="conteudo-seletor">
+                        <div class="conta-selecionada" id="conta-display">
+                            <div class="conta-icone-mini"></div>
+                            <span class="conta-texto">Selecione a conta</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Etapa 3: Confirmação -->
-            <div class="etapa-formulario" id="etapa-3">
-                <div class="card-formulario">
-                    <h3 class="titulo-card">Confirmação</h3>
-                    
-                    <div class="resumo-cartao">
-                        <div class="item-resumo">
-                            <span class="label-resumo">Nome:</span>
-                            <span class="valor-resumo" id="resumo-nome">-</span>
-                        </div>
-                        <div class="item-resumo">
-                            <span class="label-resumo">Bandeira:</span>
-                            <span class="valor-resumo" id="resumo-bandeira">-</span>
-                        </div>
-                        <div class="item-resumo">
-                            <span class="label-resumo">Conta:</span>
-                            <span class="valor-resumo" id="resumo-conta">-</span>
-                        </div>
-                        <div class="item-resumo">
-                            <span class="label-resumo">Limite:</span>
-                            <span class="valor-resumo" id="resumo-limite">R$ 0,00</span>
-                        </div>
-                        <div class="item-resumo">
-                            <span class="label-resumo">Fechamento:</span>
-                            <span class="valor-resumo" id="resumo-fechamento">-</span>
-                        </div>
-                        <div class="item-resumo">
-                            <span class="label-resumo">Vencimento:</span>
-                            <span class="valor-resumo" id="resumo-vencimento">-</span>
-                        </div>
+                <!-- Dia do Fechamento -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorDia('fechamento')">
+                    <span class="material-icons-round icone-campo">event</span>
+                    <div class="conteudo-seletor">
+                        <span class="campo-label">Dia do fechamento</span>
+                        <span class="campo-valor" id="dia-fechamento-display">1</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Botões de navegação -->
-            <div class="botoes-navegacao">
-                <button class="botao-secundario" id="botao-anterior" style="display: none;">
-                    <span class="material-icons">chevron_left</span>
-                    Anterior
-                </button>
-                
-                <button class="botao-primario" id="botao-proximo">
-                    Próximo
-                    <span class="material-icons">chevron_right</span>
-                </button>
-                
-                <button class="botao-primario" id="botao-salvar" style="display: none;">
-                    <span class="material-icons">save</span>
-                    Salvar Cartão
-                </button>
+                <!-- Dia do Vencimento -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorDia('vencimento')">
+                    <span class="material-icons-round icone-campo">check_circle</span>
+                    <div class="conteudo-seletor">
+                        <span class="campo-label">Dia do vencimento</span>
+                        <span class="campo-valor" id="dia-vencimento-display">5</span>
+                    </div>
+                </div>
             </div>
         </main>
 
-    <!-- Calculadora para editar saldo -->
+        <!-- Botão Flutuante -->
+        <button class="btn-fab" onclick="salvarCartao()">
+            <span class="material-icons-round">check</span>
+        </button>
+    </div>
+
+    <!-- Modal: Seletor de Bandeira -->
+    <div class="modal-overlay hidden" id="modal-bandeira">
+        <div class="modal-bottom">
+            <div class="modal-header">
+                <h3>Selecionar Bandeira</h3>
+                <button class="btn-fechar" onclick="fecharModal('modal-bandeira')">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-lista">
+                <div class="opcao-modal" onclick="selecionarBandeira('visa', '../Icon/visa.svg', 'Visa')">
+                    <img src="../Icon/visa.svg" alt="Visa" class="bandeira-icone">
+                    <span>Visa</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('mastercard', '../Icon/mastercard.svg', 'Mastercard')">
+                    <img src="../Icon/mastercard.svg" alt="Mastercard" class="bandeira-icone">
+                    <span>Mastercard</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('elo', '../Icon/elo.svg', 'Elo')">
+                    <img src="../Icon/elo.svg" alt="Elo" class="bandeira-icone">
+                    <span>Elo</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('hipercard', '../Icon/hipercard.svg', 'Hipercard')">
+                    <img src="../Icon/hipercard.svg" alt="Hipercard" class="bandeira-icone">
+                    <span>Hipercard</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('american-express', '../Icon/american-express.svg', 'American Express')">
+                    <img src="../Icon/american-express.svg" alt="American Express" class="bandeira-icone">
+                    <span>American Express</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Pesquisar Conta -->
+    <div class="modal-overlay hidden" id="modal-conta">
+        <div class="modal-full">
+            <div class="modal-header-full">
+                <button class="btn-voltar-modal" onclick="fecharModal('modal-conta')">
+                    <span class="material-icons-round">arrow_back</span>
+                </button>
+                <h3>Pesquisar conta</h3>
+            </div>
+            
+            <div class="campo-busca-modal">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="busca-conta" placeholder="Pesquisar conta">
+            </div>
+
+            <div class="lista-contas-modal" id="lista-contas-modal">
+                <!-- Contas serão carregadas aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Seletor de Dia -->
+    <div class="modal-overlay hidden" id="modal-dia">
+        <div class="modal-bottom">
+            <div class="modal-header">
+                <h3 id="modal-dia-titulo">Selecionar Dia</h3>
+                <button class="btn-fechar" onclick="fecharModal('modal-dia')">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-lista modal-lista-dias" id="lista-dias">
+                <!-- Dias serão gerados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculadora para editar limite -->
     <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
         <div class="input-container">
             <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
@@ -277,25 +204,44 @@
         </div>
     </div>
 
-
-        <!-- Popup de Mensagem -->
-        <div id="popup-mensagem" class="modal">
-            <div class="modal-conteudo">
-                <div class="modal-cabecalho">
-                    <h3 class="modal-titulo">Aviso</h3>
-                    <button class="modal-fechar" aria-label="Fechar modal">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-                <div class="modal-corpo">
-                    <p id="popup-texto"></p>
-                </div>
-                <div class="modal-rodape">
-                    <button id="popup-botao" class="botao-modal">OK</button>
-                </div>
+    <!-- Popup de Aviso: Limite Obrigatório -->
+    <!-- Popup de Aviso: Descrição -->
+    <div id="popup-aviso-descricao" class="popup-overlay" style="display: none;">
+        <div class="popup-aviso">
+            <div class="popup-aviso-icone">
+                <span class="material-icons-round">info</span>
             </div>
+            <h3 class="popup-aviso-titulo">Informe uma descrição</h3>
+            <p class="popup-aviso-texto">É necessário informar uma descrição para identificar o cartão.</p>
+            <button class="btn-popup-ok" onclick="fecharPopupDescricao()">Entendi</button>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <!-- Popup de Aviso: Limite -->
+    <div id="popup-aviso-limite" class="popup-overlay" style="display: none;">
+        <div class="popup-aviso">
+            <div class="popup-aviso-icone">
+                <span class="material-icons-round">info</span>
+            </div>
+            <h3 class="popup-aviso-titulo">Defina o limite do cartão</h3>
+            <p class="popup-aviso-texto">É necessário informar um valor maior que R$ 0,00 para o limite do cartão.</p>
+            <button class="btn-popup-ok" onclick="fecharPopupAviso()">Entendi</button>
+        </div>
+    </div>
+
+    <!-- Popup de Sucesso -->
+    <div id="popup-sucesso" class="popup-overlay" style="display: none;">
+        <div class="popup-sucesso">
+            <div class="popup-sucesso-icone">
+                <span class="material-icons-round">check_circle</span>
+            </div>
+            <h3 class="popup-sucesso-titulo">Cartão criado com sucesso!</h3>
+            <p class="popup-sucesso-texto">Seu cartão foi adicionado e já está disponível.</p>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
+
+

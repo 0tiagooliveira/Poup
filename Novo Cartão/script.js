@@ -1,799 +1,790 @@
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 Inicializando aplicação Novo Cartão...');
+// === CONFIGURAÇÃO DO FIREBASE ===
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    query, 
+    where, 
+    getDocs,
+    serverTimestamp 
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { 
+    getAuth, 
+    onAuthStateChanged 
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-    // Elementos do DOM
-    const elementos = {
-        botaoVoltar: document.querySelector('.botao-voltar'),
-        cartao: document.getElementById('cartao'),
-        cartaoFrente: document.querySelector('.cartao-frente'),
-        cartaoVerso: document.querySelector('.cartao-verso'),
-        bandeiraVisual: document.getElementById('bandeira-visual'),
-        numeroCartaoVisual: document.getElementById('numero-cartao-visual'),
-        nomeCartaoVisual: document.getElementById('nome-cartao-visual'),
-        validadeCartaoVisual: document.getElementById('validade-cartao-visual'),
-        cvvCartaoVisual: document.getElementById('cvv-cartao-visual'),
-        secaoLimite: document.getElementById('secao-limite'),
-        valorLimite: document.getElementById('valor-limite'),
-        inputNumeroCartao: document.getElementById('numero-cartao'),
-        inputNomeCartao: document.getElementById('nome-cartao'),
-        inputValidadeMes: document.getElementById('validade-mes'),
-        inputValidadeAno: document.getElementById('validade-ano'),
-        inputCvvCartao: document.getElementById('cvv-cartao'),
-        botaoVerCvv: document.getElementById('ver-cvv'),
-        seletorBandeira: document.getElementById('seletor-bandeira'),
-        opcaoSelecionadaBandeira: document.querySelector('.seletor-bandeira .opcao-selecionada'),
-        opcoesBandeira: document.querySelector('.seletor-bandeira .opcoes-bandeira'),
-        seletorConta: document.getElementById('seletor-conta'),
-        opcaoSelecionadaConta: document.querySelector('.seletor-conta .opcao-selecionada'),
-        opcoesConta: document.querySelector('.seletor-conta .opcoes-conta'),
-        seletorFechamento: document.getElementById('seletor-fechamento'),
-        opcaoSelecionadaFechamento: document.querySelector('#seletor-fechamento .opcao-selecionada'),
-        opcoesFechamento: document.querySelector('#seletor-fechamento .opcoes-dia'),
-        seletorVencimento: document.getElementById('seletor-vencimento'),
-        opcaoSelecionadaVencimento: document.querySelector('#seletor-vencimento .opcao-selecionada'),
-        opcoesVencimento: document.querySelector('#seletor-vencimento .opcoes-dia'),
-        botaoSalvar: document.getElementById('botao-salvar'),
-        popupMensagem: document.getElementById('popup-mensagem'),
-        popupTexto: document.getElementById('popup-texto'),
-        popupBotao: document.getElementById('popup-botao'),
-        modalFechar: document.querySelector('.modal-fechar'),
-        modalTitulo: document.querySelector('.modal-titulo'),
-        botaoAnterior: document.getElementById('botao-anterior'),
-        botaoProximo: document.getElementById('botao-proximo'),
-        etapas: document.querySelectorAll('.etapa'),
-        etapasFormulario: document.querySelectorAll('.etapa-formulario'),
-        linhasProgresso: document.querySelectorAll('.linha-progresso')
-    };
+// ⚠️ Configuração do Firebase - Poup+ Beta
+const firebaseConfig = {
+    apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+    authDomain: "poup-beta.firebaseapp.com",
+    projectId: "poup-beta",
+    storageBucket: "poup-beta.appspot.com",
+    messagingSenderId: "954695915981",
+    appId: "1:954695915981:web:d31b216f79eac178094c84",
+    measurementId: "G-LP9BDVD3KJ"
+};
 
-    console.log('📋 Elementos carregados:', {
-        botaoVoltar: !!elementos.botaoVoltar,
-        secaoLimite: !!elementos.secaoLimite,
-        valorLimite: !!elementos.valorLimite,
-        inputNomeCartao: !!elementos.inputNomeCartao,
-        seletorBandeira: !!elementos.seletorBandeira,
-    });
+// Verificar se Firebase está configurado
+const firebaseConfigurado = firebaseConfig.apiKey !== "your-api-key";
 
-    // Estado da aplicação
-    const estado = {
-        valorLimite: '0',
-        bandeiraSelecionada: null,
-        contaSelecionada: null,
-        diaFechamento: null,
-        diaVencimento: null,
-        cvvVisivel: false,
-        cartaoVirado: false,
-        etapaAtual: 1,
-        totalEtapas: 3
-    };
+let app, db, auth;
 
-    console.log('🎯 Estado inicial:', estado);
+try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    console.log('✅ Firebase inicializado com sucesso');
+} catch (error) {
+    console.error('❌ Erro ao inicializar Firebase:', error);
+}
 
-    // Inicialização
-    function inicializar() {
-        console.log('🚀 Inicializando aplicação Novo Cartão...');
-        
-        try {
-            configurarEventos();
-            carregarContas();
-            gerarOpcoesDias();
-            console.log('✅ Aplicação inicializada com sucesso!');
-        } catch (error) {
-            console.error('❌ Erro durante a inicialização:', error);
-        }
+// === ESTADO DA APLICAÇÃO ===
+let usuarioAtual = null;
+let instituicaoSelecionada = null;
+let contaSelecionada = null;
+let bandeiraSelecionada = { id: 'visa', logo: '../Icon/visa.svg', nome: 'Visa' };
+let diaFechamento = 1;
+let diaVencimento = 5;
+let limiteCartao = 0;
+let contas = [];
+
+// Dados das instituições (para seleção de instituição na Etapa 1)
+const instituicoes = [
+    { id: 'santander', nome: 'Santander', classe: 'santander', icone: '../Icon/santander.svg', cor: '#EC0000' },
+    { id: 'nubank', nome: 'Nubank', classe: 'nubank', icone: '../Icon/Nubank.svg', cor: '#820AD1' },
+    { id: 'bb', nome: 'Banco do Brasil', classe: 'bb', icone: '../Icon/banco-do-brasil.svg', cor: '#FFDD00' },
+    { id: 'caixa', nome: 'Caixa', classe: 'caixa', icone: '../Icon/caixa.svg', cor: '#0D6EAE' },
+    { id: 'itau', nome: 'Itaú', classe: 'itau', icone: '../Icon/itau.svg', cor: '#FF6600' },
+    { id: 'bradesco', nome: 'Bradesco', classe: 'bradesco', icone: '../Icon/bradesco.svg', cor: '#CC092F' },
+    { id: 'picpay', nome: 'PicPay', classe: 'picpay', icone: '../Icon/picpay.svg', cor: '#11C76F' }
+];
+
+// === INICIALIZAÇÃO ===
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Iniciando aplicação Novo Cartão...');
+    
+    // Verificar se Firebase está configurado
+    if (!firebaseConfigurado) {
+        mostrarErroFirebase();
+        return;
     }
+    
+    verificarAutenticacao();
+    // renderizarInstituicoes() será chamado após carregar contas do Firebase
+    gerarDias();
+});
 
-    // Configurar eventos
-    function configurarEventos() {
-        console.log('🔧 Configurando eventos...');
+// === MOSTRAR ERRO FIREBASE ===
+function mostrarErroFirebase() {
+    const etapa1 = document.getElementById('etapa-1');
+    if (etapa1) {
+        etapa1.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center;">
+                <span class="material-icons" style="font-size: 64px; color: #FF6B6B; margin-bottom: 20px;">error_outline</span>
+                <h2 style="color: #2D3748; margin-bottom: 16px;">Firebase não configurado</h2>
+                <p style="color: #718096; margin-bottom: 24px; line-height: 1.6;">
+                    O Firebase precisa ser configurado com suas credenciais reais antes de usar o aplicativo.
+                </p>
+                <div style="background: #FFF3CD; border: 1px solid #FFE69C; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: left;">
+                    <h3 style="color: #856404; margin-bottom: 12px; font-size: 1rem;">📋 O que fazer:</h3>
+                    <ol style="color: #856404; padding-left: 20px; line-height: 1.8;">
+                        <li>Abra o arquivo: <code>Novo Cartão/script.js</code></li>
+                        <li>Localize a linha 18 (firebaseConfig)</li>
+                        <li>Substitua "your-api-key" pelas suas credenciais</li>
+                        <li>Consulte o arquivo <strong>CONFIGURAR-FIREBASE.md</strong> para detalhes</li>
+                    </ol>
+                </div>
+                <button onclick="window.location.href='../Home/home.html'" 
+                        style="background: #21C25E; color: white; border: none; padding: 14px 32px; 
+                               border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                    Voltar para Home
+                </button>
+            </div>
+        `;
+    }
+    
+    console.error(`
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║  ⚠️  FIREBASE NÃO CONFIGURADO                              ║
+║                                                            ║
+║  O Firebase precisa ser configurado antes de usar o app.  ║
+║                                                            ║
+║  📝 Veja: CONFIGURAR-FIREBASE.md                           ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+    `);
+}
+
+// === AUTENTICAÇÃO ===
+function verificarAutenticacao() {
+    if (!auth) {
+        console.error('❌ Auth não inicializado');
+        return;
+    }
+    
+    onAuthStateChanged(auth, (usuario) => {
+        if (usuario) {
+            usuarioAtual = usuario;
+            console.log('✅ Usuário autenticado:', usuario.email);
+            carregarContas();
+        } else {
+            console.log('⚠️ Usuário não autenticado');
+            
+            // Mostrar mensagem em vez de redirecionar imediatamente
+            const etapa1 = document.getElementById('etapa-1');
+            if (etapa1) {
+                etapa1.innerHTML = `
+                    <div style="padding: 40px 20px; text-align: center;">
+                        <span class="material-icons" style="font-size: 64px; color: #FFB020; margin-bottom: 20px;">lock</span>
+                        <h2 style="color: #2D3748; margin-bottom: 16px;">Login necessário</h2>
+                        <p style="color: #718096; margin-bottom: 24px;">
+                            Você precisa estar logado para criar um cartão de crédito.
+                        </p>
+                        <button onclick="window.location.href='../Login/Login.html'" 
+                                style="background: #21C25E; color: white; border: none; padding: 14px 32px; 
+                                       border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-right: 12px;">
+                            Fazer Login
+                        </button>
+                        <button onclick="window.location.href='../Home/home.html'" 
+                                style="background: #E2E8F0; color: #2D3748; border: none; padding: 14px 32px; 
+                                       border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                            Voltar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    }, (error) => {
+        console.error('❌ Erro no onAuthStateChanged:', error);
+    });
+}
+
+// === CARREGAR CONTAS DO FIREBASE ===
+async function carregarContas() {
+    if (!usuarioAtual) {
+        console.log('❌ Sem usuário autenticado');
+        return;
+    }
+    
+    try {
+        console.log('🔍 Buscando contas do usuário:', usuarioAtual.uid);
         
-        // Botão voltar
-        if (elementos.botaoVoltar) {
-            console.log('🔙 Configurando botão voltar');
-            elementos.botaoVoltar.addEventListener('click', function() {
-                console.log('🔙 Botão voltar clicado');
-                window.history.back();
-            });
-        }
-
-        // Flip do cartão ao clicar
-        if (elementos.cartao) {
-            console.log('💳 Configurando flip do cartão');
-            elementos.cartao.addEventListener('click', function() {
-                console.log('💳 Cartão clicado - estado atual:', estado.cartaoVirado);
-                estado.cartaoVirado = !estado.cartaoVirado;
-                if (estado.cartaoVirado) {
-                    elementos.cartao.classList.add('flip');
-                    elementos.cartao.classList.remove('flip-back');
-                    console.log('💳 Cartão virado para frente');
-                } else {
-                    elementos.cartao.classList.add('flip-back');
-                    elementos.cartao.classList.remove('flip');
-                    console.log('💳 Cartão virado para trás');
-                }
-            });
-        }
-
-        // Mostrar/ocultar CVV
-        if (elementos.botaoVerCvv) {
-            elementos.botaoVerCvv.addEventListener('mousedown', function() {
-                estado.cvvVisivel = true;
-                atualizarCvvVisual();
-            });
-
-            elementos.botaoVerCvv.addEventListener('mouseup', function() {
-                estado.cvvVisivel = false;
-                atualizarCvvVisual();
-            });
-
-            elementos.botaoVerCvv.addEventListener('mouseleave', function() {
-                estado.cvvVisivel = false;
-                atualizarCvvVisual();
-            });
-        }
-
-        // Atualizar número do cartão visual
-        if (elementos.inputNumeroCartao) {
-            elementos.inputNumeroCartao.addEventListener('input', function(e) {
-                let valor = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
-                valor = valor.replace(/(\d{4})/g, '$1 ').trim();
-                e.target.value = valor;
-                if (elementos.numeroCartaoVisual) {
-                    elementos.numeroCartaoVisual.textContent = valor || '•••• •••• •••• ••••';
-                }
-            });
-        }
-
-        // Atualizar nome do cartão visual
-        if (elementos.inputNomeCartao) {
-            elementos.inputNomeCartao.addEventListener('input', function(e) {
-                if (elementos.nomeCartaoVisual) {
-                    elementos.nomeCartaoVisual.textContent = e.target.value.toUpperCase() || 'SEU NOME AQUI';
-                }
-            });
-        }
-
-        // Atualizar validade do cartão visual
-        if (elementos.inputValidadeMes) {
-            elementos.inputValidadeMes.addEventListener('input', function(e) {
-                let valor = e.target.value.replace(/\D/g, '').substring(0, 2);
-                e.target.value = valor;
-                atualizarValidadeVisual();
-            });
-        }
-
-        if (elementos.inputValidadeAno) {
-            elementos.inputValidadeAno.addEventListener('input', function(e) {
-                let valor = e.target.value.replace(/\D/g, '').substring(0, 2);
-                e.target.value = valor;
-                atualizarValidadeVisual();
-            });
-        }
-
-        // Atualizar CVV do cartão visual
-        if (elementos.inputCvvCartao) {
-            elementos.inputCvvCartao.addEventListener('input', function(e) {
-                let valor = e.target.value.replace(/\D/g, '').substring(0, 3);
-                e.target.value = valor;
-                atualizarCvvVisual();
-            });
-        }
-
-        // Fechar calculadora ao clicar fora
-        if (elementos.calculadoraContainer) {
-            elementos.calculadoraContainer.addEventListener('click', function(e) {
-                if (e.target === elementos.calculadoraContainer) {
-                    fecharCalculadora();
-                }
-            });
-        }
-
-        // Eventos do seletor de bandeira
-        if (elementos.opcaoSelecionadaBandeira) {
-            elementos.opcaoSelecionadaBandeira.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (elementos.opcoesBandeira) {
-                    elementos.opcoesBandeira.classList.toggle('mostrar');
-                }
-            });
-        }
-
-        if (elementos.opcoesBandeira) {
-            elementos.opcoesBandeira.addEventListener('click', function(e) {
-                const opcao = e.target.closest('.opcao-bandeira');
-                if (opcao) {
-                    estado.bandeiraSelecionada = opcao.getAttribute('data-value');
-                    elementos.opcaoSelecionadaBandeira.innerHTML = opcao.innerHTML;
-                    elementos.opcoesBandeira.classList.remove('mostrar');
-                    atualizarBandeiraVisual();
-                }
-            });
-        }
-
-        // Eventos do seletor de conta
-        if (elementos.opcaoSelecionadaConta) {
-            elementos.opcaoSelecionadaConta.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (elementos.opcoesConta) {
-                    elementos.opcoesConta.classList.toggle('mostrar');
-                }
-            });
-        }
-
-        if (elementos.opcoesConta) {
-            elementos.opcoesConta.addEventListener('click', function(e) {
-                const opcao = e.target.closest('.opcao-conta');
-                if (opcao) {
-                    if (opcao.classList.contains('opcao-nova-conta')) {
-                        mostrarPopup('Redirecionando para tela de nova conta...');
-                    } else {
-                        estado.contaSelecionada = opcao.getAttribute('data-value');
-                        elementos.opcaoSelecionadaConta.innerHTML = opcao.innerHTML;
-                        elementos.opcoesConta.classList.remove('mostrar');
-                    }
-                }
-            });
-        }
-
-        // Eventos do seletor de fechamento
-        if (elementos.opcaoSelecionadaFechamento) {
-            elementos.opcaoSelecionadaFechamento.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (elementos.opcoesFechamento) {
-                    elementos.opcoesFechamento.classList.toggle('mostrar');
-                }
-            });
-        }
-
-        if (elementos.opcoesFechamento) {
-            elementos.opcoesFechamento.addEventListener('click', function(e) {
-                const opcao = e.target.closest('.opcao-dia');
-                if (opcao) {
-                    estado.diaFechamento = opcao.getAttribute('data-value');
-                    elementos.opcaoSelecionadaFechamento.innerHTML = `<span>Dia ${opcao.textContent}</span>`;
-                    elementos.opcoesFechamento.classList.remove('mostrar');
-                }
-            });
-        }
-
-        // Eventos do seletor de vencimento
-        if (elementos.opcaoSelecionadaVencimento) {
-            elementos.opcaoSelecionadaVencimento.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (elementos.opcoesVencimento) {
-                    elementos.opcoesVencimento.classList.toggle('mostrar');
-                }
-            });
-        }
-
-        if (elementos.opcoesVencimento) {
-            elementos.opcoesVencimento.addEventListener('click', function(e) {
-                const opcao = e.target.closest('.opcao-dia');
-                if (opcao) {
-                    estado.diaVencimento = opcao.getAttribute('data-value');
-                    elementos.opcaoSelecionadaVencimento.innerHTML = `<span>Dia ${opcao.textContent}</span>`;
-                    elementos.opcoesVencimento.classList.remove('mostrar');
-                }
-            });
-        }
-
-        // Navegação entre etapas
-        if (elementos.botaoProximo) {
-            console.log('▶️ Configurando botão próximo');
-            elementos.botaoProximo.addEventListener('click', function() {
-                console.log('▶️ Botão próximo clicado - etapa atual:', estado.etapaAtual);
-                proximaEtapa();
-            });
-        }
+        const contasRef = collection(db, 'contas');
         
-        if (elementos.botaoAnterior) {
-            console.log('◀️ Configurando botão anterior');
-            elementos.botaoAnterior.addEventListener('click', function() {
-                console.log('◀️ Botão anterior clicado - etapa atual:', estado.etapaAtual);
-                etapaAnterior();
-            });
-        }
-
-        // Evento do botão salvar
-        if (elementos.botaoSalvar) {
-            console.log('💾 Configurando botão salvar');
-            elementos.botaoSalvar.addEventListener('click', function() {
-                console.log('💾 Botão salvar clicado');
-                salvarCartao();
-            });
-        }
-
-        // Configurar eventos do popup
-        configurarEventosPopup();
-
-        // Fechar dropdowns ao clicar fora
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.seletor-bandeira') && !e.target.closest('.seletor-conta') && !e.target.closest('.seletor-dia')) {
-                document.querySelectorAll('.opcoes-bandeira, .opcoes-conta, .opcoes-dia').forEach(function(drop) {
-                    drop.classList.remove('mostrar');
+        // Buscar por userId (padrão da Home) OU usuarioId (novo padrão)
+        const q1 = query(contasRef, where('userId', '==', usuarioAtual.uid));
+        const q2 = query(contasRef, where('usuarioId', '==', usuarioAtual.uid));
+        
+        const [snapshot1, snapshot2] = await Promise.all([
+            getDocs(q1),
+            getDocs(q2)
+        ]);
+        
+        contas = [];
+        const contasIds = new Set(); // Para evitar duplicatas
+        
+        // Processar resultados do userId
+        snapshot1.forEach((doc) => {
+            if (!contasIds.has(doc.id)) {
+                contasIds.add(doc.id);
+                const data = doc.data();
+                console.log('📊 Conta encontrada (userId):', {
+                    id: doc.id,
+                    nomeBanco: data.nomeBanco || data.banco,
+                    icone: data.icone,
+                    corIcone: data.corIcone || data.cor
+                });
+                
+                contas.push({
+                    id: doc.id,
+                    nomeBanco: data.nomeBanco || data.banco || data.descricao || 'Banco',
+                    tipoConta: data.tipoConta || data.tipo || 'Conta',
+                    icone: data.icone || 'account_balance',
+                    corIcone: data.corIcone || data.cor || '#21C25E',
+                    saldo: data.saldo || 0,
+                    openFinance: data.openFinance || false
                 });
             }
         });
-
-        // Acessibilidade: abrir dropdowns com Enter
-        document.querySelectorAll('.opcao-selecionada').forEach(function(el) {
-            el.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    const next = el.nextElementSibling;
-                    if (next && (next.classList.contains('opcoes-bandeira') || next.classList.contains('opcoes-conta') || next.classList.contains('opcoes-dia'))) {
-                        next.classList.toggle('mostrar');
-                    }
-                }
-            });
-        });
-
-        // Abrir calculadora ao clicar no limite
-        if (elementos.secaoLimite) {
-            elementos.secaoLimite.addEventListener('click', function() {
-                abrirCalculadora();
-            });
-        }
-        // Também permite abrir ao clicar diretamente no input
-        if (elementos.valorLimite) {
-            elementos.valorLimite.addEventListener('click', function() {
-                abrirCalculadora();
-            });
-        }
-
-        // Calculadora: eventos dos botões
-        if (elementos.calculadoraBotoes) {
-            elementos.calculadoraBotoes.addEventListener('click', function(e) {
-                if (e.target.tagName === 'BUTTON') {
-                    const botao = e.target;
-                    const valor = botao.textContent.trim();
-
-                    if (valor.match(/^[0-9]$/) || valor === '00') {
-                        adicionarNumero(valor);
-                    } else if (valor === ',' || valor === '.') {
-                        adicionarNumero(',');
-                    } else if (botao.classList.contains('apagar') || botao.id === 'botao-apagar') {
-                        apagarInput();
-                    } else if (botao.classList.contains('btn-cancelar-calculadora')) {
-                        cancelarCalculadora();
-                    } else if (botao.classList.contains('btn-confirmar-calculadora')) {
-                        confirmarCalculadora();
-                    }
-                    // Os botões de operação (+, -, *, /, =) não fazem nada
-                }
-            });
-        }
-    }
-
-    function configurarEventosPopup() {
-        console.log('🚨 Configurando eventos do popup...');
         
-        // Fechar popup pelo X
-        if (elementos.modalFechar) {
-            console.log('❌ Configurando botão fechar modal (X)');
-            elementos.modalFechar.addEventListener('click', function() {
-                console.log('❌ Botão fechar modal (X) clicado');
-                fecharPopup();
-            });
-        } else {
-            console.warn('⚠️ Elemento modalFechar não encontrado');
-        }
-
-        // Fechar popup pelo botão OK
-        if (elementos.popupBotao) {
-            console.log('✅ Configurando botão OK do popup');
-            elementos.popupBotao.addEventListener('click', function() {
-                console.log('✅ Botão OK do popup clicado');
-                fecharPopup();
-            });
-        } else {
-            console.warn('⚠️ Elemento popupBotao não encontrado');
-        }
-
-        // Fechar popup clicando fora
-        if (elementos.popupMensagem) {
-            console.log('🎯 Configurando click fora do popup');
-            elementos.popupMensagem.addEventListener('click', function(e) {
-                if (e.target === elementos.popupMensagem) {
-                    console.log('🎯 Clicou fora do popup - fechando');
-                    fecharPopup();
-                }
-            });
-        }
-
-        // Fechar popup com ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && elementos.popupMensagem && elementos.popupMensagem.style.display === 'flex') {
-                console.log('⌨️ Tecla ESC pressionada - fechando popup');
-                fecharPopup();
-            }
-        });
-    }
-
-    function fecharPopup() {
-        if (elementos.popupMensagem) {
-            elementos.popupMensagem.style.display = 'none';
-            elementos.popupMensagem.classList.remove('mostrar');
-            console.log('✅ Popup fechado');
-        }
-    }
-
-    function proximaEtapa() {
-        console.log(`▶️ Tentando ir para próxima etapa - atual: ${estado.etapaAtual}`);
-        
-        if (!validarEtapaAtual()) {
-            console.log('❌ Validação da etapa atual falhou');
-            return;
-        }
-
-        if (estado.etapaAtual < estado.totalEtapas) {
-            estado.etapaAtual++;
-            console.log(`✅ Avançando para etapa ${estado.etapaAtual}`);
-            atualizarEtapa();
-            if (estado.etapaAtual === estado.totalEtapas) {
-                console.log('📋 Chegou na última etapa - atualizando resumo');
-                atualizarResumo();
-            }
-        } else {
-            console.log('⚠️ Já está na última etapa');
-        }
-    }
-
-    function etapaAnterior() {
-        console.log(`◀️ Voltando para etapa anterior - atual: ${estado.etapaAtual}`);
-        
-        if (estado.etapaAtual > 1) {
-            estado.etapaAtual--;
-            console.log(`✅ Voltando para etapa ${estado.etapaAtual}`);
-            atualizarEtapa();
-        } else {
-            console.log('⚠️ Já está na primeira etapa');
-        }
-    }
-
-    function atualizarEtapa() {
-        console.log(`🔄 Atualizando interface para etapa ${estado.etapaAtual}`);
-
-        // Atualizar indicador de progresso
-        elementos.etapas.forEach((etapa, index) => {
-            const numeroEtapa = index + 1;
-            etapa.classList.remove('etapa-ativa', 'etapa-concluida');
-            
-            if (numeroEtapa === estado.etapaAtual) {
-                etapa.classList.add('etapa-ativa');
-                console.log(`✅ Etapa ${numeroEtapa} marcada como ativa`);
-            } else if (numeroEtapa < estado.etapaAtual) {
-                etapa.classList.add('etapa-concluida');
-                console.log(`✅ Etapa ${numeroEtapa} marcada como concluída`);
-            }
-        });
-
-        // Atualizar linhas de progresso
-        elementos.linhasProgresso.forEach((linha, index) => {
-            if (index < estado.etapaAtual - 1) {
-                linha.classList.add('ativa');
-            } else {
-                linha.classList.remove('ativa');
-            }
-        });
-
-        // Mostrar/ocultar etapas do formulário
-        elementos.etapasFormulario.forEach((etapa, index) => {
-            const numeroEtapa = index + 1;
-            if (numeroEtapa === estado.etapaAtual) {
-                etapa.classList.add('etapa-ativa');
-            } else {
-                etapa.classList.remove('etapa-ativa');
-            }
-        });
-
-        // Atualizar botões
-        if (elementos.botaoAnterior) {
-            if (estado.etapaAtual === 1) {
-                elementos.botaoAnterior.style.display = 'none';
-            } else {
-                elementos.botaoAnterior.style.display = 'flex';
-            }
-        }
-
-        if (elementos.botaoProximo && elementos.botaoSalvar) {
-            if (estado.etapaAtual === estado.totalEtapas) {
-                elementos.botaoProximo.style.display = 'none';
-                elementos.botaoSalvar.style.display = 'flex';
-            } else {
-                elementos.botaoProximo.style.display = 'flex';
-                elementos.botaoSalvar.style.display = 'none';
-            }
-        }
-    }
-
-    function validarEtapaAtual() {
-        console.log(`🔍 Validando etapa ${estado.etapaAtual}...`);
-        
-        switch (estado.etapaAtual) {
-            case 1:
-                console.log('🔍 Validando etapa 1 - Dados do cartão');
+        // Processar resultados do usuarioId
+        snapshot2.forEach((doc) => {
+            if (!contasIds.has(doc.id)) {
+                contasIds.add(doc.id);
+                const data = doc.data();
+                console.log('📊 Conta encontrada (usuarioId):', {
+                    id: doc.id,
+                    nomeBanco: data.nomeBanco || data.banco,
+                    icone: data.icone,
+                    corIcone: data.corIcone || data.cor
+                });
                 
-                if (!elementos.inputNomeCartao || !elementos.inputNomeCartao.value.trim()) {
-                    console.log('❌ Nome do cartão não informado');
-                    mostrarModal('Atenção', 'Por favor, insira um nome para o cartão');
-                    return false;
-                }
-                console.log('✅ Nome do cartão validado:', elementos.inputNomeCartao.value);
-                
-                if (!estado.bandeiraSelecionada) {
-                    console.log('❌ Bandeira não selecionada');
-                    mostrarModal('Atenção', 'Por favor, selecione a bandeira do cartão');
-                    return false;
-                }
-                console.log('✅ Bandeira selecionada:', estado.bandeiraSelecionada);
-                break;
-                
-            case 2:
-                console.log('🔍 Validando etapa 2 - Configurações');
-                
-                if (!estado.contaSelecionada) {
-                    console.log('❌ Conta não selecionada');
-                    mostrarModal('Atenção', 'Por favor, selecione uma conta vinculada');
-                    return false;
-                }
-                console.log('✅ Conta selecionada:', estado.contaSelecionada);
-                
-                if (!elementos.valorLimite || elementos.valorLimite.value === 'R$ 0,00' || !elementos.valorLimite.value) {
-                    console.log('❌ Limite não informado');
-                    mostrarModal('Atenção', 'Por favor, insira o limite do cartão');
-                    return false;
-                }
-                console.log('✅ Limite validado:', elementos.valorLimite.value);
-                break;
-        }
-        
-        console.log(`✅ Etapa ${estado.etapaAtual} validada com sucesso`);
-        return true;
-    }
-
-    // Carregar contas
-    function carregarContas() {
-        const contas = JSON.parse(localStorage.getItem('contasBancarias')) || [];
-        console.log(`📂 Contas carregadas (${contas.length}):`, contas);
-        
-        elementos.opcoesConta.innerHTML = '';
-        
-        contas.forEach(conta => {
-            const opcao = document.createElement('div');
-            opcao.className = 'opcao-conta';
-            opcao.setAttribute('data-value', conta.id);
-            opcao.innerHTML = `
-                <span class="material-icons icone-conta">${conta.icone}</span>
-                <span>${conta.nome}</span>
-            `;
-            elementos.opcoesConta.appendChild(opcao);
+                contas.push({
+                    id: doc.id,
+                    nomeBanco: data.nomeBanco || data.banco || data.descricao || 'Banco',
+                    tipoConta: data.tipoConta || data.tipo || 'Conta',
+                    icone: data.icone || 'account_balance',
+                    corIcone: data.corIcone || data.cor || '#21C25E',
+                    saldo: data.saldo || 0,
+                    openFinance: data.openFinance || false
+                });
+            }
         });
         
-        const opcaoNovaConta = document.createElement('div');
-        opcaoNovaConta.className = 'opcao-conta opcao-nova-conta';
-        opcaoNovaConta.setAttribute('data-value', 'nova');
-        opcaoNovaConta.innerHTML = `
-            <span class="material-icons icone-conta">add</span>
-            <span>Criar nova conta</span>
+        console.log('✅ Total de contas carregadas:', contas.length);
+        
+        if (contas.length === 0) {
+            console.log('⚠️ Nenhuma conta encontrada. Usuário precisa criar uma conta primeiro.');
+            alert('⚠️ Você precisa cadastrar uma conta bancária antes de criar um cartão de crédito.\n\nVá em "Nova Conta" para cadastrar sua primeira conta.');
+        }
+        
+        // Renderizar as contas na tela (Etapa 1)
+        renderizarInstituicoes();
+        renderizarContasModal();
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar contas:', error);
+        alert('Erro ao carregar suas contas. Verifique sua conexão e tente novamente.');
+        contas = [];
+        renderizarContasModal();
+    }
+}
+
+// === RENDERIZAR CONTAS DO USUÁRIO (Etapa 1) ===
+function renderizarInstituicoes() {
+    const lista = document.getElementById('lista-instituicoes');
+    if (!lista) return;
+    
+    lista.innerHTML = '';
+    
+    // Se não houver contas, mostrar mensagem
+    if (contas.length === 0) {
+        lista.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #718096;">
+                <span class="material-icons" style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;">account_balance</span>
+                <h3 style="color: #2D3748; margin-bottom: 12px;">Nenhuma conta encontrada</h3>
+                <p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+                    Você precisa cadastrar uma conta bancária antes de criar um cartão de crédito.
+                </p>
+                <button onclick="window.location.href='../Nova-conta/Nova-conta.html'" 
+                        style="background: #21C25E; color: white; border: none; padding: 14px 32px; 
+                               border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                    Cadastrar Conta
+                </button>
+            </div>
         `;
-        elementos.opcoesConta.appendChild(opcaoNovaConta);
+        return;
     }
-
-    // Gerar opções de dias (1-31)
-    function gerarOpcoesDias() {
-        elementos.opcoesFechamento.innerHTML = '';
-        elementos.opcoesVencimento.innerHTML = '';
+    
+    // Renderizar contas do usuário
+    contas.forEach(conta => {
+        const item = document.createElement('div');
+        item.className = 'item-instituicao';
+        item.onclick = () => selecionarContaComoInstituicao(conta);
         
-        for (let dia = 1; dia <= 31; dia++) {
-            const opcaoFechamento = document.createElement('div');
-            opcaoFechamento.className = 'opcao-dia';
-            opcaoFechamento.setAttribute('data-value', dia);
-            opcaoFechamento.textContent = dia;
-            elementos.opcoesFechamento.appendChild(opcaoFechamento);
-            
-            const opcaoVencimento = document.createElement('div');
-            opcaoVencimento.className = 'opcao-dia';
-            opcaoVencimento.setAttribute('data-value', dia);
-            opcaoVencimento.textContent = dia;
-            elementos.opcoesVencimento.appendChild(opcaoVencimento);
-        }
-    }
-
-    // Funções da calculadora
-    function abrirCalculadora() {
-        if (!elementos.calculadoraContainer) {
-            console.error('Elemento calculadoraContainer não encontrado');
-            return;
-        }
-
-        elementos.calculadoraContainer.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-
-        setTimeout(() => {
-            elementos.calculadoraContainer.classList.add('mostrar');
-        }, 10);
-
-        let valorAtual = elementos.valorLimite?.value.replace('R$ ', '').replace(/\./g, '').replace(',', '.') || '0';
-        if (isNaN(parseFloat(valorAtual))) valorAtual = '0';
-        estado.valorLimite = valorAtual === '0,00' ? '0' : valorAtual;
-        atualizarDisplayCalculadora();
-        estado.digitandoValor = false;
-
-        document.addEventListener('keydown', handleEscapeKey);
-    }
-
-    function fecharCalculadora() {
-        if (!elementos.calculadoraContainer) {
-            console.error('Elemento calculadoraContainer não encontrado');
-            return;
-        }
-
-        elementos.calculadoraContainer.classList.remove('mostrar');
-        document.body.style.overflow = '';
-
-        setTimeout(() => {
-            elementos.calculadoraContainer.style.display = 'none';
-        }, 300);
-
-        document.removeEventListener('keydown', handleEscapeKey);
-    }
-
-    function handleEscapeKey(e) {
-        if (e.key === 'Escape') {
-            cancelarCalculadora();
-        }
-    }
-
-    function cancelarCalculadora() {
-        fecharCalculadora();
-    }
-
-    function confirmarCalculadora() {
-        let valorNumerico = parseFloat(estado.valorLimite);
-        if (isNaN(valorNumerico) || valorNumerico < 0) {
-            estado.valorLimite = '0';
-        }
-        const valorFormatado = `R$ ${formatarMoeda(estado.valorLimite)}`;
-        elementos.valorLimite.value = valorFormatado;
-
-        elementos.calculadoraDisplay.style.background = '#dcfce7';
-        elementos.calculadoraDisplay.style.borderColor = '#22c55e';
-
-        setTimeout(() => {
-            fecharCalculadora();
-            setTimeout(() => {
-                elementos.calculadoraDisplay.style.background = '';
-                elementos.calculadoraDisplay.style.borderColor = '';
-            }, 300);
-        }, 500);
-    }
-
-    function adicionarNumero(numero) {
-        // Aceita apenas números e vírgula
-        if (!estado.digitandoValor) {
-            estado.valorLimite = '0';
-            estado.digitandoValor = true;
-        }
-
-        if (numero === '00') {
-            if (estado.valorLimite === '0') return;
-            estado.valorLimite += '00';
-        } else if (numero === ',' || numero === '.') {
-            // Adiciona vírgula apenas se não houver
-            if (!estado.valorLimite.includes(',')) {
-                estado.valorLimite += ',';
-            }
-        } else {
-            if (estado.valorLimite === '0' && numero !== ',' && numero !== '.') {
-                estado.valorLimite = numero;
-            } else {
-                // Limita casas decimais a 2
-                if (estado.valorLimite.includes(',')) {
-                    const parts = estado.valorLimite.split(',');
-                    if (parts[1] && parts[1].length >= 2) return;
+        // Determinar se é SVG ou Material Icon
+        const isSVG = conta.icone && (conta.icone.endsWith('.svg') || conta.icone.includes('/'));
+        const corIcone = conta.corIcone || '#21C25E';
+        
+        item.innerHTML = `
+            <div class="instituicao-icone" style="background-color: ${corIcone};">
+                ${isSVG 
+                    ? `<img src="${conta.icone}" alt="${conta.nomeBanco}" style="width: 28px; height: 28px; object-fit: contain;">` 
+                    : `<span class="material-icons" style="color: white; font-size: 28px;">${conta.icone}</span>`
                 }
-                estado.valorLimite += numero;
+            </div>
+            <div style="flex: 1;">
+                <span class="instituicao-nome">${conta.nomeBanco || 'Banco'}</span>
+            </div>
+        `;
+        
+        lista.appendChild(item);
+    });
+}
+
+// === SELECIONAR CONTA COMO INSTITUIÇÃO ===
+function selecionarContaComoInstituicao(conta) {
+    // Criar objeto instituição a partir da conta
+    instituicaoSelecionada = {
+        id: conta.id,
+        nome: conta.nomeBanco,
+        icone: conta.icone,
+        cor: conta.corIcone
+    };
+    
+    // Já pré-selecionar esta conta também
+    contaSelecionada = conta;
+    
+    console.log('Conta selecionada como instituição:', instituicaoSelecionada);
+    console.log('Conta vinculada automaticamente:', contaSelecionada);
+    
+    mostrarEtapa2();
+}
+
+// === NAVEGAÇÃO ENTRE ETAPAS ===
+function mostrarEtapa2() {
+    document.getElementById('etapa-1').classList.add('hidden');
+    document.getElementById('etapa-2').classList.remove('hidden');
+    
+    // Atualizar display da conta selecionada
+    if (contaSelecionada) {
+        atualizarDisplayConta();
+    }
+}
+
+function voltarEtapa1() {
+    document.getElementById('etapa-2').classList.add('hidden');
+    document.getElementById('etapa-1').classList.remove('hidden');
+}
+
+function voltar() {
+    window.history.back();
+}
+
+// === MODAIS ===
+function abrirSeletorBandeira() {
+    document.getElementById('modal-bandeira').classList.remove('hidden');
+}
+
+function abrirSeletorConta() {
+    document.getElementById('modal-conta').classList.remove('hidden');
+}
+
+function abrirSeletorDia(tipo) {
+    const modal = document.getElementById('modal-dia');
+    const titulo = document.getElementById('modal-dia-titulo');
+    
+    modal.setAttribute('data-tipo', tipo);
+    
+    if (tipo === 'fechamento') {
+        titulo.textContent = 'Dia do fechamento';
+        marcarDiaSelecionado(diaFechamento);
+    } else {
+        titulo.textContent = 'Dia do vencimento';
+        marcarDiaSelecionado(diaVencimento);
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function fecharModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+}
+
+// Fechar modal ao clicar no overlay
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+});
+
+// === SELEÇÃO DE BANDEIRA ===
+window.selecionarBandeira = function(id, logo, nome) {
+    bandeiraSelecionada = { id, logo, nome };
+    
+    const display = document.getElementById('bandeira-display');
+    display.innerHTML = `
+        <img src="${logo}" alt="${nome}" class="bandeira-icone-mini">
+        <span class="bandeira-texto">${nome}</span>
+    `;
+    
+    fecharModal('modal-bandeira');
+};
+
+// === RENDERIZAR CONTAS NO MODAL ===
+function renderizarContasModal() {
+    const lista = document.getElementById('lista-contas-modal');
+    if (!lista) return;
+    
+    lista.innerHTML = '';
+    
+    if (contas.length === 0) {
+        lista.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #718096;">
+                <span class="material-icons" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">account_balance</span>
+                <p>Nenhuma conta encontrada</p>
+                <p style="font-size: 0.9rem; margin-top: 8px;">Cadastre uma conta primeiro</p>
+            </div>
+        `;
+        return;
+    }
+    
+    contas.forEach(conta => {
+        const item = document.createElement('div');
+        item.className = 'item-conta-modal';
+        if (contaSelecionada && contaSelecionada.id === conta.id) {
+            item.classList.add('selecionado');
+        }
+        
+        item.onclick = () => selecionarConta(conta);
+        
+        // Determinar se é SVG ou ícone do Material Icons
+        const isSVG = conta.icone && (conta.icone.endsWith('.svg') || conta.icone.includes('/'));
+        const corIcone = conta.corIcone || '#21C25E';
+        
+        item.innerHTML = `
+            <div class="conta-icone-modal" style="background-color: ${corIcone};">
+                ${isSVG 
+                    ? `<img src="${conta.icone}" alt="${conta.nomeBanco}" style="width: 28px; height: 28px; object-fit: contain;">` 
+                    : `<span class="material-icons" style="color: white; font-size: 28px;">${conta.icone}</span>`
+                }
+            </div>
+            <div class="conta-info-modal">
+                <div class="conta-nome-modal">${conta.nomeBanco || 'Banco'}</div>
+                <div class="conta-tipo-modal">${conta.tipoConta || 'Conta'}</div>
+            </div>
+            ${conta.openFinance ? '<span class="badge-openfinance"><span class="material-icons" style="font-size: 14px;">verified</span> Open Finance</span>' : ''}
+            ${contaSelecionada && contaSelecionada.id === conta.id ? '<span class="material-icons conta-check">check_circle</span>' : ''}
+        `;
+        
+        lista.appendChild(item);
+    });
+}
+
+// === SELECIONAR CONTA ===
+function selecionarConta(conta) {
+    contaSelecionada = conta;
+    atualizarDisplayConta();
+    renderizarContasModal();
+    fecharModal('modal-conta');
+}
+
+// === ATUALIZAR DISPLAY DA CONTA ===
+function atualizarDisplayConta() {
+    if (!contaSelecionada) return;
+    
+    const display = document.getElementById('conta-display');
+    if (!display) return;
+    
+    const isSVG = contaSelecionada.icone && (contaSelecionada.icone.endsWith('.svg') || contaSelecionada.icone.includes('/'));
+    const corIcone = contaSelecionada.corIcone || '#21C25E';
+    
+    display.innerHTML = `
+        <div class="conta-icone-mini" style="background-color: ${corIcone};">
+            ${isSVG 
+                ? `<img src="${contaSelecionada.icone}" alt="${contaSelecionada.nomeBanco}" style="width: 20px; height: 20px; object-fit: contain;">` 
+                : `<span class="material-icons" style="color: white; font-size: 20px;">${contaSelecionada.icone}</span>`
             }
-        }
-        atualizarDisplayCalculadora();
-    }
+        </div>
+        <span class="conta-texto">${contaSelecionada.nomeBanco}</span>
+    `;
+}
 
-    function apagarInput() {
-        if (estado.valorLimite.length > 1) {
-            estado.valorLimite = estado.valorLimite.slice(0, -1);
-        } else {
-            estado.valorLimite = '0';
-            estado.digitandoValor = false;
-        }
-        atualizarDisplayCalculadora();
+// === GERAR DIAS (1-31) ===
+function gerarDias() {
+    const lista = document.getElementById('lista-dias');
+    if (!lista) return;
+    
+    lista.innerHTML = '';
+    
+    for (let i = 1; i <= 31; i++) {
+        const dia = document.createElement('div');
+        dia.className = 'opcao-dia';
+        dia.textContent = i;
+        dia.onclick = () => selecionarDia(i);
+        
+        lista.appendChild(dia);
     }
+}
 
-    function atualizarDisplayCalculadora() {
-        // Exibe o valor com vírgula como separador decimal
-        let valor = estado.valorLimite.replace('.', ',');
-        if (valor === '' || valor === '0') valor = '0,00';
-        elementos.calculadoraDisplay.value = `R$ ${formatarMoeda(valor)}`;
-        elementos.calculadoraDisplay.style.transform = 'scale(1.02)';
+function marcarDiaSelecionado(dia) {
+    setTimeout(() => {
+        document.querySelectorAll('.opcao-dia').forEach(opcao => {
+            opcao.classList.remove('selecionado');
+            if (parseInt(opcao.textContent) === dia) {
+                opcao.classList.add('selecionado');
+            }
+        });
+    }, 100);
+}
+
+function selecionarDia(dia) {
+    const modal = document.getElementById('modal-dia');
+    const tipo = modal.getAttribute('data-tipo');
+    
+    if (tipo === 'fechamento') {
+        diaFechamento = dia;
+        document.getElementById('dia-fechamento-display').textContent = dia;
+    } else {
+        diaVencimento = dia;
+        document.getElementById('dia-vencimento-display').textContent = dia;
+    }
+    
+    fecharModal('modal-dia');
+}
+
+// === BUSCA ===
+document.getElementById('busca-instituicao')?.addEventListener('input', (e) => {
+    const termo = e.target.value.toLowerCase();
+    document.querySelectorAll('.item-instituicao').forEach(item => {
+        const nome = item.querySelector('.instituicao-nome').textContent.toLowerCase();
+        item.style.display = nome.includes(termo) ? 'flex' : 'none';
+    });
+});
+
+document.getElementById('busca-conta')?.addEventListener('input', (e) => {
+    const termo = e.target.value.toLowerCase();
+    document.querySelectorAll('.item-conta-modal').forEach(item => {
+        const nome = item.querySelector('.conta-nome-modal').textContent.toLowerCase();
+        const tipo = item.querySelector('.conta-tipo-modal').textContent.toLowerCase();
+        item.style.display = (nome.includes(termo) || tipo.includes(termo)) ? 'flex' : 'none';
+    });
+});
+
+// === ATUALIZAR LIMITE ===
+document.getElementById('descricao')?.addEventListener('focus', () => {
+    // Poderia abrir calculadora aqui
+});
+
+// === SALVAR CARTÃO ===
+window.salvarCartao = async function() {
+    const descricao = document.getElementById('descricao').value;
+    
+    console.log('🔍 Validando dados do cartão:', {
+        descricao,
+        contaSelecionada,
+        bandeiraSelecionada,
+        limiteCartao,
+        diaFechamento,
+        diaVencimento
+    });
+    
+    // Validações
+    if (!contaSelecionada) {
+        alert('❌ Selecione uma conta para vincular o cartão');
+        return;
+    }
+    
+    if (!descricao.trim()) {
+        mostrarPopupDescricao();
+        return;
+    }
+    
+    if (limiteCartao === undefined || limiteCartao === null || limiteCartao <= 0) {
+        mostrarPopupAviso();
+        return;
+    }
+    
+    if (!diaFechamento || diaFechamento < 1 || diaFechamento > 31) {
+        alert('❌ Selecione um dia de fechamento válido');
+        return;
+    }
+    
+    if (!diaVencimento || diaVencimento < 1 || diaVencimento > 31) {
+        alert('❌ Selecione um dia de vencimento válido');
+        return;
+    }
+    
+    // Preparar dados
+    const cartaoData = {
+        descricao: descricao.trim(),
+        bandeira: bandeiraSelecionada.nome,
+        bandeiraSvg: bandeiraSelecionada.logo,
+        contaId: contaSelecionada.id,
+        nomeBanco: contaSelecionada.nomeBanco,
+        icone: contaSelecionada.icone,
+        corIcone: contaSelecionada.corIcone,
+        limite: Number(limiteCartao),
+        utilizado: 0,
+        disponivel: Number(limiteCartao),
+        valorFatura: 0,
+        diaFechamento: Number(diaFechamento),
+        diaVencimento: Number(diaVencimento),
+        ativo: true,
+        criadoEm: serverTimestamp()
+    };
+    
+    if (usuarioAtual) {
+        cartaoData.usuarioId = usuarioAtual.uid;
+    }
+    
+    console.log('💾 Salvando cartão no Firebase:', cartaoData);
+    
+    try {
+        // Salvar no Firebase
+        const docRef = await addDoc(collection(db, 'cartoes'), cartaoData);
+        console.log('✅ Cartão salvo com ID:', docRef.id);
+        
+        mostrarPopupSucesso();
+        
+        // Redirecionar após 2 segundos
         setTimeout(() => {
-            elementos.calculadoraDisplay.style.transform = 'scale(1)';
-        }, 100);
+            window.location.href = '../Lista-de-cartoes/Lista-de-cartoes.html';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Erro ao salvar cartão:', error);
+        alert('❌ Erro ao salvar cartão. Tente novamente.\n\n' + error.message);
     }
+};
 
-    function formatarMoeda(valor) {
-        // Aceita vírgula como separador decimal
-        let numero = parseFloat(valor.replace(',', '.')) || 0;
-        return numero.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+// === CALCULADORA ===
+let valorAtualCalculadora = '0';
+let digitandoValor = false;
+
+window.abrirCalculadora = function() {
+    const calculadoraContainer = document.getElementById('calculadora-container');
+    const calculadoraDisplay = document.getElementById('calculadora-display');
+    const valorLimiteDisplay = document.getElementById('valor-limite-display');
+    
+    calculadoraContainer.style.display = 'block';
+    
+    // Pegar valor atual do limite (removendo R$ e formatação)
+    const valorTexto = valorLimiteDisplay.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+    valorAtualCalculadora = valorTexto || '0';
+    calculadoraDisplay.value = formatarValorCalculadora(valorAtualCalculadora);
+    digitandoValor = false;
+};
+
+function fecharCalculadora() {
+    document.getElementById('calculadora-container').style.display = 'none';
+}
+
+function cancelarCalculadora() {
+    fecharCalculadora();
+}
+
+function confirmarCalculadora() {
+    const valorFormatado = formatarMoeda(valorAtualCalculadora);
+    document.getElementById('valor-limite-display').textContent = `R$ ${valorFormatado}`;
+    limiteCartao = parseFloat(valorAtualCalculadora);
+    fecharCalculadora();
+}
+
+function adicionarNumero(numero) {
+    if (!digitandoValor) {
+        valorAtualCalculadora = '0';
+        digitandoValor = true;
+    }
+    
+    if (valorAtualCalculadora === '0' && numero !== '.') {
+        valorAtualCalculadora = numero;
+    } else {
+        if (valorAtualCalculadora.includes('.') && valorAtualCalculadora.split('.')[1].length >= 2) {
+            return; // Limite de 2 casas decimais
+        }
+        valorAtualCalculadora += numero;
+    }
+    
+    document.getElementById('calculadora-display').value = formatarValorCalculadora(valorAtualCalculadora);
+}
+
+function apagarDigito() {
+    if (valorAtualCalculadora.length > 1) {
+        valorAtualCalculadora = valorAtualCalculadora.slice(0, -1);
+    } else {
+        valorAtualCalculadora = '0';
+        digitandoValor = false;
+    }
+    document.getElementById('calculadora-display').value = formatarValorCalculadora(valorAtualCalculadora);
+}
+
+function formatarValorCalculadora(valor) {
+    if (valor.includes('.')) {
+        const partes = valor.split('.');
+        return `${partes[0]},${partes[1].substring(0, 2)}`;
+    }
+    return valor.replace('.', ',');
+}
+
+function formatarMoeda(valor) {
+    const numero = parseFloat(valor);
+    return numero.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+}
+
+// Event listeners da calculadora
+document.addEventListener('DOMContentLoaded', () => {
+    const calculadoraBotoes = document.querySelector('.calculadora-botoes');
+    const btnApagar = document.getElementById('botao-apagar');
+    const btnCancelar = document.querySelector('.btn-cancelar-calculadora');
+    const btnConfirmar = document.querySelector('.btn-confirmar-calculadora');
+    
+    if (calculadoraBotoes) {
+        calculadoraBotoes.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const valor = e.target.textContent;
+                
+                if (!isNaN(valor) || valor === ',' || valor === '.') {
+                    const numero = valor === ',' ? '.' : valor;
+                    adicionarNumero(numero);
+                } else if (valor === '=') {
+                    confirmarCalculadora();
+                } else if (['+', '-', '*', '/'].includes(valor)) {
+                    // Operações matemáticas simples podem ser implementadas aqui
+                    console.log('Operação:', valor);
+                }
+            }
         });
     }
-
-    // Função para mostrar popup
-    function mostrarPopup(mensagem) {
-        console.log('🚨 Exibindo popup simples:', mensagem);
-        
-        if (!elementos.popupTexto || !elementos.popupMensagem) {
-            console.error('❌ Elementos do popup não encontrados:', {
-                popupTexto: !!elementos.popupTexto,
-                popupMensagem: !!elementos.popupMensagem
-            });
-            alert(mensagem); // Fallback
-            return;
-        }
-        
-        elementos.popupTexto.textContent = mensagem;
-        elementos.popupMensagem.style.display = 'flex';
-        elementos.popupMensagem.classList.add('mostrar');
-        
-        console.log('✅ Popup exibido com sucesso');
+    
+    if (btnApagar) {
+        btnApagar.addEventListener('click', apagarDigito);
     }
-
-    // Função para mostrar modal
-    function mostrarModal(titulo, mensagem) {
-        console.log('🚨 Exibindo modal:', { titulo, mensagem });
-        
-        if (!elementos.popupMensagem || !elementos.modalTitulo || !elementos.popupTexto) {
-            console.error('❌ Elementos do modal não encontrados:', {
-                popupMensagem: !!elementos.popupMensagem,
-                modalTitulo: !!elementos.modalTitulo,
-                popupTexto: !!elementos.popupTexto
-            });
-            alert(`${titulo}: ${mensagem}`); // Fallback
-            return;
-        }
-        
-        elementos.modalTitulo.textContent = titulo;
-        elementos.popupTexto.textContent = mensagem;
-        elementos.popupMensagem.style.display = 'flex';
-        elementos.popupMensagem.classList.add('mostrar');
-        
-        console.log('✅ Modal exibido com sucesso');
+    
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', cancelarCalculadora);
     }
-
-    // Função para salvar o cartão
-    function salvarCartao() {
-        console.log('💾 Salvando cartão...');
-        const novoCartao = {
-            id: Date.now().toString(),
-            numero: elementos.inputNumeroCartao.value.replace(/\s/g, ''),
-            nome: elementos.inputNomeCartao.value,
-            validade: `${elementos.inputValidadeMes.value}/${elementos.inputValidadeAno.value}`,
-            cvv: elementos.inputCvvCartao.value,
-            bandeira: estado.bandeiraSelecionada,
-            limite: elementos.valorLimite.value,
-            conta: estado.contaSelecionada,
-            diaFechamento: estado.diaFechamento,
-            diaVencimento: estado.diaVencimento,
-            dataCriacao: new Date().toISOString()
-        };
-        console.log('🎯 Novo cartão criado:', novoCartao);
-
-        let cartoes = JSON.parse(localStorage.getItem('cartoesCredito')) || [];
-        cartoes.push(novoCartao);
-        localStorage.setItem('cartoesCredito', JSON.stringify(cartoes));
-        console.log(`✅ Cartão salvo com sucesso! Total de cartões: ${cartoes.length}`);
+    
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', confirmarCalculadora);
     }
-
-    // Inicializar a aplicação
-    inicializar();
 });
+
+// === POPUP DE AVISO: DESCRIÇÃO OBRIGATÓRIA ===
+function mostrarPopupDescricao() {
+    const popup = document.getElementById('popup-aviso-descricao');
+    if (popup) {
+        popup.style.display = 'flex';
+    }
+}
+
+window.fecharPopupDescricao = function() {
+    const popup = document.getElementById('popup-aviso-descricao');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+    
+    // Focar no campo de descrição para facilitar a entrada
+    const inputDescricao = document.getElementById('descricao-cartao');
+    if (inputDescricao) {
+        inputDescricao.focus();
+        inputDescricao.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// === POPUP DE AVISO: LIMITE OBRIGATÓRIO ===
+function mostrarPopupAviso() {
+    const popup = document.getElementById('popup-aviso-limite');
+    popup.style.display = 'flex';
+}
+
+window.fecharPopupAviso = function() {
+    const popup = document.getElementById('popup-aviso-limite');
+    popup.style.display = 'none';
+    
+    // Focar no campo de limite para facilitar a entrada
+    const secaoLimite = document.querySelector('.secao-limite');
+    if (secaoLimite) {
+        secaoLimite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// === POPUP DE SUCESSO ===
+function mostrarPopupSucesso() {
+    const popup = document.getElementById('popup-sucesso');
+    popup.style.display = 'flex';
+}
+
+// Expor funções globalmente
+window.voltarEtapa1 = voltarEtapa1;
+window.voltar = voltar;
+window.abrirSeletorBandeira = abrirSeletorBandeira;
+window.abrirSeletorConta = abrirSeletorConta;
+window.abrirSeletorDia = abrirSeletorDia;
+window.fecharModal = fecharModal;
+
+console.log('✅ Script Novo Cartão carregado');
