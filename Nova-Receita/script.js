@@ -461,9 +461,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         novaData.setMonth(novaData.getMonth() + 1);
                     }
 
+                    // Adicionar numeração sequencial à descrição
+                    const numeroSequencial = String(i).padStart(2, '0');
+                    const descricaoComNumero = `${receitaBase.descricao} ${numeroSequencial}`;
+
                     const receitaFutura = {
                         ...receitaBase,
                         data: formatarDataParaExibicao(novaData),
+                        descricao: descricaoComNumero, // Descrição com numeração
                         recebido: false, // Receitas futuras sempre começam como não recebidas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
@@ -503,9 +508,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Verificar se já existe receita para este mês
                 const mesAno = receita.data.substring(3); // MM/AAAA
+                const descricaoBase = receita.descricao.replace(/ \d{2}$/, ''); // Remove numeração
+                
                 const existeReceita = receitas.some(r => 
                     r.data.substring(3) === mesAno && 
-                    r.descricao === receita.descricao &&
+                    (r.descricao ? r.descricao.replace(/ \d{2}$/, '') : '') === descricaoBase &&
                     r.categoria === receita.categoria
                 );
 
@@ -542,13 +549,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
             firebase.firestore().collection('receitas')
                 .where('userId', '==', user.uid)
-                .where('descricao', '==', receita.descricao)
                 .where('categoria', '==', receita.categoria)
                 .get()
                 .then(snapshot => {
+                    const mesAno = receita.data.substring(3); // MM/AAAA
+                    const descricaoBase = receita.descricao.replace(/ \d{2}$/, ''); // Remove numeração (ex: " 01")
+                    
                     const existeReceita = snapshot.docs.some(doc => {
                         const data = doc.data().data;
-                        return data && data.substring(3) === mesAno;
+                        const docDescricao = doc.data().descricao || '';
+                        const docDescricaoBase = docDescricao.replace(/ \d{2}$/, ''); // Remove numeração
+                        
+                        return data && data.substring(3) === mesAno && docDescricaoBase === descricaoBase;
                     });
 
                     if (!existeReceita) {

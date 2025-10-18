@@ -437,9 +437,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         novaData.setMonth(novaData.getMonth() + 1);
                     }
 
+                    // Adicionar numeração sequencial à descrição
+                    const numeroSequencial = String(i).padStart(2, '0');
+                    const descricaoComNumero = `${despesaBase.descricao} ${numeroSequencial}`;
+
                     const despesaFutura = {
                         ...despesaBase,
                         data: formatarDataParaExibicao(novaData),
+                        descricao: descricaoComNumero, // Descrição com numeração
                         pago: false, // Despesas futuras começam como não pagas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
@@ -479,9 +484,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Verificar se já existe despesa para este mês
                 const mesAno = despesa.data.substring(3); // MM/AAAA
+                const descricaoBase = despesa.descricao.replace(/ \d{2}$/, ''); // Remove numeração
+                
                 const existeDespesa = despesas.some(r => 
                     r.data.substring(3) === mesAno && 
-                    r.descricao === despesa.descricao &&
+                    (r.descricao ? r.descricao.replace(/ \d{2}$/, '') : '') === descricaoBase &&
                     r.categoria === despesa.categoria
                 );
 
@@ -518,13 +525,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             firebase.firestore().collection('despesas')
                 .where('userId', '==', user.uid)
-                .where('descricao', '==', despesa.descricao)
                 .where('categoria', '==', despesa.categoria)
                 .get()
                 .then(snapshot => {
+                    const mesAno = despesa.data.substring(3); // MM/AAAA
+                    const descricaoBase = despesa.descricao.replace(/ \d{2}$/, ''); // Remove numeração (ex: " 01")
+                    
                     const existeDespesa = snapshot.docs.some(doc => {
                         const data = doc.data().data;
-                        return data && data.substring(3) === mesAno;
+                        const docDescricao = doc.data().descricao || '';
+                        const docDescricaoBase = docDescricao.replace(/ \d{2}$/, ''); // Remove numeração
+                        
+                        return data && data.substring(3) === mesAno && docDescricaoBase === descricaoBase;
                     });
 
                     if (!existeDespesa) {
