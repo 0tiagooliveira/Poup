@@ -461,14 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         novaData.setMonth(novaData.getMonth() + 1);
                     }
 
-                    // Adicionar numeração sequencial à descrição
-                    const numeroSequencial = String(i).padStart(2, '0');
-                    const descricaoComNumero = `${receitaBase.descricao} ${numeroSequencial}`;
-
                     const receitaFutura = {
                         ...receitaBase,
                         data: formatarDataParaExibicao(novaData),
-                        descricao: descricaoComNumero, // Descrição com numeração
                         recebido: false, // Receitas futuras sempre começam como não recebidas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
@@ -506,24 +501,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
                 
-                // Para receitas automáticas (com numeração), sempre salvar
-                // Verificar duplicata só para receitas manuais
-                if (receita.origem === 'automatica') {
+                // Verificar se já existe receita para este mês
+                const mesAno = receita.data.substring(3); // MM/AAAA
+                const existeReceita = receitas.some(r => 
+                    r.data.substring(3) === mesAno && 
+                    r.descricao === receita.descricao &&
+                    r.categoria === receita.categoria
+                );
+
+                if (!existeReceita) {
                     receitas.push(receita);
                     localStorage.setItem('receitas', JSON.stringify(receitas));
-                } else {
-                    // Verificar se já existe receita para este mês (só para receitas manuais)
-                    const mesAno = receita.data.substring(3); // MM/AAAA
-                    const existeReceita = receitas.some(r => 
-                        r.data.substring(3) === mesAno && 
-                        r.descricao === receita.descricao &&
-                        r.categoria === receita.categoria
-                    );
-
-                    if (!existeReceita) {
-                        receitas.push(receita);
-                        localStorage.setItem('receitas', JSON.stringify(receitas));
-                    }
+                    // Receita futura salva no localStorage para data
                 }
                 
                 resolve();
@@ -553,27 +542,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             firebase.firestore().collection('receitas')
                 .where('userId', '==', user.uid)
+                .where('descricao', '==', receita.descricao)
                 .where('categoria', '==', receita.categoria)
                 .get()
                 .then(snapshot => {
-                    // Para receitas automáticas (com numeração), sempre salvar
-                    if (receita.origem === 'automatica') {
-                        const receitaFirestore = { ...receita, userId: user.uid };
-                        return firebase.firestore().collection('receitas').add(receitaFirestore);
-                    }
-                    
-                    // Para receitas manuais, verificar duplicata
-                    const mesAno = receita.data.substring(3); // MM/AAAA
                     const existeReceita = snapshot.docs.some(doc => {
                         const data = doc.data().data;
-                        const docDescricao = doc.data().descricao || '';
-                        return data && data.substring(3) === mesAno && docDescricao === receita.descricao;
+                        return data && data.substring(3) === mesAno;
                     });
 
                     if (!existeReceita) {
                         const receitaFirestore = { ...receita, userId: user.uid };
                         return firebase.firestore().collection('receitas').add(receitaFirestore);
                     } else {
+                        // Receita duplicada para o mês detectada e ignorada
                         return Promise.resolve();
                     }
                 })

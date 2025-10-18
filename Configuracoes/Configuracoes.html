@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link rel="stylesheet" href="../css/menu-inferior-padrao.css">
     <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 
     <!-- Firebase scripts -->
@@ -20,10 +22,40 @@
     <header class="header">
         <div class="header-container">
             <button class="btn-voltar" onclick="window.history.back()">
-                <img src="../Icon/anterior.svg" alt="Voltar" class="icon-voltar">
+                <span class="material-icons-round">arrow_back</span>
             </button>
             <h1 class="header-title">Configurações</h1>
-            <div class="header-spacer"></div>
+            <div class="dropdown-container">
+                <button class="btn-dropdown" onclick="toggleDropdown(event)">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
+                        <span class="material-icons-round">receipt_long</span>
+                        Lista de Despesas
+                    </a>
+                    <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
+                        <span class="material-icons-round">payment</span>
+                        Lista de Receitas
+                    </a>
+                    <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item">
+                        <span class="material-icons-round">credit_card</span>
+                        Cartões de Crédito
+                    </a>
+                    <a href="../Transações/Transações.html" class="dropdown-item">
+                        <span class="material-icons-round">swap_horiz</span>
+                        Transações
+                    </a>
+                    <a href="../Gráficos/Gráficos.html" class="dropdown-item">
+                        <span class="material-icons-round">bar_chart</span>
+                        Gráficos
+                    </a>
+                    <a href="../Configuracoes/Configuracoes.html" class="dropdown-item active">
+                        <span class="material-icons-round">settings</span>
+                        Configurações
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -495,7 +527,7 @@
             <span class="material-icons-round">swap_horiz</span>
             <span>Transações</span>
         </a>
-        <div class="botao-adicionar-menu" id="botao-adicionar-config">
+        <div class="botao-adicionar-menu" id="botao-adicionar-menu">
             <span class="material-icons-round">add</span>
         </div>
         <a href="../Gráficos/Gráficos.html" class="item-navegacao">
@@ -508,22 +540,9 @@
         </a>
     </nav>
 
-    <!-- Menu de seleção ao clicar no botão + -->
-    <div class="menu-adicionar" id="menu-adicionar-config" style="display: none;">
-        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
-            <span class="material-icons">trending_up</span>
-            <span>Nova Receita</span>
-        </div>
-        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
-            <span class="material-icons">trending_down</span>
-            <span>Nova Despesa</span>
-        </div>
-        <div class="menu-opcao" onclick="alert('Transferência em breve!')">
-            <span class="material-icons">swap_horiz</span>
-            <span>Transferência</span>
-        </div>
-    </div>
-
+    <script src="../js/header-padrao.js"></script>
+    <script src="../js/menu-inferior-padrao.js"></script>
+    <script src="../js/menu-adicionar-padrao.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

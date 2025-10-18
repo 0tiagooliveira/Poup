@@ -1119,17 +1119,14 @@ input:checked + .toggle-slider:before {
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s ease-out;
-    min-height: 300px; /* Garantir altura mínima */
 }
 
 @keyframes slideUp {
     from {
         transform: translateY(100%);
-        opacity: 0;
     }
     to {
         transform: translateY(0);
-        opacity: 1;
     }
 }
 
@@ -1138,7 +1135,6 @@ input:checked + .toggle-slider:before {
     padding: 20px;
     gap: 8px;
     background: #fff;
-    border-radius: 24px 24px 0 0;
 }
 
 .modal-divider {

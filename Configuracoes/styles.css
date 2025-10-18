@@ -35,7 +35,8 @@ body {
     line-height: 1.6;
 }
 
-/* Header */
+/* Header - Comentado para usar header-padrao.css */
+/*
 .header {
     background-color: var(--fundo-card);
     border-bottom: 1px solid var(--borda);
@@ -83,6 +84,7 @@ body {
 .header-spacer {
     width: 36px;
 }
+*/
 
 /* Main Content */
 .main-content {

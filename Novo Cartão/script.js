@@ -560,7 +560,7 @@ window.salvarCartao = async function() {
     }
     
     if (!descricao.trim()) {
-        mostrarPopupDescricao();
+        alert('❌ Informe uma descrição para o cartão');
         return;
     }
     
@@ -733,28 +733,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnConfirmar.addEventListener('click', confirmarCalculadora);
     }
 });
-
-// === POPUP DE AVISO: DESCRIÇÃO OBRIGATÓRIA ===
-function mostrarPopupDescricao() {
-    const popup = document.getElementById('popup-aviso-descricao');
-    if (popup) {
-        popup.style.display = 'flex';
-    }
-}
-
-window.fecharPopupDescricao = function() {
-    const popup = document.getElementById('popup-aviso-descricao');
-    if (popup) {
-        popup.style.display = 'none';
-    }
-    
-    // Focar no campo de descrição para facilitar a entrada
-    const inputDescricao = document.getElementById('descricao-cartao');
-    if (inputDescricao) {
-        inputDescricao.focus();
-        inputDescricao.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-}
 
 // === POPUP DE AVISO: LIMITE OBRIGATÓRIO ===
 function mostrarPopupAviso() {

@@ -1,7 +1,7 @@
-﻿// === FIREBASE E CONFIGURAÃ‡ÃƒO ===
+﻿// === FIREBASE E CONFIGURAÇÃO ===
 // Usando Firebase v8 para compatibilidade
 
-// ConfiguraÃ§Ã£o do Firebase (mesma da home)
+// Configuração do Firebase (mesma da home)
 const firebaseConfig = {
     apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
     authDomain: "poup-beta.firebaseapp.com",
@@ -11,7 +11,7 @@ const firebaseConfig = {
     appId: "1:954695915981:web:d31b216f79eac178094c84"
 };
 
-// VariÃ¡veis Firebase
+// Variáveis Firebase
 let db = null;
 let auth = null;
 let usuarioAtual = null;
@@ -20,53 +20,27 @@ let usuarioAtual = null;
 const DEBUG_MODE = window.location.search.includes('debug=true');
 
 if (DEBUG_MODE) {
-    console.log('ðŸ“Š Sistema de GrÃ¡ficos Iniciado');
-    console.log('ðŸ”— URL:', window.location.href);
+    console.log('📊 Sistema de Gráficos Iniciado');
+    console.log('🔗 URL:', window.location.href);
 }
 
-// === FUNÃ‡Ã•ES DE LOG ===
+// === FUNÇÕES DE LOG ===
 function logInfo(emoji, mensagem, dados = null) {
     if (DEBUG_MODE) {
         if (dados) {
-            console.log(`${emoji} [GRÃFICOS] ${mensagem}`, dados);
+            console.log(`${emoji} [GRÁFICOS] ${mensagem}`, dados);
         } else {
-            console.log(`${emoji} [GRÃFICOS] ${mensagem}`);
+            console.log(`${emoji} [GRÁFICOS] ${mensagem}`);
         }
-    }
-}
-
-// FunÃ§Ã£o auxiliar para converter data de forma segura
-function converterDataParaObjeto(dataInput) {
-    try {
-        // Se jÃ¡ Ã© objeto Date, retorna
-        if (dataInput instanceof Date) {
-            return dataInput;
-        }
-        
-        // Se Ã© string no formato "DD/MM/AAAA"
-        if (typeof dataInput === 'string' && dataInput.includes('/')) {
-            return new Date(dataInput.split('/').reverse().join('-'));
-        }
-        
-        // Se Ã© objeto com propriedade data
-        if (typeof dataInput === 'object' && dataInput.data) {
-            return converterDataParaObjeto(dataInput.data);
-        }
-        
-        // Fallback: tentar converter diretamente
-        return new Date(dataInput);
-    } catch (error) {
-        logError('ðŸ“…', 'Erro ao converter data:', { dataInput, error });
-        return new Date(); // Retorna data atual como fallback
     }
 }
 
 function logError(emoji, mensagem, erro = null) {
-    console.error(`${emoji} [GRÃFICOS] ${mensagem}`, erro || '');
+    console.error(`${emoji} [GRÁFICOS] ${mensagem}`, erro || '');
 }
 
 function logWarn(emoji, mensagem, dados = null) {
-    console.warn(`${emoji} [GRÃFICOS] ${mensagem}`, dados || '');
+    console.warn(`${emoji} [GRÁFICOS] ${mensagem}`, dados || '');
 }
 
 // Dados reais do Firebase - estrutura para armazenar dados carregados
@@ -80,7 +54,7 @@ let dadosReais = {
     receitasFixasVariaveis: {},
 };
 
-// Dados brutos carregados (para reprocessar ao mudar perÃ­odo)
+// Dados brutos carregados (para reprocessar ao mudar período)
 let dadosBrutos = {
     despesas: [],
     receitas: [],
@@ -88,28 +62,28 @@ let dadosBrutos = {
     transferencias: []
 };
 
-// Estado atual dos grÃ¡ficos
-let tipoAtivo = 'donut'; // Inicia com grÃ¡fico de rosca (Despesas por categoria)
+// Estado atual dos gráficos
+let tipoAtivo = 'donut'; // Inicia com gráfico de rosca (Despesas por categoria)
 let categoriaAtiva = 'despesas-categoria'; // Mostra despesas por categoria
 let graficoAtual = null;
 
-// PerÃ­odo selecionado
+// Período selecionado
 let mesAtual = new Date().getMonth();
 let anoAtual = new Date().getFullYear();
 
-// === INICIALIZAÃ‡ÃƒO ===
-logInfo('ðŸš€', 'Iniciando sistema de grÃ¡ficos...');
+// === INICIALIZAÇÃO ===
+logInfo('🚀', 'Iniciando sistema de gráficos...');
 
 // Aguardar Firebase ser carregado
 firebase.initializeApp(firebaseConfig);
 db = firebase.firestore();
 auth = firebase.auth();
 
-logInfo('âœ…', 'Firebase inicializado com sucesso');
-logInfo('ðŸ—„', 'Firestore conectado');
-logInfo('ðŸ”', 'Auth conectado');
+logInfo('✅', 'Firebase inicializado com sucesso');
+logInfo('🗄', 'Firestore conectado');
+logInfo('🔐', 'Auth conectado');
 
-// Aguardar DOM e autenticaÃ§Ã£o
+// Aguardar DOM e autenticação
 // Configurar menu adicionar
 function configurarMenuAdicionar() {
     const botaoAdicionar = document.getElementById('botao-adicionar-graficos');
@@ -134,36 +108,36 @@ function configurarMenuAdicionar() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    logInfo('ðŸ ', 'DOM carregado, inicializando aplicaÃ§Ã£o...');
+    logInfo('🏠', 'DOM carregado, inicializando aplicação...');
     
     configurarMenuAdicionar();
     
-    // Verificar autenticaÃ§Ã£o
+    // Verificar autenticação
     auth.onAuthStateChanged((user) => {
         if (user) {
             usuarioAtual = user;
-            logInfo('ðŸ‘¤', `UsuÃ¡rio autenticado: ${user.email}`);
-            logInfo('ðŸ†”', `UID: ${user.uid}`);
+            logInfo('👤', `Usuário autenticado: ${user.email}`);
+            logInfo('🆔', `UID: ${user.uid}`);
             
-            // Aguardar um breve momento para garantir que o Firestore estÃ¡ pronto
+            // Aguardar um breve momento para garantir que o Firestore está pronto
             setTimeout(() => {
                 // Inicializar controles
                 inicializarControles();
-                logInfo('âœ…', 'Controles inicializados');
+                logInfo('✅', 'Controles inicializados');
                 
-                // Inicializar texto do perÃ­odo
+                // Inicializar texto do período
                 const periodoTexto = document.getElementById('periodo-texto');
                 if (periodoTexto) {
-                    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÃ‡O', 'ABRIL', 'MAIO', 'JUNHO', 
+                    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                                   'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
                     periodoTexto.textContent = `${meses[mesAtual]} ${anoAtual}`;
                 }
                 
-                // Carregar dados e criar grÃ¡fico inicial
+                // Carregar dados e criar gráfico inicial
                 carregarDadosReais();
             }, 100);
         } else {
-            logError('âŒ', 'UsuÃ¡rio nÃ£o autenticado, redirecionando...');
+            logError('❌', 'Usuário não autenticado, redirecionando...');
             window.location.href = '../index.html';
         }
     });
@@ -172,30 +146,30 @@ document.addEventListener('DOMContentLoaded', function() {
 // === CARREGAMENTO DE DADOS ===
 async function carregarDadosReais() {
     try {
-        logInfo('ðŸ“¡', 'Carregando dados reais do Firebase...');
+        logInfo('📡', 'Carregando dados reais do Firebase...');
         
-        // Verificar se o usuÃ¡rio estÃ¡ autenticado antes de prosseguir
+        // Verificar se o usuário está autenticado antes de prosseguir
         if (!usuarioAtual || !usuarioAtual.uid) {
-            logError('âŒ', 'UsuÃ¡rio nÃ£o estÃ¡ autenticado');
+            logError('❌', 'Usuário não está autenticado');
             return;
         }
         
         // Carregar dados em paralelo mas com tratamento de erro individual
         const promisesCarregamento = [
             carregarDespesas().catch(error => {
-                logError('âŒ', 'Falha ao carregar despesas:', error);
+                logError('❌', 'Falha ao carregar despesas:', error);
                 return [];
             }),
             carregarReceitas().catch(error => {
-                logError('âŒ', 'Falha ao carregar receitas:', error);
+                logError('❌', 'Falha ao carregar receitas:', error);
                 return [];
             }),
             carregarContas().catch(error => {
-                logError('âŒ', 'Falha ao carregar contas:', error);
+                logError('❌', 'Falha ao carregar contas:', error);
                 return [];
             }),
             carregarTransferencias().catch(error => {
-                logError('âŒ', 'Falha ao carregar transferÃªncias:', error);
+                logError('❌', 'Falha ao carregar transferências:', error);
                 return [];
             })
         ];
@@ -207,7 +181,7 @@ async function carregarDadosReais() {
         
         const dadosCarregados = { despesas, receitas, contas, transferencias };
         
-        logInfo('ðŸ“Š', 'Dados carregados:', {
+        logInfo('📊', 'Dados carregados:', {
             despesas: despesas.length,
             receitas: receitas.length,
             contas: contas.length,
@@ -217,27 +191,27 @@ async function carregarDadosReais() {
         // Processar dados
         processarDadosParaGraficos(dadosCarregados);
         
-        // Inicializar UI com grÃ¡fico de linha selecionado
+        // Inicializar UI com gráfico de linha selecionado
         inicializarUIInicial();
         
-        // Criar grÃ¡fico inicial
+        // Criar gráfico inicial
         criarGrafico();
         
     } catch (error) {
-        logError('âŒ', 'Erro crÃ­tico ao carregar dados:', error);
+        logError('❌', 'Erro crítico ao carregar dados:', error);
         
-        // Tentar mostrar uma mensagem amigÃ¡vel para o usuÃ¡rio
+        // Tentar mostrar uma mensagem amigável para o usuário
         mostrarMensagemSemDados();
     }
 }
 
 async function carregarDespesas() {
     try {
-        logInfo('ðŸ’¸', 'Carregando despesas...');
+        logInfo('💸', 'Carregando despesas...');
         
-        // Verificar se o usuÃ¡rio estÃ¡ autenticado
+        // Verificar se o usuário está autenticado
         if (!usuarioAtual || !usuarioAtual.uid) {
-            throw new Error('UsuÃ¡rio nÃ£o autenticado');
+            throw new Error('Usuário não autenticado');
         }
         
         const despesas = [];
@@ -247,22 +221,22 @@ async function carregarDespesas() {
             despesas.push({ id: doc.id, ...doc.data() });
         });
         
-        logInfo('ðŸ’¸', `${despesas.length} despesas carregadas`);
+        logInfo('💸', `${despesas.length} despesas carregadas`);
         return despesas;
     } catch (error) {
-        logError('âŒ', 'Erro ao carregar despesas:', error);
-        // Em caso de erro, retornar array vazio para nÃ£o quebrar o app
+        logError('❌', 'Erro ao carregar despesas:', error);
+        // Em caso de erro, retornar array vazio para não quebrar o app
         return [];
     }
 }
 
 async function carregarReceitas() {
     try {
-        logInfo('ðŸ’°', 'Carregando receitas...');
+        logInfo('💰', 'Carregando receitas...');
         
-        // Verificar se o usuÃ¡rio estÃ¡ autenticado
+        // Verificar se o usuário está autenticado
         if (!usuarioAtual || !usuarioAtual.uid) {
-            throw new Error('UsuÃ¡rio nÃ£o autenticado');
+            throw new Error('Usuário não autenticado');
         }
         
         const receitas = [];
@@ -272,21 +246,21 @@ async function carregarReceitas() {
             receitas.push({ id: doc.id, ...doc.data() });
         });
         
-        logInfo('ðŸ’°', `${receitas.length} receitas carregadas`);
+        logInfo('💰', `${receitas.length} receitas carregadas`);
         return receitas;
     } catch (error) {
-        logError('âŒ', 'Erro ao carregar receitas:', error);
+        logError('❌', 'Erro ao carregar receitas:', error);
         return [];
     }
 }
 
 async function carregarContas() {
     try {
-        logInfo('ðŸ¦', 'Carregando contas...');
+        logInfo('🏦', 'Carregando contas...');
         
-        // Verificar se o usuÃ¡rio estÃ¡ autenticado
+        // Verificar se o usuário está autenticado
         if (!usuarioAtual || !usuarioAtual.uid) {
-            throw new Error('UsuÃ¡rio nÃ£o autenticado');
+            throw new Error('Usuário não autenticado');
         }
         
         const contas = [];
@@ -296,21 +270,21 @@ async function carregarContas() {
             contas.push({ id: doc.id, ...doc.data() });
         });
         
-        logInfo('ðŸ¦', `${contas.length} contas carregadas`);
+        logInfo('🏦', `${contas.length} contas carregadas`);
         return contas;
     } catch (error) {
-        logError('âŒ', 'Erro ao carregar contas:', error);
+        logError('❌', 'Erro ao carregar contas:', error);
         return [];
     }
 }
 
 async function carregarTransferencias() {
     try {
-        logInfo('ðŸ”„', 'Carregando transferÃªncias...');
+        logInfo('🔄', 'Carregando transferências...');
         
-        // Verificar se o usuÃ¡rio estÃ¡ autenticado
+        // Verificar se o usuário está autenticado
         if (!usuarioAtual || !usuarioAtual.uid) {
-            throw new Error('UsuÃ¡rio nÃ£o autenticado');
+            throw new Error('Usuário não autenticado');
         }
         
         const transferencias = [];
@@ -320,17 +294,17 @@ async function carregarTransferencias() {
             transferencias.push({ id: doc.id, ...doc.data() });
         });
         
-        logInfo('ðŸ”„', `${transferencias.length} transferÃªncias carregadas`);
+        logInfo('🔄', `${transferencias.length} transferências carregadas`);
         return transferencias;
     } catch (error) {
-        logError('âŒ', 'Erro ao carregar transferÃªncias:', error);
+        logError('❌', 'Erro ao carregar transferências:', error);
         return [];
     }
 }
 
 // === PROCESSAMENTO DE DADOS ===
 function processarDadosParaGraficos(dados) {
-    logInfo('ðŸ”„', 'Processando dados para grÃ¡ficos...');
+    logInfo('🔄', 'Processando dados para gráficos...');
     
     // Criar mapa de contas (ID -> Nome)
     const mapaContas = {};
@@ -353,20 +327,20 @@ function processarDadosParaGraficos(dados) {
     // Calcular saldos por conta
     dadosReais.saldosConta = calcularSaldosPorConta(dados.contas || [], dados.receitas || [], dados.despesas || []);
     
-    // Processar despesas fixas x variÃ¡veis
+    // Processar despesas fixas x variáveis
     dadosReais.despesasFixasVariaveis = processarFixasVariaveis(dados.despesas || [], 'despesa');
     
-    // Processar receitas fixas x variÃ¡veis
+    // Processar receitas fixas x variáveis
     dadosReais.receitasFixasVariaveis = processarFixasVariaveis(dados.receitas || [], 'receita');
     
-    logInfo('âœ…', 'Dados processados com sucesso');
+    logInfo('✅', 'Dados processados com sucesso');
 }
 
 function processarPorCategoria(transacoes, tipo) {
     const resultado = {};
     
     transacoes.forEach(transacao => {
-        // Converter valores usando a mesma lÃ³gica da Home
+        // Converter valores usando a mesma lógica da Home
         let valor = 0;
         if (typeof transacao.valor === 'string') {
             valor = parseFloat(transacao.valor.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
@@ -382,12 +356,12 @@ function processarPorCategoria(transacoes, tipo) {
         
         // Log para debug
         if (DEBUG_MODE) {
-            logInfo('ðŸ“', `Processando ${tipo}: ${categoria} = R$ ${valor.toFixed(2)}`);
+            logInfo('📝', `Processando ${tipo}: ${categoria} = R$ ${valor.toFixed(2)}`);
         }
     });
     
-    logInfo('ðŸ“Š', `Processadas ${transacoes.length} ${tipo}s em ${Object.keys(resultado).length} categorias`);
-    logInfo('ðŸ“Š', `Resultado: ${JSON.stringify(resultado)}`);
+    logInfo('📊', `Processadas ${transacoes.length} ${tipo}s em ${Object.keys(resultado).length} categorias`);
+    logInfo('📊', `Resultado: ${JSON.stringify(resultado)}`);
     return resultado;
 }
 
@@ -395,7 +369,7 @@ function processarPorConta(transacoes, mapaContas) {
     const resultado = {};
     
     transacoes.forEach(transacao => {
-        // Converter valores usando a mesma lÃ³gica da Home
+        // Converter valores usando a mesma lógica da Home
         let valor = 0;
         if (typeof transacao.valor === 'string') {
             valor = parseFloat(transacao.valor.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
@@ -406,20 +380,20 @@ function processarPorConta(transacoes, mapaContas) {
         // Garantir que o valor seja positivo
         valor = Math.abs(valor);
         
-        // Usar o campo 'carteira' que Ã© o ID da conta
+        // Usar o campo 'carteira' que é o ID da conta
         const contaId = transacao.carteira || transacao.conta;
-        const nomeConta = mapaContas[contaId] || contaId || 'Conta PadrÃ£o';
+        const nomeConta = mapaContas[contaId] || contaId || 'Conta Padrão';
         
         resultado[nomeConta] = (resultado[nomeConta] || 0) + valor;
         
         // Log para debug
         if (DEBUG_MODE) {
-            logInfo('ðŸ’³', `Processando conta: ${contaId} -> ${nomeConta} = R$ ${valor.toFixed(2)}`);
+            logInfo('💳', `Processando conta: ${contaId} -> ${nomeConta} = R$ ${valor.toFixed(2)}`);
         }
     });
     
-    logInfo('ðŸ’³', `Processadas ${transacoes.length} transaÃ§Ãµes em ${Object.keys(resultado).length} contas`);
-    logInfo('ðŸ’³', `Resultado: ${JSON.stringify(resultado)}`);
+    logInfo('💳', `Processadas ${transacoes.length} transações em ${Object.keys(resultado).length} contas`);
+    logInfo('💳', `Resultado: ${JSON.stringify(resultado)}`);
     return resultado;
 }
 
@@ -495,24 +469,24 @@ function calcularSaldosPorConta(contas, receitas, despesas) {
     const saldosFiltrados = {};
     Object.keys(saldos).forEach(nomeConta => {
         if (saldos[nomeConta] !== 0) {
-            // Manter valores absolutos para o grÃ¡fico
+            // Manter valores absolutos para o gráfico
             saldosFiltrados[nomeConta] = Math.abs(saldos[nomeConta]);
         }
     });
     
-    logInfo('ðŸ¦', `Calculados saldos para ${Object.keys(saldosFiltrados).length} contas`);
-    logInfo('ðŸ¦', `Saldos: ${JSON.stringify(saldosFiltrados)}`);
+    logInfo('🏦', `Calculados saldos para ${Object.keys(saldosFiltrados).length} contas`);
+    logInfo('🏦', `Saldos: ${JSON.stringify(saldosFiltrados)}`);
     return saldosFiltrados;
 }
 
 function processarFixasVariaveis(transacoes, tipo) {
     const resultado = {
         'Fixas': 0,
-        'VariÃ¡veis': 0
+        'Variáveis': 0
     };
     
     transacoes.forEach(transacao => {
-        // Converter valores usando a mesma lÃ³gica da Home
+        // Converter valores usando a mesma lógica da Home
         let valor = 0;
         if (typeof transacao.valor === 'string') {
             valor = parseFloat(transacao.valor.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
@@ -523,7 +497,7 @@ function processarFixasVariaveis(transacoes, tipo) {
         // Garantir que o valor seja positivo
         valor = Math.abs(valor);
         
-        // Verificar se Ã© recorrente/fixa (campos diferentes para receitas e despesas)
+        // Verificar se é recorrente/fixa (campos diferentes para receitas e despesas)
         const ehFixa = transacao.recorrente === true || 
                        transacao.fixa === true || 
                        transacao.despesaFixa === true ||
@@ -533,11 +507,11 @@ function processarFixasVariaveis(transacoes, tipo) {
         if (ehFixa) {
             resultado['Fixas'] += valor;
         } else {
-            resultado['VariÃ¡veis'] += valor;
+            resultado['Variáveis'] += valor;
         }
     });
     
-    logInfo('ðŸ“Š', `Processadas ${transacoes.length} ${tipo}s: ${resultado['Fixas'].toFixed(2)} fixas, ${resultado['VariÃ¡veis'].toFixed(2)} variÃ¡veis`);
+    logInfo('📊', `Processadas ${transacoes.length} ${tipo}s: ${resultado['Fixas'].toFixed(2)} fixas, ${resultado['Variáveis'].toFixed(2)} variáveis`);
     
     // Filtrar categorias com valor zero
     const resultadoFiltrado = {};
@@ -550,17 +524,17 @@ function processarFixasVariaveis(transacoes, tipo) {
     return resultadoFiltrado;
 }
 
-// === OBTENÃ‡ÃƒO DE DADOS PARA GRÃFICO ===
+// === OBTENÇÃO DE DADOS PARA GRÁFICO ===
 function obterDadosParaGrafico(categoria) {
     const chaveCategoria = mapearCategoria(categoria);
     
-    // Primeiro, verificar se temos dados para a categoria especÃ­fica
+    // Primeiro, verificar se temos dados para a categoria específica
     if (dadosReais[chaveCategoria] && Object.keys(dadosReais[chaveCategoria]).length > 0) {
         return dadosReais[chaveCategoria];
     }
     
-    // Se nÃ£o temos dados para categoria especÃ­fica, usar dados apropriados baseado no tipo
-    // CORREÃ‡ÃƒO: Para despesas, mostrar apenas dados de despesas
+    // Se não temos dados para categoria específica, usar dados apropriados baseado no tipo
+    // CORREÇÃO: Para despesas, mostrar apenas dados de despesas
     if (categoria.includes('despesas')) {
         // Priorizar categorias de despesas
         if (dadosReais.despesasCategoria && Object.keys(dadosReais.despesasCategoria).length > 0) {
@@ -571,7 +545,7 @@ function obterDadosParaGrafico(categoria) {
         }
     }
     
-    // CORREÃ‡ÃƒO: Para receitas, mostrar apenas dados de receitas  
+    // CORREÇÃO: Para receitas, mostrar apenas dados de receitas  
     if (categoria.includes('receitas')) {
         if (dadosReais.receitasCategoria && Object.keys(dadosReais.receitasCategoria).length > 0) {
             return dadosReais.receitasCategoria;
@@ -588,7 +562,7 @@ function obterDadosParaGrafico(categoria) {
         }
     }
     
-    logWarn('âš ï¸', `Sem dados especÃ­ficos para: ${categoria}`);
+    logWarn('⚠️', `Sem dados específicos para: ${categoria}`);
     return { 'Sem dados': 0 };
 }
 
@@ -606,9 +580,9 @@ function mapearCategoria(categoria) {
     return mapeamento[categoria] || categoria;
 }
 
-// === INICIALIZAÃ‡ÃƒO DA UI ===
+// === INICIALIZAÇÃO DA UI ===
 function inicializarUIInicial() {
-    // Ativar botÃ£o de rosca/donut
+    // Ativar botão de rosca/donut
     document.querySelectorAll('.tipo-grafico').forEach(btn => {
         if (btn.dataset.tipo === 'donut' || btn.dataset.tipo === 'rosca') {
             btn.classList.add('ativo');
@@ -631,30 +605,30 @@ function inicializarUIInicial() {
     document.getElementById('filtros-linha').style.display = 'none';
     document.getElementById('filtros-colunas').style.display = 'none';
     
-    logInfo('âœ…', 'UI inicializada com grÃ¡fico de rosca (Despesas por categoria)');
+    logInfo('✅', 'UI inicializada com gráfico de rosca (Despesas por categoria)');
 }
 
 // === CONTROLES ===
 function inicializarControles() {
-    // BotÃµes de tipo
+    // Botões de tipo
     document.querySelectorAll('.tipo-grafico').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const novoTipo = e.currentTarget.dataset.tipo;
             
-            // Se mudou o tipo de grÃ¡fico, ajustar categoria padrÃ£o
+            // Se mudou o tipo de gráfico, ajustar categoria padrão
             if (novoTipo !== tipoAtivo) {
                 if (novoTipo === 'linha') {
                     // Ao clicar em linha, mostrar Despesas da semana
                     categoriaAtiva = 'despesas-semana';
                 } else if (novoTipo === 'colunas') {
-                    // Ao clicar em barras, mostrar BalanÃ§o mensal
+                    // Ao clicar em barras, mostrar Balanço mensal
                     categoriaAtiva = 'balanco-mensal';
                 } else if (novoTipo === 'donut' || novoTipo === 'rosca') {
                     // Ao clicar em rosca, mostrar Despesas por categoria
                     categoriaAtiva = 'despesas-categoria';
                 }
                 
-                // Atualizar botÃµes de categoria ativos
+                // Atualizar botões de categoria ativos
                 document.querySelectorAll('.filtro-categoria').forEach(b => b.classList.remove('ativo'));
                 const btnCategoriaCorrespondente = document.querySelector(`.filtro-categoria[data-categoria="${categoriaAtiva}"]`);
                 if (btnCategoriaCorrespondente) {
@@ -673,12 +647,12 @@ function inicializarControles() {
             document.getElementById('filtros-linha').style.display = tipoAtivo === 'linha' ? 'flex' : 'none';
             document.getElementById('filtros-colunas').style.display = tipoAtivo === 'colunas' ? 'flex' : 'none';
             
-            // Recriar grÃ¡fico
+            // Recriar gráfico
             criarGrafico();
         });
     });
     
-    // BotÃµes de categoria
+    // Botões de categoria
     document.querySelectorAll('.filtro-categoria').forEach(btn => {
         btn.addEventListener('click', (e) => {
             categoriaAtiva = e.currentTarget.dataset.categoria;
@@ -687,7 +661,7 @@ function inicializarControles() {
             document.querySelectorAll('.filtro-categoria').forEach(b => b.classList.remove('ativo'));
             e.currentTarget.classList.add('ativo');
             
-            // Atualizar o texto do perÃ­odo baseado na categoria
+            // Atualizar o texto do período baseado na categoria
             const periodoTexto = document.getElementById('periodo-texto');
             if (periodoTexto && tipoAtivo === 'linha') {
                 if (categoriaAtiva === 'despesas-semana') {
@@ -695,35 +669,35 @@ function inicializarControles() {
                     const dadosSemana = gerarDadosSemana(hoje);
                     periodoTexto.textContent = dadosSemana.periodo;
                 } else if (categoriaAtiva === 'despesas-mes') {
-                    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÃ‡O', 'ABRIL', 'MAIO', 'JUNHO', 
+                    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                                   'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
                     periodoTexto.textContent = meses[mesAtual];
                 } else if (categoriaAtiva === 'despesas-ano') {
                     periodoTexto.textContent = anoAtual.toString();
                 }
             } else if (periodoTexto && tipoAtivo === 'donut') {
-                const meses = ['JANEIRO', 'FEVEREIRO', 'MARÃ‡O', 'ABRIL', 'MAIO', 'JUNHO', 
+                const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                               'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
                 periodoTexto.textContent = `${meses[mesAtual]} ${anoAtual}`;
             }
             
-            // Recriar grÃ¡fico
+            // Recriar gráfico
             criarGrafico();
         });
     });
     
-    // BotÃµes de perÃ­odo (anterior/prÃ³ximo)
+    // Botões de período (anterior/próximo)
     const btnAnterior = document.querySelector('.botao-periodo.anterior');
     const btnProximo = document.querySelector('.botao-periodo.proximo');
     const periodoTexto = document.getElementById('periodo-texto');
     
     if (btnAnterior && btnProximo && periodoTexto) {
-        // FunÃ§Ã£o para atualizar o texto do perÃ­odo
+        // Função para atualizar o texto do período
         function atualizarPeriodo() {
-            const meses = ['JANEIRO', 'FEVEREIRO', 'MARÃ‡O', 'ABRIL', 'MAIO', 'JUNHO', 
+            const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                           'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
             
-            // Para grÃ¡ficos de linha, atualizar perÃ­odo baseado na categoria
+            // Para gráficos de linha, atualizar período baseado na categoria
             if (tipoAtivo === 'linha') {
                 if (categoriaAtiva === 'despesas-semana') {
                     const hoje = new Date(anoAtual, mesAtual, new Date().getDate());
@@ -735,11 +709,11 @@ function inicializarControles() {
                     periodoTexto.textContent = anoAtual.toString();
                 }
             } else {
-                // Para grÃ¡ficos de rosca e barras
+                // Para gráficos de rosca e barras
                 periodoTexto.textContent = `${meses[mesAtual]} ${anoAtual}`;
             }
             
-            // Reprocessar dados com o novo perÃ­odo
+            // Reprocessar dados com o novo período
             if (dadosBrutos.despesas.length > 0 || dadosBrutos.receitas.length > 0) {
                 if (tipoAtivo !== 'linha') {
                     filtrarDadosPorPeriodo();
@@ -753,7 +727,7 @@ function inicializarControles() {
                 // Para despesas por ano, mudar o ano
                 anoAtual--;
             } else {
-                // Para outros, mudar o mÃªs
+                // Para outros, mudar o mês
                 mesAtual--;
                 if (mesAtual < 0) {
                     mesAtual = 11;
@@ -768,7 +742,7 @@ function inicializarControles() {
                 // Para despesas por ano, mudar o ano
                 anoAtual++;
             } else {
-                // Para outros, mudar o mÃªs
+                // Para outros, mudar o mês
                 mesAtual++;
                 if (mesAtual > 11) {
                     mesAtual = 0;
@@ -778,16 +752,16 @@ function inicializarControles() {
             atualizarPeriodo();
         });
         
-        // Inicializar com o mÃªs atual
+        // Inicializar com o mês atual
         atualizarPeriodo();
     }
 }
 
-// === FILTRAR DADOS POR PERÃODO ===
+// === FILTRAR DADOS POR PERÍODO ===
 function filtrarDadosPorPeriodo() {
-    logInfo('ðŸ“…', `Filtrando dados para ${mesAtual + 1}/${anoAtual}`);
+    logInfo('📅', `Filtrando dados para ${mesAtual + 1}/${anoAtual}`);
     
-    // FunÃ§Ã£o auxiliar para verificar se uma data estÃ¡ no perÃ­odo selecionado
+    // Função auxiliar para verificar se uma data está no período selecionado
     function estaNoPeriodo(data) {
         if (!data) return false;
         
@@ -814,7 +788,7 @@ function filtrarDadosPorPeriodo() {
     // Filtrar receitas
     const receitasFiltradas = dadosBrutos.receitas.filter(r => estaNoPeriodo(r.data));
     
-    logInfo('ðŸ“…', `Filtrados: ${despesasFiltradas.length} despesas, ${receitasFiltradas.length} receitas`);
+    logInfo('📅', `Filtrados: ${despesasFiltradas.length} despesas, ${receitasFiltradas.length} receitas`);
     
     // Reprocessar dados com os dados filtrados
     processarDadosParaGraficos({
@@ -825,18 +799,18 @@ function filtrarDadosPorPeriodo() {
     });
 }
 
-// === CRIAÃ‡ÃƒO DE GRÃFICOS ===
+// === CRIAÇÃO DE GRÁFICOS ===
 function criarGrafico() {
     const canvas = document.getElementById('grafico-principal');
     if (!canvas) {
-        logError('âŒ', 'Canvas nÃ£o encontrado');
+        logError('❌', 'Canvas não encontrado');
         return;
     }
     
     const ctx = canvas.getContext('2d');
-    logInfo('ðŸ–¼ï¸', 'Contexto do canvas obtido');
+    logInfo('🖼️', 'Contexto do canvas obtido');
     
-    // Destruir grÃ¡fico anterior
+    // Destruir gráfico anterior
     if (graficoAtual) {
         graficoAtual.destroy();
         graficoAtual = null;
@@ -845,29 +819,29 @@ function criarGrafico() {
     // Obter dados corretos para a categoria atual
     const dados = obterDadosParaGrafico(categoriaAtiva);
     
-    // Para grÃ¡ficos de linha e barras, nÃ£o verificamos dados aqui (eles geram prÃ³prios dados)
+    // Para gráficos de linha e barras, não verificamos dados aqui (eles geram próprios dados)
     if (tipoAtivo === 'donut' && (!dados || Object.keys(dados).length === 0)) {
         mostrarMensagemSemDados();
         return;
     }
     
-    // Criar grÃ¡fico baseado no tipo
+    // Criar gráfico baseado no tipo
     if (tipoAtivo === 'donut') {
         criarGraficoDonut(ctx, dados);
         atualizarListaItens(dados);
     } else if (tipoAtivo === 'linha') {
-        criarGraficoLinha(ctx, null); // GrÃ¡fico de linha gera prÃ³prios dados
-        atualizarListaItensLinha(); // Atualizar lista para grÃ¡ficos de linha
+        criarGraficoLinha(ctx, null); // Gráfico de linha gera próprios dados
+        atualizarListaItensLinha(); // Atualizar lista para gráficos de linha
     } else if (tipoAtivo === 'colunas') {
         criarGraficoBarras(ctx, dados);
-        atualizarListaItensBarras(); // Atualizar lista para grÃ¡ficos de barras
+        atualizarListaItensBarras(); // Atualizar lista para gráficos de barras
     }
     
-    logInfo('âœ…', 'GrÃ¡fico criado com sucesso');
+    logInfo('✅', 'Gráfico criado com sucesso');
 }
 
 function criarGraficoDonut(ctx, dados) {
-    logInfo('ðŸ©', 'Criando grÃ¡fico de rosca');
+    logInfo('🍩', 'Criando gráfico de rosca');
     
     // Remover mensagem de "sem dados" se existir
     const canvas = document.getElementById('grafico-principal');
@@ -879,7 +853,7 @@ function criarGraficoDonut(ctx, dados) {
     const labels = Object.keys(dados);
     const valores = Object.values(dados);
     
-    // Verificar se hÃ¡ dados vÃ¡lidos
+    // Verificar se há dados válidos
     if (labels.length === 0 || valores.every(v => v === 0)) {
         mostrarMensagemSemDados();
         return;
@@ -933,16 +907,16 @@ function criarGraficoDonut(ctx, dados) {
             }
         });
         
-        logInfo('ðŸ“Š', 'Chart.js criado com sucesso');
-        logInfo('âœ…', 'GrÃ¡fico donut criado completamente');
+        logInfo('📊', 'Chart.js criado com sucesso');
+        logInfo('✅', 'Gráfico donut criado completamente');
         
     } catch (error) {
-        logError('âŒ', 'Erro ao criar grÃ¡fico donut:', error);
+        logError('❌', 'Erro ao criar gráfico donut:', error);
     }
 }
 
 function criarGraficoLinha(ctx, dados) {
-    logInfo('ðŸ“ˆ', 'Criando grÃ¡fico de linha');
+    logInfo('📈', 'Criando gráfico de linha');
     
     // Remover mensagem de "sem dados" se existir
     const canvas = document.getElementById('grafico-principal');
@@ -951,39 +925,39 @@ function criarGraficoLinha(ctx, dados) {
         mensagemAnterior.remove();
     }
     
-    // Determinar o tipo de perÃ­odo e gerar dados apropriados
+    // Determinar o tipo de período e gerar dados apropriados
     let labels = [];
     let valores = [];
     let periodoTexto = '';
     
     if (categoriaAtiva === 'despesas-semana') {
-        // Gerar dados para a semana (Ãºltimos 7 dias)
+        // Gerar dados para a semana (últimos 7 dias)
         const hoje = new Date(anoAtual, mesAtual, new Date().getDate());
         const dadosSemana = gerarDadosSemana(hoje);
         labels = dadosSemana.labels;
         valores = dadosSemana.valores;
         periodoTexto = dadosSemana.periodo;
     } else if (categoriaAtiva === 'despesas-mes') {
-        // Gerar dados para o mÃªs inteiro
+        // Gerar dados para o mês inteiro
         const dadosMes = gerarDadosMes(mesAtual, anoAtual);
         labels = dadosMes.labels;
         valores = dadosMes.valores;
         periodoTexto = dadosMes.periodo;
     } else if (categoriaAtiva === 'despesas-ano') {
-        // Gerar dados para o ano inteiro (por mÃªs)
+        // Gerar dados para o ano inteiro (por mês)
         const dadosAno = gerarDadosAno(anoAtual);
         labels = dadosAno.labels;
         valores = dadosAno.valores;
         periodoTexto = dadosAno.periodo;
     }
     
-    // Atualizar texto do perÃ­odo
+    // Atualizar texto do período
     const periodoElement = document.getElementById('periodo-texto');
     if (periodoElement && periodoTexto) {
         periodoElement.textContent = periodoTexto;
     }
     
-    // Verificar se hÃ¡ dados
+    // Verificar se há dados
     if (valores.length === 0 || valores.every(v => v === 0)) {
         mostrarMensagemSemDados();
         return;
@@ -1068,20 +1042,20 @@ function criarGraficoLinha(ctx, dados) {
             }
         });
         
-        logInfo('âœ…', 'GrÃ¡fico de linha criado com sucesso');
+        logInfo('✅', 'Gráfico de linha criado com sucesso');
         
     } catch (error) {
-        logError('âŒ', 'Erro ao criar grÃ¡fico de linha:', error);
+        logError('❌', 'Erro ao criar gráfico de linha:', error);
     }
 }
 
-// === FUNÃ‡Ã•ES AUXILIARES PARA GRÃFICOS DE LINHA ===
+// === FUNÇÕES AUXILIARES PARA GRÁFICOS DE LINHA ===
 function gerarDadosSemana(dataFinal) {
     const labels = [];
     const valores = [];
     const meses = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
     
-    // Gerar Ãºltimos 7 dias
+    // Gerar últimos 7 dias
     const dias = [];
     for (let i = 6; i >= 0; i--) {
         const data = new Date(dataFinal);
@@ -1128,7 +1102,7 @@ function gerarDadosSemana(dataFinal) {
         valores.push(total);
     });
     
-    // PerÃ­odo (ex: "23 SET. - 29 SET.")
+    // Período (ex: "23 SET. - 29 SET.")
     const primeiraData = dias[0];
     const ultimaData = dias[dias.length - 1];
     const periodo = `${primeiraData.getDate()} ${meses[primeiraData.getMonth()]}. - ${ultimaData.getDate()} ${meses[ultimaData.getMonth()]}.`;
@@ -1139,15 +1113,15 @@ function gerarDadosSemana(dataFinal) {
 function gerarDadosMes(mes, ano) {
     const labels = [];
     const valores = [];
-    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÃ‡O', 'ABRIL', 'MAIO', 'JUNHO', 
+    const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                    'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
     const mesesAbrev = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
     
-    // NÃºmero de dias no mÃªs
+    // Número de dias no mês
     const diasNoMes = new Date(ano, mes + 1, 0).getDate();
     
     // Criar labels (ex: "01 SET.", "06 SET.", "11 SET.", etc.)
-    // Mostrar apenas alguns dias para nÃ£o ficar muito poluÃ­do
+    // Mostrar apenas alguns dias para não ficar muito poluído
     const intervalo = Math.ceil(diasNoMes / 6); // Aproximadamente 6 labels
     for (let dia = 1; dia <= diasNoMes; dia += intervalo) {
         labels.push(`${dia.toString().padStart(2, '0')} ${mesesAbrev[mes]}.`);
@@ -1201,7 +1175,7 @@ function gerarDadosAno(ano) {
                     'JUL.', 'AGO.', 'SET.', 'OUT.', 'NOV.', 'DEZ.'];
     const valores = [];
     
-    // Calcular total para cada mÃªs
+    // Calcular total para cada mês
     for (let mes = 0; mes < 12; mes++) {
         const despesasDoMes = dadosBrutos.despesas.filter(d => {
             if (!d.data) return false;
@@ -1235,7 +1209,7 @@ function gerarDadosAno(ano) {
 }
 
 function criarGraficoBarras(ctx, dados) {
-    logInfo('ðŸ“Š', 'Criando grÃ¡fico de barras');
+    logInfo('📊', 'Criando gráfico de barras');
     
     // Remover mensagem de "sem dados" se existir
     const canvas = document.getElementById('grafico-principal');
@@ -1244,7 +1218,7 @@ function criarGraficoBarras(ctx, dados) {
         mensagemAnterior.remove();
     }
     
-    // Verificar tipo de grÃ¡fico de barras e criar apropriadamente
+    // Verificar tipo de gráfico de barras e criar apropriadamente
     if (categoriaAtiva === 'balanco-mensal') {
         criarGraficoBalancoMensal(ctx);
     } else if (categoriaAtiva === 'fluxo-caixa-anual') {
@@ -1254,11 +1228,11 @@ function criarGraficoBarras(ctx, dados) {
     }
 }
 
-// BalanÃ§o Mensal: Receitas e Despesas lado a lado (Ãºltimos 3 meses)
+// Balanço Mensal: Receitas e Despesas lado a lado (últimos 3 meses)
 function criarGraficoBalancoMensal(ctx) {
-    logInfo('ðŸ’°', 'Criando grÃ¡fico de balanÃ§o mensal');
+    logInfo('💰', 'Criando gráfico de balanço mensal');
     
-    // Gerar Ãºltimos 3 meses
+    // Gerar últimos 3 meses
     const meses = [];
     const receitasPorMes = [];
     const despesasPorMes = [];
@@ -1268,15 +1242,15 @@ function criarGraficoBalancoMensal(ctx) {
         const mes = data.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).toUpperCase();
         meses.push(mes.replace('.', ''));
         
-        // Filtrar receitas do mÃªs
+        // Filtrar receitas do mês
         const receitasMes = dadosBrutos.receitas.filter(r => {
-            const dataReceita = converterDataParaObjeto(r.data);
+            const dataReceita = new Date(r.data.split('/').reverse().join('-'));
             return dataReceita.getMonth() === data.getMonth() && dataReceita.getFullYear() === data.getFullYear();
         });
         
-        // Filtrar despesas do mÃªs
+        // Filtrar despesas do mês
         const despesasMes = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa.getMonth() === data.getMonth() && dataDespesa.getFullYear() === data.getFullYear();
         });
         
@@ -1305,13 +1279,13 @@ function criarGraficoBalancoMensal(ctx) {
         despesasPorMes.push(totalDespesas);
     }
     
-    // Atualizar perÃ­odo
+    // Atualizar período
     const periodoElement = document.getElementById('periodo-texto');
     if (periodoElement) {
         periodoElement.textContent = `${meses[0]} - ${meses[2]}`;
     }
     
-    // Verificar se hÃ¡ dados
+    // Verificar se há dados
     if (receitasPorMes.every(v => v === 0) && despesasPorMes.every(v => v === 0)) {
         mostrarMensagemSemDados();
         return;
@@ -1391,32 +1365,32 @@ function criarGraficoBalancoMensal(ctx) {
             }
         });
         
-        logInfo('âœ…', 'GrÃ¡fico de balanÃ§o mensal criado');
+        logInfo('✅', 'Gráfico de balanço mensal criado');
     } catch (error) {
-        logError('âŒ', 'Erro ao criar grÃ¡fico de balanÃ§o mensal:', error);
+        logError('❌', 'Erro ao criar gráfico de balanço mensal:', error);
     }
 }
 
 // Fluxo de Caixa Anual: Barras empilhadas + linha de saldo
 function criarGraficoFluxoCaixaAnual(ctx) {
-    logInfo('ðŸ“Š', 'Criando grÃ¡fico de fluxo de caixa anual');
+    logInfo('📊', 'Criando gráfico de fluxo de caixa anual');
     
     const meses = ['JAN.', 'FEV.', 'MAR.', 'ABR.', 'MAI.', 'JUN.', 'JUL.', 'AGO.', 'SET.', 'OUT.', 'NOV.', 'DEZ.'];
     const receitasPorMes = [];
     const despesasPorMes = [];
     const saldoPorMes = [];
     
-    // Processar cada mÃªs do ano
+    // Processar cada mês do ano
     for (let mes = 0; mes < 12; mes++) {
         // Filtrar receitas
         const receitasMes = dadosBrutos.receitas.filter(r => {
-            const dataReceita = converterDataParaObjeto(r.data);
+            const dataReceita = new Date(r.data.split('/').reverse().join('-'));
             return dataReceita.getMonth() === mes && dataReceita.getFullYear() === anoAtual;
         });
         
         // Filtrar despesas
         const despesasMes = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa.getMonth() === mes && dataDespesa.getFullYear() === anoAtual;
         });
         
@@ -1446,13 +1420,13 @@ function criarGraficoFluxoCaixaAnual(ctx) {
         saldoPorMes.push(totalReceitas - totalDespesas);
     }
     
-    // Atualizar perÃ­odo
+    // Atualizar período
     const periodoElement = document.getElementById('periodo-texto');
     if (periodoElement) {
         periodoElement.textContent = anoAtual.toString();
     }
     
-    // Verificar se hÃ¡ dados
+    // Verificar se há dados
     if (receitasPorMes.every(v => v === 0) && despesasPorMes.every(v => v === 0)) {
         mostrarMensagemSemDados();
         return;
@@ -1514,7 +1488,7 @@ function criarGraficoFluxoCaixaAnual(ctx) {
                             },
                             generateLabels: function(chart) {
                                 const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                                // Personalizar Ã­cones
+                                // Personalizar ícones
                                 labels[0].pointStyle = 'circle'; // Linha
                                 labels[1].pointStyle = 'circle'; // Receitas
                                 labels[2].pointStyle = 'circle'; // Despesas
@@ -1555,22 +1529,22 @@ function criarGraficoFluxoCaixaAnual(ctx) {
             }
         });
         
-        logInfo('âœ…', 'GrÃ¡fico de fluxo de caixa anual criado');
+        logInfo('✅', 'Gráfico de fluxo de caixa anual criado');
     } catch (error) {
-        logError('âŒ', 'Erro ao criar grÃ¡fico de fluxo de caixa:', error);
+        logError('❌', 'Erro ao criar gráfico de fluxo de caixa:', error);
     }
 }
 
 // Despesas por Dia da Semana
 function criarGraficoDespesasDiaSemana(ctx) {
-    logInfo('ðŸ“…', 'Criando grÃ¡fico de despesas por dia da semana');
+    logInfo('📅', 'Criando gráfico de despesas por dia da semana');
     
-    const diasSemana = ['DOM.', 'SEG.', 'TER.', 'QUA.', 'QUI.', 'SEX.', 'SÃB.'];
+    const diasSemana = ['DOM.', 'SEG.', 'TER.', 'QUA.', 'QUI.', 'SEX.', 'SÁB.'];
     const despesasPorDia = [0, 0, 0, 0, 0, 0, 0];
     
-    // Filtrar despesas do mÃªs atual
+    // Filtrar despesas do mês atual
     dadosBrutos.despesas.forEach(d => {
-        const dataDespesa = converterDataParaObjeto(d.data);
+        const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
         if (dataDespesa.getMonth() === mesAtual && dataDespesa.getFullYear() === anoAtual) {
             const diaSemana = dataDespesa.getDay();
             let valor = 0;
@@ -1583,14 +1557,14 @@ function criarGraficoDespesasDiaSemana(ctx) {
         }
     });
     
-    // Atualizar perÃ­odo
+    // Atualizar período
     const periodoElement = document.getElementById('periodo-texto');
     if (periodoElement) {
         const mesNome = new Date(anoAtual, mesAtual).toLocaleDateString('pt-BR', { month: 'long' }).toUpperCase();
         periodoElement.textContent = mesNome;
     }
     
-    // Verificar se hÃ¡ dados
+    // Verificar se há dados
     if (despesasPorDia.every(v => v === 0)) {
         mostrarMensagemSemDados();
         return;
@@ -1658,13 +1632,13 @@ function criarGraficoDespesasDiaSemana(ctx) {
             }
         });
         
-        logInfo('âœ…', 'GrÃ¡fico de despesas por dia da semana criado');
+        logInfo('✅', 'Gráfico de despesas por dia da semana criado');
     } catch (error) {
-        logError('âŒ', 'Erro ao criar grÃ¡fico de despesas por dia:', error);
+        logError('❌', 'Erro ao criar gráfico de despesas por dia:', error);
     }
 }
 
-// === UTILITÃRIOS ===
+// === UTILITÁRIOS ===
 function gerarCoresParaCategoria(quantidade, categoria) {
     // Cores verdes para receitas (tons variados de verde)
     const coresReceitas = [
@@ -1727,24 +1701,24 @@ function atualizarListaItens(dados) {
         item.className = 'item-lista';
         item.style.cssText = 'display: flex; align-items: center; padding: 16px; border-bottom: 1px solid #f1f5f9;';
         
-        // Buscar Ã­cone e cor reais
+        // Buscar ícone e cor reais
         const iconeInfo = obterIconeECor(label, cores[index]);
         
-        console.log(`Ãcone para "${label}":`, iconeInfo); // Debug
+        console.log(`Ícone para "${label}":`, iconeInfo); // Debug
         
-        // Container do Ã­cone
+        // Container do ícone
         const iconeContainer = document.createElement('div');
         iconeContainer.style.cssText = `width: 48px; height: 48px; border-radius: 50%; background-color: ${iconeInfo.cor}; display: flex; align-items: center; justify-content: center; margin-right: 12px;`;
         
         if (iconeInfo.tipo === 'material-icon') {
-            // Ãcone Material Icons
+            // Ícone Material Icons
             const icone = document.createElement('span');
             icone.className = 'material-icons-round';
             icone.textContent = iconeInfo.icone;
             icone.style.cssText = 'color: white; font-size: 24px;';
             iconeContainer.appendChild(icone);
         } else if (iconeInfo.tipo === 'svg') {
-            // Ãcone SVG
+            // Ícone SVG
             const icone = document.createElement('img');
             icone.src = iconeInfo.icone;
             icone.style.cssText = 'width: 28px; height: 28px; filter: brightness(0) invert(1);';
@@ -1757,7 +1731,7 @@ function atualizarListaItens(dados) {
             iconeContainer.appendChild(icone);
         }
         
-        // ConteÃºdo
+        // Conteúdo
         const conteudo = document.createElement('div');
         conteudo.style.cssText = 'flex: 1;';
         
@@ -1797,7 +1771,7 @@ function atualizarListaItens(dados) {
     });
 }
 
-// Atualizar lista de itens para grÃ¡ficos de LINHA
+// Atualizar lista de itens para gráficos de LINHA
 function atualizarListaItensLinha() {
     const listaItens = document.getElementById('lista-itens');
     if (!listaItens) return;
@@ -1807,16 +1781,16 @@ function atualizarListaItensLinha() {
     let dados = {};
     let titulo = '';
     
-    // Determinar qual tipo de grÃ¡fico de linha
+    // Determinar qual tipo de gráfico de linha
     if (categoriaAtiva === 'despesas-semana') {
-        titulo = 'Despesas dos Ãºltimos 7 dias';
+        titulo = 'Despesas dos últimos 7 dias';
         // Calcular total da semana
         const hoje = new Date();
         const seteDiasAtras = new Date(hoje);
         seteDiasAtras.setDate(hoje.getDate() - 7);
         
         const despesasSemana = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa >= seteDiasAtras && dataDespesa <= hoje;
         });
         
@@ -1833,9 +1807,9 @@ function atualizarListaItensLinha() {
         dados = { 'Total da Semana': total };
         
     } else if (categoriaAtiva === 'despesas-mes') {
-        titulo = 'Despesas do mÃªs';
+        titulo = 'Despesas do mês';
         const despesasMes = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa.getMonth() === mesAtual && dataDespesa.getFullYear() === anoAtual;
         });
         
@@ -1849,12 +1823,12 @@ function atualizarListaItensLinha() {
             return acc + Math.abs(valor);
         }, 0);
         
-        dados = { 'Total do MÃªs': total };
+        dados = { 'Total do Mês': total };
         
     } else if (categoriaAtiva === 'despesas-ano') {
         titulo = 'Despesas do ano';
         const despesasAno = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa.getFullYear() === anoAtual;
         });
         
@@ -1871,7 +1845,7 @@ function atualizarListaItensLinha() {
         dados = { 'Total do Ano': total };
     }
     
-    // Criar item Ãºnico com resumo
+    // Criar item único com resumo
     const item = document.createElement('div');
     item.style.cssText = 'padding: 20px; text-align: center;';
     
@@ -1900,7 +1874,7 @@ function atualizarListaItensLinha() {
     listaItens.appendChild(item);
 }
 
-// Atualizar lista de itens para grÃ¡ficos de BARRAS
+// Atualizar lista de itens para gráficos de BARRAS
 function atualizarListaItensBarras() {
     const listaItens = document.getElementById('lista-itens');
     if (!listaItens) return;
@@ -1908,7 +1882,7 @@ function atualizarListaItensBarras() {
     listaItens.innerHTML = '';
     
     if (categoriaAtiva === 'balanco-mensal') {
-        // Mostrar resumo dos Ãºltimos 3 meses
+        // Mostrar resumo dos últimos 3 meses
         let totalReceitas = 0;
         let totalDespesas = 0;
         
@@ -1916,12 +1890,12 @@ function atualizarListaItensBarras() {
             const data = new Date(anoAtual, mesAtual - i, 1);
             
             const receitasMes = dadosBrutos.receitas.filter(r => {
-                const dataReceita = converterDataParaObjeto(r.data);
+                const dataReceita = new Date(r.data.split('/').reverse().join('-'));
                 return dataReceita.getMonth() === data.getMonth() && dataReceita.getFullYear() === data.getFullYear();
             });
             
             const despesasMes = dadosBrutos.despesas.filter(d => {
-                const dataDespesa = converterDataParaObjeto(d.data);
+                const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
                 return dataDespesa.getMonth() === data.getMonth() && dataDespesa.getFullYear() === data.getFullYear();
             });
             
@@ -1972,7 +1946,7 @@ function atualizarListaItensBarras() {
         let totalDespesasAno = 0;
         
         dadosBrutos.receitas.forEach(r => {
-            const dataReceita = converterDataParaObjeto(r.data);
+            const dataReceita = new Date(r.data.split('/').reverse().join('-'));
             if (dataReceita.getFullYear() === anoAtual) {
                 let valor = 0;
                 if (typeof r.valor === 'string') {
@@ -1985,7 +1959,7 @@ function atualizarListaItensBarras() {
         });
         
         dadosBrutos.despesas.forEach(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             if (dataDespesa.getFullYear() === anoAtual) {
                 let valor = 0;
                 if (typeof d.valor === 'string') {
@@ -2014,9 +1988,9 @@ function atualizarListaItensBarras() {
         listaItens.appendChild(container);
         
     } else if (categoriaAtiva === 'despesas-dia-semana') {
-        // Mostrar total de despesas do mÃªs e mÃ©dia por dia
+        // Mostrar total de despesas do mês e média por dia
         const despesasMes = dadosBrutos.despesas.filter(d => {
-            const dataDespesa = converterDataParaObjeto(d.data);
+            const dataDespesa = new Date(d.data.split('/').reverse().join('-'));
             return dataDespesa.getMonth() === mesAtual && dataDespesa.getFullYear() === anoAtual;
         });
         
@@ -2030,13 +2004,13 @@ function atualizarListaItensBarras() {
             return acc + Math.abs(valor);
         }, 0);
         
-        const mediaPorDia = totalDespesas / 30; // AproximaÃ§Ã£o
+        const mediaPorDia = totalDespesas / 30; // Aproximação
         
         const container = document.createElement('div');
         container.style.cssText = 'display: flex; justify-content: space-around; padding: 20px;';
         
-        const itemTotal = criarItemResumo('shopping_cart', 'Total do MÃªs', totalDespesas, '#ef4444');
-        const itemMedia = criarItemResumo('calendar_today', 'MÃ©dia por Dia', mediaPorDia, '#f59e0b');
+        const itemTotal = criarItemResumo('shopping_cart', 'Total do Mês', totalDespesas, '#ef4444');
+        const itemMedia = criarItemResumo('calendar_today', 'Média por Dia', mediaPorDia, '#f59e0b');
         
         container.appendChild(itemTotal);
         container.appendChild(itemMedia);
@@ -2045,7 +2019,7 @@ function atualizarListaItensBarras() {
     }
 }
 
-// FunÃ§Ã£o auxiliar para criar item de resumo
+// Função auxiliar para criar item de resumo
 function criarItemResumo(icone, titulo, valor, cor) {
     const item = document.createElement('div');
     item.style.cssText = 'flex: 1; text-align: center; padding: 10px;';
@@ -2075,8 +2049,8 @@ function criarItemResumo(icone, titulo, valor, cor) {
 }
 
 function obterIconeECor(label, corPadrao) {
-    // Para despesas/receitas fixas x variÃ¡veis
-    if (label === 'Fixas' || label === 'VariÃ¡veis') {
+    // Para despesas/receitas fixas x variáveis
+    if (label === 'Fixas' || label === 'Variáveis') {
         if (label === 'Fixas') {
             return {
                 tipo: 'material-icon',
@@ -2098,7 +2072,7 @@ function obterIconeECor(label, corPadrao) {
         if (categoriaAtiva.includes('despesa')) {
             const despesaComCategoria = dadosBrutos.despesas.find(d => d.categoria === label);
             if (despesaComCategoria && despesaComCategoria.iconeCategoria) {
-                // Verificar se Ã© um Material Icon ou SVG
+                // Verificar se é um Material Icon ou SVG
                 const icone = despesaComCategoria.iconeCategoria;
                 const isSvg = icone.endsWith('.svg');
                 
@@ -2113,7 +2087,7 @@ function obterIconeECor(label, corPadrao) {
         else if (categoriaAtiva.includes('receita')) {
             const receitaComCategoria = dadosBrutos.receitas.find(r => r.categoria === label);
             if (receitaComCategoria && receitaComCategoria.iconeCategoria) {
-                // Verificar se Ã© um Material Icon ou SVG
+                // Verificar se é um Material Icon ou SVG
                 const icone = receitaComCategoria.iconeCategoria;
                 const isSvg = icone.endsWith('.svg');
                 
@@ -2142,10 +2116,10 @@ function obterIconeECor(label, corPadrao) {
                 };
             }
             
-            // Ãcone baseado no tipo de conta
+            // Ícone baseado no tipo de conta
             let icone = 'account_balance';
             if (conta.tipo === 'Carteira') icone = 'account_balance_wallet';
-            else if (conta.tipo === 'PoupanÃ§a') icone = 'savings';
+            else if (conta.tipo === 'Poupança') icone = 'savings';
             else if (conta.tipo === 'Investimentos') icone = 'trending_up';
             
             return {
@@ -2156,7 +2130,7 @@ function obterIconeECor(label, corPadrao) {
         }
     }
     
-    // Fallback: Ã­cone padrÃ£o
+    // Fallback: ícone padrão
     return {
         tipo: 'material-icon',
         icone: categoriaAtiva.includes('receita') ? 'attach_money' : 'shopping_cart',
@@ -2214,28 +2188,28 @@ function mostrarMensagemSemDados() {
             z-index: 10;
         `;
         
-        // Ãcone
+        // Ícone
         const icone = document.createElement('span');
         icone.className = 'material-icons-round';
         icone.textContent = 'pie_chart';
         icone.style.cssText = 'font-size: 64px; color: #cbd5e1; display: block; margin-bottom: 16px;';
         
-        // TÃ­tulo
+        // Título
         const titulo = document.createElement('div');
         titulo.textContent = 'Nenhum dado encontrado';
         titulo.style.cssText = 'font-size: 18px; font-weight: 600; color: #475569; margin-bottom: 8px;';
         
-        // SubtÃ­tulo
+        // Subtítulo
         const subtitulo = document.createElement('div');
         const mesNome = new Date(anoAtual, mesAtual).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-        subtitulo.textContent = `Nenhuma transaÃ§Ã£o foi registrada em ${mesNome}`;
+        subtitulo.textContent = `Nenhuma transação foi registrada em ${mesNome}`;
         subtitulo.style.cssText = 'font-size: 14px; color: #94a3b8;';
         
         mensagem.appendChild(icone);
         mensagem.appendChild(titulo);
         mensagem.appendChild(subtitulo);
         
-        // Posicionar em relaÃ§Ã£o ao canvas
+        // Posicionar em relação ao canvas
         containerGrafico.style.position = 'relative';
         containerGrafico.appendChild(mensagem);
     }
@@ -2246,27 +2220,26 @@ function mostrarMensagemSemDados() {
         totalValor.textContent = 'R$ 0,00';
     }
     
-    logInfo('â„¹ï¸', 'Nenhum dado disponÃ­vel para exibir');
+    logInfo('ℹ️', 'Nenhum dado disponível para exibir');
 }
 
 // Log de performance
 window.addEventListener('load', () => {
     if (DEBUG_MODE) {
-        logInfo('âš¡', 'PÃ¡gina carregada completamente');
-        logInfo('ðŸ“Š', 'Sistema de grÃ¡ficos pronto para uso');
-        logInfo('â±ï¸', `Tempo de carregamento: ${performance.now().toFixed(2)}ms`);
+        logInfo('⚡', 'Página carregada completamente');
+        logInfo('📊', 'Sistema de gráficos pronto para uso');
+        logInfo('⏱️', `Tempo de carregamento: ${performance.now().toFixed(2)}ms`);
     }
 });
 
-// Log de erros globais apenas em casos crÃ­ticos
+// Log de erros globais apenas em casos críticos
 window.addEventListener('error', (event) => {
-    logError('ðŸ’¥', 'Erro crÃ­tico na aplicaÃ§Ã£o:', {
+    logError('💥', 'Erro crítico na aplicação:', {
         message: event.message,
         filename: event.filename,
         lineno: event.lineno
     });
 });
 
-logInfo('ðŸŽ¯', 'Script de grÃ¡ficos carregado completamente');
-logInfo('ðŸ“Š', `Estado inicial: Tipo=${tipoAtivo}, Categoria=${categoriaAtiva}`);
-
+logInfo('🎯', 'Script de gráficos carregado completamente');
+logInfo('📊', `Estado inicial: Tipo=${tipoAtivo}, Categoria=${categoriaAtiva}`);

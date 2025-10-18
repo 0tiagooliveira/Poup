@@ -3741,3 +3741,225 @@ a.botao-primario {
         font-size: 1.7rem;
     }
 }
+
+/* Seção de Cartões de Crédito */
+.secao-cartoes {
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.secao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.secao-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2b2d42;
+    margin: 0;
+}
+
+.ver-todos {
+    color: #21C25E;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ver-todos:hover {
+    text-decoration: underline;
+}
+
+.cartoes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cartao-credito-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.cartao-credito-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cartao-icone {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #21C25E, #1a9d4d);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.cartao-icone span {
+    color: white;
+    font-size: 24px;
+}
+
+.cartao-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2b2d42;
+}
+
+.cartao-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Cartões de Crédito na Home */
+.cartao-credito-home {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cartao-credito-home:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cartao-credito-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.cartao-credito-icone {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.cartao-credito-icone span {
+    color: white;
+    font-size: 24px;
+}
+
+.cartao-credito-info {
+    flex: 1;
+}
+
+.cartao-credito-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2b2d42;
+}
+
+.cartao-bandeira {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.cartao-credito-valores {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.fatura-atual,
+.limite-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.fatura-atual .label,
+.limite-total .label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+.fatura-atual .valor {
+    font-size: 16px;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.limite-total .valor {
+    font-size: 14px;
+    font-weight: 500;
+    color: #28a745;
+}
+
+.cartao-credito-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.barra-progresso {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barra-preenchida {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.porcentagem {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Responsividade para cartões */
+@media (max-width: 768px) {
+    .cartao-credito-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .cartao-credito-valores {
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .fatura-atual,
+    .limite-total {
+        align-items: flex-start;
+    }
+}
