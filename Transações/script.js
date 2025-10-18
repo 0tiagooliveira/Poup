@@ -530,22 +530,35 @@ let transacaoAtual = null;
 
 async function abrirModalTransacao(id, tipo) {
     try {
+        console.log('Abrindo modal para transação:', { id, tipo });
+        
         // Buscar dados da transação
         const colecao = tipo === 'receita' ? 'receitas' : 'despesas';
         const docSnap = await db.collection(colecao).doc(id).get();
         
         if (!docSnap.exists) {
-            console.error('Transação não encontrada');
+            console.error('Transação não encontrada:', { id, tipo, colecao });
             return;
         }
         
         const transacao = { id: docSnap.id, ...docSnap.data(), tipo };
         transacaoAtual = transacao;
         
-        // Preencher dados no modal
-        document.getElementById('modal-descricao').textContent = transacao.descricao || 'Sem descrição';
-        document.getElementById('modal-valor').textContent = formatCurrency(parseValueToNumber(transacao.valor));
-        document.getElementById('modal-data').textContent = formatarData(transacao.data);
+        console.log('Dados da transação:', transacao);
+        
+        // Preencher dados no modal com verificações de segurança
+        const descricaoEl = document.getElementById('modal-descricao');
+        const valorEl = document.getElementById('modal-valor');
+        const dataEl = document.getElementById('modal-data');
+        const contaEl = document.getElementById('modal-conta');
+        const categoriaEl = document.getElementById('modal-categoria');
+        const tagsEl = document.getElementById('modal-tags');
+        const lembreteEl = document.getElementById('modal-lembrete');
+        const observacaoEl = document.getElementById('modal-observacao');
+        
+        if (descricaoEl) descricaoEl.textContent = transacao.descricao || 'Sem descrição';
+        if (valorEl) valorEl.textContent = formatCurrency(parseValueToNumber(transacao.valor));
+        if (dataEl) dataEl.textContent = formatarData(transacao.data);
         
         // Conta
         let nomeContaExibicao = '';
@@ -557,37 +570,64 @@ async function abrirModalTransacao(id, tipo) {
             nomeContaExibicao = transacao.conta;
         }
         if (!nomeContaExibicao) nomeContaExibicao = 'Conta não informada';
-        document.getElementById('modal-conta').textContent = nomeContaExibicao;
+        if (contaEl) contaEl.textContent = nomeContaExibicao;
         
-        document.getElementById('modal-categoria').textContent = transacao.categoria || 'Sem categoria';
-        document.getElementById('modal-tags').textContent = transacao.tags || 'Nenhuma tag';
-        document.getElementById('modal-lembrete').textContent = transacao.lembrete || 'Nenhum';
-        document.getElementById('modal-observacao').textContent = transacao.observacao || 'Nenhuma';
+        if (categoriaEl) categoriaEl.textContent = transacao.categoria || 'Sem categoria';
+        if (tagsEl) tagsEl.textContent = transacao.tags || 'Nenhuma tag';
+        if (lembreteEl) lembreteEl.textContent = transacao.lembrete || 'Nenhum';
+        if (observacaoEl) observacaoEl.textContent = transacao.observacao || 'Nenhuma';
         
         // Atualizar ícone do tipo
         const tipoBtn = document.getElementById('status-tipo');
         const tipoLabel = document.getElementById('tipo-label');
-        const tipoIcon = tipoBtn.querySelector('.material-icons');
         
-        if (tipo === 'receita') {
-            tipoIcon.textContent = 'trending_up';
-            tipoLabel.textContent = 'Receita';
-        } else {
-            tipoIcon.textContent = 'trending_down';
-            tipoLabel.textContent = 'Despesa';
+        if (tipoBtn && tipoLabel) {
+            const tipoIcon = tipoBtn.querySelector('.material-icons');
+            
+            if (tipo === 'receita') {
+                if (tipoIcon) tipoIcon.textContent = 'trending_up';
+                tipoLabel.textContent = 'Receita';
+            } else {
+                if (tipoIcon) tipoIcon.textContent = 'trending_down';
+                tipoLabel.textContent = 'Despesa';
+            }
         }
         
         // Status pago
         const statusPago = document.getElementById('status-pago');
-        const estaRecebida = transacao.pago === true || transacao.concluida === true || transacao.recebido === true;
-        statusPago.classList.toggle('active', estaRecebida);
+        if (statusPago) {
+            const estaRecebida = transacao.pago === true || transacao.concluida === true || transacao.recebido === true;
+            statusPago.classList.toggle('active', estaRecebida);
+        }
         
         // Toggle ignorar
         const toggleIgnorar = document.getElementById('ignorar-transacao');
         if (toggleIgnorar) toggleIgnorar.checked = transacao.ignorada || false;
         
         // Mostrar modal
-        document.getElementById('modal-detalhes-transacao').style.display = 'flex';
+        const modal = document.getElementById('modal-detalhes-transacao');
+        if (modal) {
+            modal.style.display = 'flex';
+            console.log('Modal exibido com sucesso');
+            
+            // Forçar reflow para garantir que o modal seja renderizado
+            modal.offsetHeight;
+            
+            // Verificar se os elementos foram preenchidos
+            setTimeout(() => {
+                const elementos = ['modal-descricao', 'modal-valor', 'modal-data', 'modal-conta', 'modal-categoria'];
+                elementos.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        console.log(`${id}:`, el.textContent);
+                    } else {
+                        console.warn(`Elemento ${id} não encontrado`);
+                    }
+                });
+            }, 100);
+        } else {
+            console.error('Elemento modal não encontrado!');
+        }
         
     } catch (error) {
         console.error('Erro ao abrir modal:', error);
