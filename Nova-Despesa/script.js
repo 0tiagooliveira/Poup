@@ -482,20 +482,24 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
 
-                // Verificar se já existe despesa para este mês
-                const mesAno = despesa.data.substring(3); // MM/AAAA
-                const descricaoBase = despesa.descricao.replace(/ \d{2}$/, ''); // Remove numeração
-                
-                const existeDespesa = despesas.some(r => 
-                    r.data.substring(3) === mesAno && 
-                    (r.descricao ? r.descricao.replace(/ \d{2}$/, '') : '') === descricaoBase &&
-                    r.categoria === despesa.categoria
-                );
-
-                if (!existeDespesa) {
+                // Para despesas automáticas (com numeração), sempre salvar
+                // Verificar duplicata só para despesas manuais
+                if (despesa.origem === 'automatica') {
                     despesas.push(despesa);
                     localStorage.setItem('despesas', JSON.stringify(despesas));
-                    console.log(`Despesa futura salva no localStorage: ${despesa.data}`);
+                } else {
+                    // Verificar se já existe despesa para este mês (só para despesas manuais)
+                    const mesAno = despesa.data.substring(3); // MM/AAAA
+                    const existeDespesa = despesas.some(r => 
+                        r.data.substring(3) === mesAno && 
+                        r.descricao === despesa.descricao &&
+                        r.categoria === despesa.categoria
+                    );
+
+                    if (!existeDespesa) {
+                        despesas.push(despesa);
+                        localStorage.setItem('despesas', JSON.stringify(despesas));
+                    }
                 }
                 
                 resolve();
@@ -528,22 +532,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 .where('categoria', '==', despesa.categoria)
                 .get()
                 .then(snapshot => {
-                    const mesAno = despesa.data.substring(3); // MM/AAAA
-                    const descricaoBase = despesa.descricao.replace(/ \d{2}$/, ''); // Remove numeração (ex: " 01")
+                    // Para despesas automáticas (com numeração), sempre salvar
+                    if (despesa.origem === 'automatica') {
+                        const despesaFirestore = { ...despesa, userId: user.uid };
+                        return firebase.firestore().collection('despesas').add(despesaFirestore);
+                    }
                     
+                    // Para despesas manuais, verificar duplicata
+                    const mesAno = despesa.data.substring(3); // MM/AAAA
                     const existeDespesa = snapshot.docs.some(doc => {
                         const data = doc.data().data;
                         const docDescricao = doc.data().descricao || '';
-                        const docDescricaoBase = docDescricao.replace(/ \d{2}$/, ''); // Remove numeração
-                        
-                        return data && data.substring(3) === mesAno && docDescricaoBase === descricaoBase;
+                        return data && data.substring(3) === mesAno && docDescricao === despesa.descricao;
                     });
 
                     if (!existeDespesa) {
                         const despesaFirestore = { ...despesa, userId: user.uid };
                         return firebase.firestore().collection('despesas').add(despesaFirestore);
                     } else {
-                        console.log(`Despesa já existe para ${mesAno}, pulando...`);
                         return Promise.resolve();
                     }
                 })

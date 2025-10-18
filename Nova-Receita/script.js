@@ -506,20 +506,24 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
                 
-                // Verificar se já existe receita para este mês
-                const mesAno = receita.data.substring(3); // MM/AAAA
-                const descricaoBase = receita.descricao.replace(/ \d{2}$/, ''); // Remove numeração
-                
-                const existeReceita = receitas.some(r => 
-                    r.data.substring(3) === mesAno && 
-                    (r.descricao ? r.descricao.replace(/ \d{2}$/, '') : '') === descricaoBase &&
-                    r.categoria === receita.categoria
-                );
-
-                if (!existeReceita) {
+                // Para receitas automáticas (com numeração), sempre salvar
+                // Verificar duplicata só para receitas manuais
+                if (receita.origem === 'automatica') {
                     receitas.push(receita);
                     localStorage.setItem('receitas', JSON.stringify(receitas));
-                    // Receita futura salva no localStorage para data
+                } else {
+                    // Verificar se já existe receita para este mês (só para receitas manuais)
+                    const mesAno = receita.data.substring(3); // MM/AAAA
+                    const existeReceita = receitas.some(r => 
+                        r.data.substring(3) === mesAno && 
+                        r.descricao === receita.descricao &&
+                        r.categoria === receita.categoria
+                    );
+
+                    if (!existeReceita) {
+                        receitas.push(receita);
+                        localStorage.setItem('receitas', JSON.stringify(receitas));
+                    }
                 }
                 
                 resolve();
@@ -552,22 +556,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 .where('categoria', '==', receita.categoria)
                 .get()
                 .then(snapshot => {
-                    const mesAno = receita.data.substring(3); // MM/AAAA
-                    const descricaoBase = receita.descricao.replace(/ \d{2}$/, ''); // Remove numeração (ex: " 01")
+                    // Para receitas automáticas (com numeração), sempre salvar
+                    if (receita.origem === 'automatica') {
+                        const receitaFirestore = { ...receita, userId: user.uid };
+                        return firebase.firestore().collection('receitas').add(receitaFirestore);
+                    }
                     
+                    // Para receitas manuais, verificar duplicata
+                    const mesAno = receita.data.substring(3); // MM/AAAA
                     const existeReceita = snapshot.docs.some(doc => {
                         const data = doc.data().data;
                         const docDescricao = doc.data().descricao || '';
-                        const docDescricaoBase = docDescricao.replace(/ \d{2}$/, ''); // Remove numeração
-                        
-                        return data && data.substring(3) === mesAno && docDescricaoBase === descricaoBase;
+                        return data && data.substring(3) === mesAno && docDescricao === receita.descricao;
                     });
 
                     if (!existeReceita) {
                         const receitaFirestore = { ...receita, userId: user.uid };
                         return firebase.firestore().collection('receitas').add(receitaFirestore);
                     } else {
-                        // Receita duplicada para o mês detectada e ignorada
                         return Promise.resolve();
                     }
                 })

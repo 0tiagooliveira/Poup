@@ -1,13 +1,13 @@
-// Variáveis globais do Firebase e autenticação
+﻿// VariÃ¡veis globais do Firebase e autenticaÃ§Ã£o
 let firebaseApp, auth, googleProvider;
 let usuarioJaAutenticado = false;
 let usuario = null;
 let db = null; // Firestore database
 
-// Mapeamento de categorias para ícones
+// Mapeamento de categorias para Ã­cones
 const categoriaParaIcone = {
     // Receitas
-    'Salário': 'paid',
+    'SalÃ¡rio': 'paid',
     'Freelancer': 'business_center',
     'Freelance': 'business_center',
     'Investimentos': 'trending_up',
@@ -18,20 +18,20 @@ const categoriaParaIcone = {
     'Outras': 'attach_money',
     
     // Despesas
-    'Alimentação': 'restaurant',
+    'AlimentaÃ§Ã£o': 'restaurant',
     'Transporte': 'local_gas_station',
     'Uber': 'local_taxi',
     'Churrasco': 'restaurant',
     'Moradia': 'home',
-    'Saúde': 'local_hospital',
-    'Educação': 'school',
+    'SaÃºde': 'local_hospital',
+    'EducaÃ§Ã£o': 'school',
     'Lazer': 'sports_esports',
-    'Vestuário': 'checkroom',
+    'VestuÃ¡rio': 'checkroom',
     'Contas de Casa': 'electric_bolt',
     'Outros': 'shopping_cart'
 };
 
-// Função para obter ícone baseado na categoria
+// FunÃ§Ã£o para obter Ã­cone baseado na categoria
 function obterIconePorCategoria(categoria, tipoTransacao) {
     if (categoriaParaIcone[categoria]) {
         return categoriaParaIcone[categoria];
@@ -63,21 +63,21 @@ function configurarMenuAdicionar() {
     }
 }
 
-// Mapeamento de bancos para ícones SVG
+// Mapeamento de bancos para Ã­cones SVG
 const bancosIcones = {
     'Nubank': '../Icon/Nubank.svg',
     'Banco do Brasil': '../Icon/banco-do-brasil.svg',
     'Bradesco': '../Icon/bradesco.svg',
-    'Itaú': '../Icon/itau.svg',
+    'ItaÃº': '../Icon/itau.svg',
     'Santander': '../Icon/santander.svg',
     'Caixa': '../Icon/caixa.svg',
     'PicPay': '../Icon/picpay.svg'
 };
 
-// Mapeamento de bancos para variáveis de cor e fallback hex (para uso consistente na Home)
+// Mapeamento de bancos para variÃ¡veis de cor e fallback hex (para uso consistente na Home)
 const bancosCores = [
     { chave: 'nubank', var: '--nubank', hex: '#820ad1' },
-    { chave: 'itaú', var: '--itau', hex: '#EC7000' },
+    { chave: 'itaÃº', var: '--itau', hex: '#EC7000' },
     { chave: 'itau', var: '--itau', hex: '#EC7000' },
     { chave: 'bradesco', var: '--bradesco', hex: '#CC092F' },
     { chave: 'santander', var: '--santander', hex: '#EC0000' },
@@ -90,7 +90,7 @@ const bancosCores = [
 
 function getCorConta(conta) {
     if (!conta) return 'var(--outros, #6B7280)';
-    // Campos possíveis onde a "marca" do banco pode aparecer
+    // Campos possÃ­veis onde a "marca" do banco pode aparecer
     const candidatos = [
         conta.banco,
         conta.nome,
@@ -99,8 +99,8 @@ function getCorConta(conta) {
         conta.iconeBanco,
     ].filter(Boolean).map(c => String(c).toLowerCase());
 
-    // Checar também se ícone SVG contém nome do banco
-    if (conta.icone && /nubank|itau|itaú|bradesco|santander|caixa|picpay|banco-do-brasil|bb|carteira/i.test(conta.icone)) {
+    // Checar tambÃ©m se Ã­cone SVG contÃ©m nome do banco
+    if (conta.icone && /nubank|itau|itaÃº|bradesco|santander|caixa|picpay|banco-do-brasil|bb|carteira/i.test(conta.icone)) {
         candidatos.push(conta.icone.toLowerCase());
     }
 
@@ -122,9 +122,9 @@ function getCorConta(conta) {
     return 'var(--outros, #6B7280)';
 }
 
-// Função para obter ícone do banco
+// FunÃ§Ã£o para obter Ã­cone do banco
 function obterIconeBanco(conta) {
-    // Se o ícone já é um SVG path, retorna ele mesmo
+    // Se o Ã­cone jÃ¡ Ã© um SVG path, retorna ele mesmo
     if (conta.icone && conta.icone.includes('.svg')) {
         return conta.icone;
     }
@@ -134,7 +134,7 @@ function obterIconeBanco(conta) {
         return bancosIcones[conta.banco];
     }
     
-    // Fallback para ícone material
+    // Fallback para Ã­cone material
     return null;
 }
 
@@ -157,20 +157,20 @@ function obterIconeBanco(conta) {
     }
 })();
 
-// Sistema de autenticação simplificado com token
+// Sistema de autenticaÃ§Ã£o simplificado com token
 function salvarTokenUsuario(usuario) {
-    // Usar displayName se disponível, senão extrair nome do email (antes do @)
+    // Usar displayName se disponÃ­vel, senÃ£o extrair nome do email (antes do @)
     let nomeExibicao = usuario.displayName;
     if (!nomeExibicao && usuario.email) {
         nomeExibicao = usuario.email.split('@')[0];
-        // Capitalizar primeira letra se necessário
+        // Capitalizar primeira letra se necessÃ¡rio
         nomeExibicao = nomeExibicao.charAt(0).toUpperCase() + nomeExibicao.slice(1);
     }
     
     const dadosUsuario = {
         uid: usuario.uid,
         email: usuario.email,
-        nome: nomeExibicao || 'Usuário',
+        nome: nomeExibicao || 'UsuÃ¡rio',
         timestamp: Date.now()
     };
     localStorage.setItem('tokenUsuarioPoup', JSON.stringify(dadosUsuario));
@@ -181,7 +181,7 @@ function obterTokenUsuario() {
         const token = localStorage.getItem('tokenUsuarioPoup');
         if (token) {
             const dadosUsuario = JSON.parse(token);
-            // Verificar se o token não está expirado (24 horas)
+            // Verificar se o token nÃ£o estÃ¡ expirado (24 horas)
             const horasExpiracao = 24;
             const tempoExpiracao = horasExpiracao * 60 * 60 * 1000;
             
@@ -199,12 +199,12 @@ function obterTokenUsuario() {
     }
 }
 
-// ===== FUNÇÕES GLOBAIS DE POPUP =====
+// ===== FUNÃ‡Ã•ES GLOBAIS DE POPUP =====
 
-// Variável global para controlar exclusão de conta
+// VariÃ¡vel global para controlar exclusÃ£o de conta
 let contaParaExcluirId = null;
 
-// Função global para mostrar popup de exclusão de conta
+// FunÃ§Ã£o global para mostrar popup de exclusÃ£o de conta
 window.mostrarPopupExcluirConta = function(contaId, mensagem) {
     contaParaExcluirId = contaId;
     const popupExcluirContaCustom = document.getElementById('popup-excluir-conta-custom');
@@ -216,20 +216,20 @@ window.mostrarPopupExcluirConta = function(contaId, mensagem) {
     }
 };
 
-// Função global para fechar popup de exclusão de conta
+// FunÃ§Ã£o global para fechar popup de exclusÃ£o de conta
 window.fecharPopupExcluirConta = function() {
-    console.log('Fechando popup de exclusão...');
+    console.log('Fechando popup de exclusÃ£o...');
     const popupExcluirContaCustom = document.getElementById('popup-excluir-conta-custom');
     if (popupExcluirContaCustom) {
         popupExcluirContaCustom.style.display = 'none';
         console.log('Popup fechado com sucesso');
     } else {
-        console.error('Elemento popup não encontrado!');
+        console.error('Elemento popup nÃ£o encontrado!');
     }
     contaParaExcluirId = null;
 };
 
-// Função global para confirmar exclusão de conta
+// FunÃ§Ã£o global para confirmar exclusÃ£o de conta
 window.confirmarExclusaoConta = function() {
     if (contaParaExcluirId) {
         excluirConta(contaParaExcluirId);
@@ -241,7 +241,7 @@ function limparTokenUsuario() {
     localStorage.removeItem('tokenUsuarioPoup');
 }
 
-// Funções de cache local para trabalhar offline
+// FunÃ§Ãµes de cache local para trabalhar offline
 function salvarContaNoCache(conta) {
     try {
         const chave = `conta_${conta.id}`;
@@ -262,26 +262,26 @@ function buscarContaNoCacheLocal(contaId) {
     }
 }
 
-// Função para configurar event listeners dos modais
+// FunÃ§Ã£o para configurar event listeners dos modais
 function configurarEventListenersModais() {
     console.log('Configurando event listeners dos modais...');
     
     // Usar event delegation no document para garantir que funcione
     document.addEventListener('click', function(e) {
-        // Botão "Não"
+        // BotÃ£o "NÃ£o"
         if (e.target && e.target.id === 'popup-excluir-conta-nao') {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Botão Não clicado via delegation!');
+            console.log('BotÃ£o NÃ£o clicado via delegation!');
             window.fecharPopupExcluirConta();
             return;
         }
         
-        // Botão "Sim"
+        // BotÃ£o "Sim"
         if (e.target && e.target.id === 'popup-excluir-conta-sim') {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Botão Sim clicado via delegation!');
+            console.log('BotÃ£o Sim clicado via delegation!');
             if (contaParaExcluirId) {
                 excluirConta(contaParaExcluirId);
             }
@@ -293,22 +293,22 @@ function configurarEventListenersModais() {
     console.log('Event delegation configurado!');
 }
 
-// Função para excluir a conta
+// FunÃ§Ã£o para excluir a conta
 function excluirConta(contaId) {
     console.log('Excluindo conta com ID:', contaId);
     
-    // Verificar se Firebase está disponível
+    // Verificar se Firebase estÃ¡ disponÃ­vel
     if (!firebase || !firebase.firestore) {
-        console.error('Firebase não está disponível');
-        mostrarToast('Erro: Firebase não disponível', '#ef233c');
+        console.error('Firebase nÃ£o estÃ¡ disponÃ­vel');
+        mostrarToast('Erro: Firebase nÃ£o disponÃ­vel', '#ef233c');
         return;
     }
     
     const db = firebase.firestore();
     db.collection('contas').doc(contaId).delete()
         .then(() => {
-            console.log('Conta excluída com sucesso!');
-            mostrarToast('Conta excluída!');
+            console.log('Conta excluÃ­da com sucesso!');
+            mostrarToast('Conta excluÃ­da!');
             if (auth && auth.currentUser) {
                 carregarContasHome(auth.currentUser.uid);
             }
@@ -319,7 +319,7 @@ function excluirConta(contaId) {
         });
 }
 
-// Função para verificar se notificações foram limpas recentemente
+// FunÃ§Ã£o para verificar se notificaÃ§Ãµes foram limpas recentemente
 function verificarStatusNotificacoes() {
     const timestampLimpeza = localStorage.getItem('notificacoesLimpasEm');
     
@@ -329,27 +329,27 @@ function verificarStatusNotificacoes() {
         const umaHora = 3600000; // 1 hora em millisegundos
         
         if (tempoDecorrido < umaHora) {
-            // Ainda dentro do período de 1 hora, manter bloqueadas
+            // Ainda dentro do perÃ­odo de 1 hora, manter bloqueadas
             window.notificacoesLimpas = true;
             const minutos = Math.ceil((umaHora - tempoDecorrido) / 60000);
-            console.log(`Notificações ainda bloqueadas por mais ${minutos} minutos`);
+            console.log(`NotificaÃ§Ãµes ainda bloqueadas por mais ${minutos} minutos`);
         } else {
             // Passou de 1 hora, reabilitar
             window.notificacoesLimpas = false;
             localStorage.removeItem('notificacoesLimpasEm');
-            console.log('Período de 1 hora expirado, notificações reabilitadas');
+            console.log('PerÃ­odo de 1 hora expirado, notificaÃ§Ãµes reabilitadas');
         }
     } else {
         window.notificacoesLimpas = false;
     }
 }
 
-// Inicialização principal com controle total
+// InicializaÃ§Ã£o principal com controle total
 document.addEventListener('DOMContentLoaded', function() {
     mostrarCarregamento();
-    console.log('[INIT] Verificando autenticação...');
+    console.log('[INIT] Verificando autenticaÃ§Ã£o...');
     
-    // Verificar se notificações foram limpas recentemente
+    // Verificar se notificaÃ§Ãµes foram limpas recentemente
     verificarStatusNotificacoes();
     
     // Configurar event listeners dos modais imediatamente
@@ -358,20 +358,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar menu adicionar
     configurarMenuAdicionar();
     
-    // Configurar listeners para mudanças no avatar
+    // Configurar listeners para mudanÃ§as no avatar
     configurarListenersAvatar();
     
-    // Primeiro, verificar se há token válido
+    // Primeiro, verificar se hÃ¡ token vÃ¡lido
     const tokenUsuario = obterTokenUsuario();
     
     if (tokenUsuario) {
-        // Token existe, mas ainda precisa da autenticação Firebase para Firestore
+        // Token existe, mas ainda precisa da autenticaÃ§Ã£o Firebase para Firestore
         console.log('[AUTH] Token encontrado, aguardando Firebase...');
         
         auth.onAuthStateChanged(user => {
             const containerApp = document.querySelector('.container-app');
             if (user) {
-                usuario = user; // Definir variável global
+                usuario = user; // Definir variÃ¡vel global
                 usuarioJaAutenticado = true;
                 salvarTokenUsuario(user); // Atualizar token
                 setTimeout(() => {
@@ -380,8 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 350);
                 inicializarComponentes(user);
             } else {
-                // Token inválido, limpar e redirecionar
-                console.log('[AUTH] Token inválido, redirecionando...');
+                // Token invÃ¡lido, limpar e redirecionar
+                console.log('[AUTH] Token invÃ¡lido, redirecionando...');
                 limparTokenUsuario();
                 window.location.href = '../index.html';
             }
@@ -399,13 +399,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Só usar Firebase se não há token
+    // SÃ³ usar Firebase se nÃ£o hÃ¡ token
     if (auth) {
         console.log('[AUTH] Verificando Firebase...');
         auth.onAuthStateChanged(user => {
             const containerApp = document.querySelector('.container-app');
             if (user) {
-                usuario = user; // Definir variável global
+                usuario = user; // Definir variÃ¡vel global
                 usuarioJaAutenticado = true;
                 salvarTokenUsuario(user);
                 setTimeout(() => {
@@ -421,13 +421,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         esconderCarregamento();
-        alert('Erro ao carregar Firebase. Verifique sua configuração.');
+        alert('Erro ao carregar Firebase. Verifique sua configuraÃ§Ã£o.');
     }
 
-    // Clique nos cartões de receitas/despesas (cartão-lista-ux)
+    // Clique nos cartÃµes de receitas/despesas (cartÃ£o-lista-ux)
     document.querySelectorAll('.cartao-receitas.cartao-lista-ux').forEach(card => {
         card.addEventListener('click', function(e) {
-            // Evita navegação se clicar em botão interno
+            // Evita navegaÃ§Ã£o se clicar em botÃ£o interno
             if (!e.target.classList.contains('botao-mini-ux')) {
                 window.location.href = '../Lista-de-receitas/Lista-de-receitas.html';
             }
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Variáveis globais para mês/ano selecionado
+// VariÃ¡veis globais para mÃªs/ano selecionado
 let mesSelecionado, anoSelecionado;
 (function setMesAnoInicial() {
     const hoje = new Date();
@@ -450,29 +450,29 @@ let mesSelecionado, anoSelecionado;
     anoSelecionado = hoje.getFullYear();
 })();
 
-// Função para atualizar o seletor de mês
+// FunÃ§Ã£o para atualizar o seletor de mÃªs
 function atualizarSeletorMes() {
     const seletorMes = document.querySelector('.seletor-mes');
     if (!seletorMes) return;
     seletorMes.selectedIndex = mesSelecionado;
 }
 
-// Função para atualizar saldo ao trocar mês
+// FunÃ§Ã£o para atualizar saldo ao trocar mÃªs
 async function atualizarSaldoMes(uid) {
-    console.log(`[Home] Atualizando dados para o mês ${mesSelecionado+1}/${anoSelecionado}`);
+    console.log(`[Home] Atualizando dados para o mÃªs ${mesSelecionado+1}/${anoSelecionado}`);
     await calcularSaldoTotalMesAtual(uid);
     calcularValorTotalReceitas(uid);
     calcularValorTotalDespesas(uid);
     
-    // Atualizar também os gráficos e listas
+    // Atualizar tambÃ©m os grÃ¡ficos e listas
     carregarResumoReceitas(uid);
     carregarReceitasHome(uid);
     carregarDespesasHome(uid);
 }
 
-// Função principal de inicialização dos componentes da Home
+// FunÃ§Ã£o principal de inicializaÃ§Ã£o dos componentes da Home
 async function inicializarComponentes(user) {
-    console.log('Inicializando componentes para o usuário:', user.uid);
+    console.log('Inicializando componentes para o usuÃ¡rio:', user.uid);
 
     const elementos = {
         avatarUsuarioBtn: document.getElementById('avatar-usuario-btn'),
@@ -481,43 +481,43 @@ async function inicializarComponentes(user) {
         nomeUsuario: document.querySelector('.nome-usuario'),
     };
 
-    // Carregar nome e avatar das configurações
+    // Carregar nome e avatar das configuraÃ§Ãµes
     carregarDadosPerfilHome(elementos.nomeUsuario);
     
     if (elementos.nomeUsuario) {
-        // Usar displayName se disponível, senão extrair nome do email (antes do @)
+        // Usar displayName se disponÃ­vel, senÃ£o extrair nome do email (antes do @)
         let nomeExibicao = user.displayName;
         if (!nomeExibicao && user.email) {
             nomeExibicao = user.email.split('@')[0];
-            // Capitalizar primeira letra se necessário
+            // Capitalizar primeira letra se necessÃ¡rio
             nomeExibicao = nomeExibicao.charAt(0).toUpperCase() + nomeExibicao.slice(1);
         }
-        elementos.nomeUsuario.textContent = nomeExibicao || 'Usuário';
+        elementos.nomeUsuario.textContent = nomeExibicao || 'UsuÃ¡rio';
     }
 
     configurarEventos(elementos);
-    atualizarSeletorMes(); // Definir mês atual no seletor
+    atualizarSeletorMes(); // Definir mÃªs atual no seletor
     carregarDadosDaHome(user.uid);
     
     // Configurar event listeners dos modais
     configurarEventListenersModais();
 
-    // Inicializar sistema de notificações
+    // Inicializar sistema de notificaÃ§Ãµes
     inicializarNotificacoes();
 
-    // Calcular saldo total do mês atual - aguardar resultado
-    console.log('[INIT] Executando calcularSaldoTotalMesAtual na inicialização...');
+    // Calcular saldo total do mÃªs atual - aguardar resultado
+    console.log('[INIT] Executando calcularSaldoTotalMesAtual na inicializaÃ§Ã£o...');
     await calcularSaldoTotalMesAtual(user.uid);
     calcularValorTotalReceitas(user.uid);
     calcularValorTotalDespesas(user.uid);
 }
 
-// Função para carregar dados do perfil (nome e avatar) salvos nas Configurações
+// FunÃ§Ã£o para carregar dados do perfil (nome e avatar) salvos nas ConfiguraÃ§Ãµes
 function carregarDadosPerfilHome(nomeElement) {
     try {
         console.log('[Home] Carregando dados do perfil...');
         
-        // Carregar nome do usuário
+        // Carregar nome do usuÃ¡rio
         const dadosUsuario = localStorage.getItem('dadosUsuario');
         if (dadosUsuario) {
             const dados = JSON.parse(dadosUsuario);
@@ -527,16 +527,16 @@ function carregarDadosPerfilHome(nomeElement) {
             }
         }
         
-        // Carregar avatar do usuário
+        // Carregar avatar do usuÃ¡rio
         carregarAvatarUsuario();
         
-        console.log('[Home] ✅ Dados do perfil carregados com sucesso');
+        console.log('[Home] âœ… Dados do perfil carregados com sucesso');
     } catch (error) {
         console.error('[Home] Erro ao carregar dados do perfil:', error);
     }
 }
 
-// Função específica para carregar avatar do usuário
+// FunÃ§Ã£o especÃ­fica para carregar avatar do usuÃ¡rio
 function carregarAvatarUsuario() {
     const avatarContainer = document.querySelector('.avatar-usuario');
     if (!avatarContainer) return;
@@ -547,7 +547,7 @@ function carregarAvatarUsuario() {
     if (avatarSalvo) {
         mostrarAvatarUsuario(avatarSalvo);
     } else {
-        // Se não há no localStorage, buscar no Firestore
+        // Se nÃ£o hÃ¡ no localStorage, buscar no Firestore
         const user = auth.currentUser;
         if (user && user.uid) {
             db.collection('users').doc(user.uid).get()
@@ -567,12 +567,12 @@ function carregarAvatarUsuario() {
     }
 }
 
-// Função para mostrar avatar na interface
+// FunÃ§Ã£o para mostrar avatar na interface
 function mostrarAvatarUsuario(avatarURL) {
     const avatarContainer = document.querySelector('.avatar-usuario');
     if (!avatarContainer || !avatarURL) return;
     
-    // Remove o ícone padrão
+    // Remove o Ã­cone padrÃ£o
     const iconePadrao = avatarContainer.querySelector('.material-icons-round');
     if (iconePadrao) {
         iconePadrao.remove();
@@ -592,7 +592,7 @@ function mostrarAvatarUsuario(avatarURL) {
     console.log('[Home] Avatar carregado');
 }
 
-// Função para remover avatar e mostrar ícone padrão
+// FunÃ§Ã£o para remover avatar e mostrar Ã­cone padrÃ£o
 function removerAvatarUsuario() {
     const avatarContainer = document.querySelector('.avatar-usuario');
     if (!avatarContainer) return;
@@ -603,7 +603,7 @@ function removerAvatarUsuario() {
         avatarImg.remove();
     }
     
-    // Adiciona ícone padrão se não existir
+    // Adiciona Ã­cone padrÃ£o se nÃ£o existir
     if (!avatarContainer.querySelector('.material-icons-round')) {
         const iconePadrao = document.createElement('span');
         iconePadrao.className = 'material-icons-round';
@@ -612,9 +612,9 @@ function removerAvatarUsuario() {
     }
 }
 
-// Configurar listeners para mudanças no avatar
+// Configurar listeners para mudanÃ§as no avatar
 function configurarListenersAvatar() {
-    // Listener para eventos customizados de outras páginas
+    // Listener para eventos customizados de outras pÃ¡ginas
     window.addEventListener('avatarAtualizado', function(event) {
         console.log('[Home] Avatar atualizado via evento:', event.detail);
         const fotoURL = event.detail.fotoURL;
@@ -627,7 +627,7 @@ function configurarListenersAvatar() {
         }
     });
     
-    // Listener para mudanças no localStorage (outras abas)
+    // Listener para mudanÃ§as no localStorage (outras abas)
     window.addEventListener('storage', function(event) {
         if (event.key === 'avatarUsuario') {
             console.log('[Home] Avatar atualizado via localStorage');
@@ -640,7 +640,7 @@ function configurarListenersAvatar() {
     });
 }
 
-// Configura eventos de clique e interação da Home
+// Configura eventos de clique e interaÃ§Ã£o da Home
 function configurarEventos(elementos) {
     console.log('Configurando eventos de clique...');
     if (elementos.avatarUsuarioBtn) {
@@ -656,7 +656,7 @@ function configurarEventos(elementos) {
             e.preventDefault();
             limparTokenUsuario(); // Limpar token local
             auth.signOut().then(() => {
-                console.log('[AUTH] Usuário deslogado com sucesso.');
+                console.log('[AUTH] UsuÃ¡rio deslogado com sucesso.');
                 window.location.href = '../index.html';
             }).catch(error => {
                 console.error('[AUTH] Erro ao fazer logout:', error);
@@ -666,26 +666,26 @@ function configurarEventos(elementos) {
         });
     }
     
-    // Configurar botão de configurações do menu do usuário
+    // Configurar botÃ£o de configuraÃ§Ãµes do menu do usuÃ¡rio
     const configUsuarioBtn = document.getElementById('config-usuario-btn');
     if (configUsuarioBtn) {
         configUsuarioBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Redirecionando para Configurações...');
+            console.log('Redirecionando para ConfiguraÃ§Ãµes...');
             window.location.href = '../Configuracoes/Configuracoes.html';
         });
     }
     
-    // Configurar item de navegação de configurações
+    // Configurar item de navegaÃ§Ã£o de configuraÃ§Ãµes
     const navegacaoSettings = document.querySelector('.item-navegacao[href="#"]:last-child');
-    if (navegacaoSettings && navegacaoSettings.textContent.includes('Configurações')) {
+    if (navegacaoSettings && navegacaoSettings.textContent.includes('ConfiguraÃ§Ãµes')) {
         navegacaoSettings.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Redirecionando para Configurações via navegação...');
-            window.location.href = '../Configurações/Configuracoes.html';
+            console.log('Redirecionando para ConfiguraÃ§Ãµes via navegaÃ§Ã£o...');
+            window.location.href = '../ConfiguraÃ§Ãµes/Configuracoes.html';
         });
         // Remover o href="#" e adicionar um href real
-        navegacaoSettings.href = '../Configurações/Configuracoes.html';
+        navegacaoSettings.href = '../ConfiguraÃ§Ãµes/Configuracoes.html';
     }
     
     document.addEventListener('click', function(e) {
@@ -694,16 +694,16 @@ function configurarEventos(elementos) {
         }
     });
 
-    // Filtros dos gráficos (exemplo)
+    // Filtros dos grÃ¡ficos (exemplo)
     document.querySelectorAll('.botao-filtro-receita').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.botao-filtro-receita').forEach(b => b.classList.remove('ativo'));
             this.classList.add('ativo');
-            // Chame função para filtrar receitas por período/categoria se desejar
+            // Chame funÃ§Ã£o para filtrar receitas por perÃ­odo/categoria se desejar
         });
     });
 
-    // Configurar botões de navegação de mês
+    // Configurar botÃµes de navegaÃ§Ã£o de mÃªs
     const btnAnterior = document.querySelector('.botao-mes.anterior');
     const btnProximo = document.querySelector('.botao-mes.proximo');
     const seletorMes = document.querySelector('.seletor-mes');
@@ -718,9 +718,9 @@ function configurarEventos(elementos) {
             atualizarSeletorMes();
             if (auth.currentUser) atualizarSaldoMes(auth.currentUser.uid);
         });
-        console.log('[Home] Botão anterior configurado');
+        console.log('[Home] BotÃ£o anterior configurado');
     } else {
-        console.error('[Home] Botão anterior não encontrado');
+        console.error('[Home] BotÃ£o anterior nÃ£o encontrado');
     }
     
     if (btnProximo) {
@@ -733,33 +733,33 @@ function configurarEventos(elementos) {
             atualizarSeletorMes();
             if (auth.currentUser) atualizarSaldoMes(auth.currentUser.uid);
         });
-        console.log('[Home] Botão próximo configurado');
+        console.log('[Home] BotÃ£o prÃ³ximo configurado');
     } else {
-        console.error('[Home] Botão próximo não encontrado');
+        console.error('[Home] BotÃ£o prÃ³ximo nÃ£o encontrado');
     }
 
-    // Seletor de mês
+    // Seletor de mÃªs
     if (seletorMes) {
         seletorMes.addEventListener('change', function() {
             mesSelecionado = this.selectedIndex;
             if (auth.currentUser) atualizarSaldoMes(auth.currentUser.uid);
         });
-        console.log('[Home] Seletor de mês configurado');
+        console.log('[Home] Seletor de mÃªs configurado');
     } else {
-        console.error('[Home] Seletor de mês não encontrado');
+        console.error('[Home] Seletor de mÃªs nÃ£o encontrado');
     }
     document.querySelectorAll('.botao-filtro').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.botao-filtro').forEach(b => b.classList.remove('ativo'));
             this.classList.add('ativo');
-            // Chame função para filtrar despesas por período/categoria se desejar
+            // Chame funÃ§Ã£o para filtrar despesas por perÃ­odo/categoria se desejar
         });
     });
 }
 
-// Carrega todos os dados necessários para a Home
+// Carrega todos os dados necessÃ¡rios para a Home
 function carregarDadosDaHome(userId) {
-    console.log(`Buscando dados da home para o usuário: ${userId}`);
+    console.log(`Buscando dados da home para o usuÃ¡rio: ${userId}`);
     carregarContasHome(userId);
     carregarResumoReceitas(userId);
     carregarReceitasHome(userId);
@@ -767,22 +767,22 @@ function carregarDadosDaHome(userId) {
     carregarCartoesCreditoHome(userId);
 }
 
-// Carregar notificações para todas as receitas e despesas existentes
+// Carregar notificaÃ§Ãµes para todas as receitas e despesas existentes
 async function carregarNotificacoesTransacoes(userId) {
     if (!window.notificacoesManager) {
-        console.log('Sistema de notificações não disponível');
+        console.log('Sistema de notificaÃ§Ãµes nÃ£o disponÃ­vel');
         return;
     }
     
-    // Verificar se já carregou notificações nesta sessão OU se foram limpas pelo usuário
+    // Verificar se jÃ¡ carregou notificaÃ§Ãµes nesta sessÃ£o OU se foram limpas pelo usuÃ¡rio
     if (sessionStorage.getItem('notificacoesCarregadas') && !window.notificacoesLimpas) {
-        console.log('Notificações já foram carregadas nesta sessão');
+        console.log('NotificaÃ§Ãµes jÃ¡ foram carregadas nesta sessÃ£o');
         return;
     }
     
-    // Se as notificações foram limpas, não carregar novamente
+    // Se as notificaÃ§Ãµes foram limpas, nÃ£o carregar novamente
     if (window.notificacoesLimpas) {
-        console.log('Notificações foram limpas pelo usuário, não recarregando');
+        console.log('NotificaÃ§Ãµes foram limpas pelo usuÃ¡rio, nÃ£o recarregando');
         return;
     }
     
@@ -793,7 +793,7 @@ async function carregarNotificacoesTransacoes(userId) {
         
         let totalNotificacoes = 0;
         
-        // Carregar receitas do mês atual
+        // Carregar receitas do mÃªs atual
         const receitasSnapshot = await db.collection('receitas')
             .where('userId', '==', userId)
             .get();
@@ -801,7 +801,7 @@ async function carregarNotificacoesTransacoes(userId) {
         receitasSnapshot.forEach(doc => {
             const receita = { id: doc.id, ...doc.data() };
             
-            // Verificar se é do mês atual
+            // Verificar se Ã© do mÃªs atual
             if (isDataNoMesSelecionado(receita.data, mesAtual, anoAtual)) {
                 const valor = parseValueToNumber(receita.valor || '0');
                 const formatCurrency = (val) => {
@@ -811,7 +811,7 @@ async function carregarNotificacoesTransacoes(userId) {
                     }).format(val);
                 };
                 
-                const status = receita.recebido || receita.pago || receita.concluida ? '✅' : '⏳';
+                const status = receita.recebido || receita.pago || receita.concluida ? 'âœ…' : 'â³';
                 
                 window.notificacoesManager.criarNotificacao({
                     tipo: 'receita_existente',
@@ -824,7 +824,7 @@ async function carregarNotificacoesTransacoes(userId) {
             }
         });
         
-        // Carregar despesas do mês atual
+        // Carregar despesas do mÃªs atual
         const despesasSnapshot = await db.collection('despesas')
             .where('userId', '==', userId)
             .get();
@@ -832,7 +832,7 @@ async function carregarNotificacoesTransacoes(userId) {
         despesasSnapshot.forEach(doc => {
             const despesa = { id: doc.id, ...doc.data() };
             
-            // Verificar se é do mês atual
+            // Verificar se Ã© do mÃªs atual
             if (isDataNoMesSelecionado(despesa.data, mesAtual, anoAtual)) {
                 const valor = parseValueToNumber(despesa.valor || '0');
                 const formatCurrency = (val) => {
@@ -842,7 +842,7 @@ async function carregarNotificacoesTransacoes(userId) {
                     }).format(val);
                 };
                 
-                const status = despesa.pago || despesa.concluida || despesa.recebido ? '✅' : '⏳';
+                const status = despesa.pago || despesa.concluida || despesa.recebido ? 'âœ…' : 'â³';
                 
                 window.notificacoesManager.criarNotificacao({
                     tipo: 'despesa_existente',
@@ -855,21 +855,21 @@ async function carregarNotificacoesTransacoes(userId) {
             }
         });
         
-        // Marcar como carregadas nesta sessão
+        // Marcar como carregadas nesta sessÃ£o
         sessionStorage.setItem('notificacoesCarregadas', 'true');
         
-        console.log(`✅ ${totalNotificacoes} notificações de transações carregadas`);
+        console.log(`âœ… ${totalNotificacoes} notificaÃ§Ãµes de transaÃ§Ãµes carregadas`);
     } catch (error) {
-        console.error('❌ Erro ao carregar notificações de transações:', error);
+        console.error('âŒ Erro ao carregar notificaÃ§Ãµes de transaÃ§Ãµes:', error);
     }
 }
 
-// [FUNÇÃO REMOVIDA - DUPLICADA]
+// [FUNÃ‡ÃƒO REMOVIDA - DUPLICADA]
 
-// Carrega cartões de crédito do Firestore e renderiza na Home
+// Carrega cartÃµes de crÃ©dito do Firestore e renderiza na Home
 function carregarCartoesCreditoHome(uid) {
-    console.log('[Home] Buscando cartões de crédito para o usuário:', uid);
-    // Tenta buscar, mas trata erro de permissão de forma amigável
+    console.log('[Home] Buscando cartÃµes de crÃ©dito para o usuÃ¡rio:', uid);
+    // Tenta buscar, mas trata erro de permissÃ£o de forma amigÃ¡vel
     firebase.firestore().collection('cartoes')
         .where('userId', '==', uid)
         .get()
@@ -878,25 +878,25 @@ function carregarCartoesCreditoHome(uid) {
             snapshot.forEach(doc => {
                 cartoes.push({ ...doc.data(), id: doc.id });
             });
-            console.log('[Home] Total de cartões de crédito carregados:', cartoes.length);
-            // Aqui você pode renderizar os cartões na tela, se desejar
+            console.log('[Home] Total de cartÃµes de crÃ©dito carregados:', cartoes.length);
+            // Aqui vocÃª pode renderizar os cartÃµes na tela, se desejar
         })
         .catch(error => {
             if (
                 error.code === 'permission-denied' ||
                 (error.message && error.message.includes('Missing or insufficient permissions'))
             ) {
-                console.warn('[Home] Permissão insuficiente para buscar cartões de crédito. Coleção "cartoes" não está acessível para este usuário.');
+                console.warn('[Home] PermissÃ£o insuficiente para buscar cartÃµes de crÃ©dito. ColeÃ§Ã£o "cartoes" nÃ£o estÃ¡ acessÃ­vel para este usuÃ¡rio.');
             } else {
-                console.error('[Home] Erro ao buscar cartões de crédito:', error);
+                console.error('[Home] Erro ao buscar cartÃµes de crÃ©dito:', error);
             }
         });
 }
 
-// Carrega resumo de receitas (total recebido) e chama gráfico de receitas por categoria
+// Carrega resumo de receitas (total recebido) e chama grÃ¡fico de receitas por categoria
 function carregarResumoReceitas(userId) {
     if (typeof firebase === "undefined" || !firebase.firestore) {
-        console.error('Firebase não disponível para carregar receitas.');
+        console.error('Firebase nÃ£o disponÃ­vel para carregar receitas.');
         return;
     }
     const db = firebase.firestore();
@@ -909,14 +909,14 @@ function carregarResumoReceitas(userId) {
             snapshot.forEach(doc => {
                 const receita = doc.data();
                 
-                // Filtrar apenas receitas do mês/ano selecionado
+                // Filtrar apenas receitas do mÃªs/ano selecionado
                 const isDoMesSelecionado = isDataNoMesSelecionado(receita.data, mesSelecionado, anoSelecionado);
                 const recebido = receita.recebido !== false;
                 
                 if (isDoMesSelecionado) {
                     receitas.push(receita);
                     if (recebido) {
-                        const valor = parseValueToNumber(receita.valor || '0'); // Usar função correta
+                        const valor = parseValueToNumber(receita.valor || '0'); // Usar funÃ§Ã£o correta
                         totalRecebido += valor;
                     }
                 }
@@ -926,7 +926,7 @@ function carregarResumoReceitas(userId) {
             if (valorReceitas) {
                 atualizarValorComAnimacao(valorReceitas, totalRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
             }
-            console.log(`[Home] Total de receitas do mês ${mesSelecionado+1}/${anoSelecionado}: ${receitas.length}, total recebido: R$ ${totalRecebido.toFixed(2)}`);
+            console.log(`[Home] Total de receitas do mÃªs ${mesSelecionado+1}/${anoSelecionado}: ${receitas.length}, total recebido: R$ ${totalRecebido.toFixed(2)}`);
             carregarGraficoReceitasPorCategoria(userId, receitas);
         })
         .catch(error => {
@@ -934,7 +934,7 @@ function carregarResumoReceitas(userId) {
         });
 }
 
-// Renderiza receitas na Home (máx 3, visual consistente e valores corretos)
+// Renderiza receitas na Home (mÃ¡x 3, visual consistente e valores corretos)
 function carregarReceitasHome(uid) {
     firebase.firestore().collection('receitas')
         .where('userId', '==', uid)
@@ -945,17 +945,17 @@ function carregarReceitasHome(uid) {
             snapshot.forEach(doc => {
                 const receita = doc.data();
                 
-                // Filtrar apenas receitas do mês/ano selecionado
+                // Filtrar apenas receitas do mÃªs/ano selecionado
                 const isDoMesSelecionado = isDataNoMesSelecionado(receita.data, mesSelecionado, anoSelecionado);
                 const recebido = receita.recebido !== false;
                 
                 if (isDoMesSelecionado) {
                     receitas.push(receita);
                     if (recebido) {
-                        let valor = parseValueToNumber(receita.valor || '0'); // Usar função correta
+                        let valor = parseValueToNumber(receita.valor || '0'); // Usar funÃ§Ã£o correta
                         
-                        // CORREÇÃO TEMPORÁRIA: Se é "Salário" e valor é 500, corrigir para 5000
-                        if (receita.descricao === 'Salário' && valor === 500) {
+                        // CORREÃ‡ÃƒO TEMPORÃRIA: Se Ã© "SalÃ¡rio" e valor Ã© 500, corrigir para 5000
+                        if (receita.descricao === 'SalÃ¡rio' && valor === 500) {
                             valor = 5000;
                         }
                         
@@ -974,24 +974,24 @@ function carregarReceitasHome(uid) {
                 if (receitas.length === 0) {
                     listaHome.innerHTML = `<div style="text-align:center;color:#888;padding:24px 0;">
                         <span class="material-icons-round" style="font-size:2.2rem;opacity:0.3;">receipt_long</span>
-                        <div style="margin-top:8px;">Nenhuma receita cadastrada este mês.</div>
+                        <div style="margin-top:8px;">Nenhuma receita cadastrada este mÃªs.</div>
                     </div>`;
                 } else {
                     receitas.slice(0, 3).forEach(receita => {
-                        // Debug específico para o Salário
-                        if (receita.descricao === 'Salário') {
+                        // Debug especÃ­fico para o SalÃ¡rio
+                        if (receita.descricao === 'SalÃ¡rio') {
                         }
                         
                         let valor = parseValueToNumber(receita.valor || '0');
                         
-                        // CORREÇÃO TEMPORÁRIA: Se é "Salário" e valor é 500, corrigir para 5000
-                        if (receita.descricao === 'Salário' && valor === 500) {
-                            console.log('� CORREÇÃO: Salário de 500 corrigido para 5000');
+                        // CORREÃ‡ÃƒO TEMPORÃRIA: Se Ã© "SalÃ¡rio" e valor Ã© 500, corrigir para 5000
+                        if (receita.descricao === 'SalÃ¡rio' && valor === 500) {
+                            console.log('ï¿½ CORREÃ‡ÃƒO: SalÃ¡rio de 500 corrigido para 5000');
                             valor = 5000;
                         }
                         
-                        if (receita.descricao === 'Salário') {
-                            console.log('�🚨 DEBUG SALÁRIO - valor final:', valor);
+                        if (receita.descricao === 'SalÃ¡rio') {
+                            console.log('ï¿½ðŸš¨ DEBUG SALÃRIO - valor final:', valor);
                         }
                         
                         const iconeReceita = receita.iconeCategoria || obterIconePorCategoria(receita.categoria, 'receita');
@@ -1014,7 +1014,7 @@ function carregarReceitasHome(uid) {
         });
 }
 
-// Renderiza despesas na Home (máx 3, visual consistente e valores corretos)
+// Renderiza despesas na Home (mÃ¡x 3, visual consistente e valores corretos)
 function carregarDespesasHome(uid) {
     firebase.firestore().collection('despesas')
         .where('userId', '==', uid)
@@ -1025,14 +1025,14 @@ function carregarDespesasHome(uid) {
             snapshot.forEach(doc => {
                 const despesa = doc.data();
                 
-                // Filtrar apenas despesas do mês/ano selecionado
+                // Filtrar apenas despesas do mÃªs/ano selecionado
                 const isDoMesSelecionado = isDataNoMesSelecionado(despesa.data, mesSelecionado, anoSelecionado);
                 const pago = despesa.pago !== false;
                 
                 if (isDoMesSelecionado) {
                     despesas.push(despesa);
                     if (pago) {
-                        const valor = parseValueToNumber(despesa.valor || '0'); // Usar função correta
+                        const valor = parseValueToNumber(despesa.valor || '0'); // Usar funÃ§Ã£o correta
                         totalDespesas += valor;
                     }
                 }
@@ -1047,11 +1047,11 @@ function carregarDespesasHome(uid) {
                 if (despesas.length === 0) {
                     listaHome.innerHTML = `<div style="text-align:center;color:#888;padding:24px 0;">
                         <span class="material-icons-round" style="font-size:2.2rem;opacity:0.3;">shopping_cart</span>
-                        <div style="margin-top:8px;">Nenhuma despesa cadastrada este mês.</div>
+                        <div style="margin-top:8px;">Nenhuma despesa cadastrada este mÃªs.</div>
                     </div>`;
                 } else {
                     despesas.slice(0, 3).forEach(despesa => {
-                        const valor = parseValueToNumber(despesa.valor || '0'); // Usar função correta
+                        const valor = parseValueToNumber(despesa.valor || '0'); // Usar funÃ§Ã£o correta
                         const iconeDespesa = despesa.iconeCategoria || obterIconePorCategoria(despesa.categoria, 'despesa');
                         const div = document.createElement('div');
                         div.className = 'item-mini-ux despesa';
@@ -1072,28 +1072,28 @@ function carregarDespesasHome(uid) {
         });
 }
 
-// Variáveis globais para gráficos Chart.js
+// VariÃ¡veis globais para grÃ¡ficos Chart.js
 let graficoReceitasCategoria = null;
 let graficoDespesasCategoria = null;
 
-// Ícones globais para gráficos de categoria (evita ReferenceError)
+// Ãcones globais para grÃ¡ficos de categoria (evita ReferenceError)
 const icones = [
     'shopping_cart', 'home', 'check_circle', 'star', 'payments', 'attach_money', 'local_offer', 'category'
 ];
 
-// Gráfico de receitas por categoria com lista lateral de categorias (estilo gráfico 2)
+// GrÃ¡fico de receitas por categoria com lista lateral de categorias (estilo grÃ¡fico 2)
 function carregarGraficoReceitasPorCategoria(uid, receitas) {
-    console.log('[Home] Montando gráfico de receitas por categoria...');
+    console.log('[Home] Montando grÃ¡fico de receitas por categoria...');
     let categorias = {};
     let total = 0;
-    let categoriaIcones = {}; // Mapeia categoria -> ícone
+    let categoriaIcones = {}; // Mapeia categoria -> Ã­cone
 
     receitas.forEach(receita => {
         if (receita.categoria) {
-            const valor = parseValueToNumber(receita.valor || '0'); // Usar a função correta
+            const valor = parseValueToNumber(receita.valor || '0'); // Usar a funÃ§Ã£o correta
             categorias[receita.categoria] = (categorias[receita.categoria] || 0) + valor;
             total += valor;
-            // Captura o ícone personalizado se existir
+            // Captura o Ã­cone personalizado se existir
             if (receita.iconeCategoria) {
                 categoriaIcones[receita.categoria] = receita.iconeCategoria;
             } else if (receita.icone) {
@@ -1105,7 +1105,7 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
     const labels = Object.keys(categorias);
     const data = Object.values(categorias);
 
-    // DESTROI O GRÁFICO ANTERIOR SE EXISTIR
+    // DESTROI O GRÃFICO ANTERIOR SE EXISTIR
     if (graficoReceitasCategoria) {
         graficoReceitasCategoria.destroy();
         graficoReceitasCategoria = null;
@@ -1150,7 +1150,7 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
 
         document.getElementById('valor-total-receitas').textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-        // Monta lista lateral de categorias com barra de progresso, ícone, valor e %
+        // Monta lista lateral de categorias com barra de progresso, Ã­cone, valor e %
         const listaCategorias = document.getElementById('lista-categorias-receitas');
         if (listaCategorias) {
             listaCategorias.innerHTML = '';
@@ -1158,8 +1158,8 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
                 const valor = dataOrdenada[idx];
                 const percent = total > 0 ? Math.round((valor / total) * 100) : 0;
                 const cor = tonsVerde[idx % tonsVerde.length];
-                // Ordem de prioridade para ícone da categoria:
-                // 1. Ícone salvo em alguma receita dessa categoria (categoriaIcones)
+                // Ordem de prioridade para Ã­cone da categoria:
+                // 1. Ãcone salvo em alguma receita dessa categoria (categoriaIcones)
                 // 2. Mapeamento categoriaParaIcone
                 // 3. Fallback por tipo (obterIconePorCategoria)
                 let icone = categoriaIcones[cat] 
@@ -1186,19 +1186,19 @@ function carregarGraficoReceitasPorCategoria(uid, receitas) {
 
         if (containerReceitas) containerReceitas.style.display = 'flex';
         if (vazioReceitas) vazioReceitas.style.display = 'none';
-        console.log('[Home] Gráfico de receitas por categoria criado.');
+        console.log('[Home] GrÃ¡fico de receitas por categoria criado.');
     } else {
         if (containerReceitas) containerReceitas.style.display = 'none';
         if (vazioReceitas) vazioReceitas.style.display = 'flex';
         const listaCategorias = document.getElementById('lista-categorias-receitas');
         if (listaCategorias) listaCategorias.innerHTML = '';
-        console.log('[Home] Nenhuma receita para gráfico de categoria.');
+        console.log('[Home] Nenhuma receita para grÃ¡fico de categoria.');
     }
 }
 
-// Gráfico de despesas por categoria com lista lateral de categorias (estilo gráfico 2)
+// GrÃ¡fico de despesas por categoria com lista lateral de categorias (estilo grÃ¡fico 2)
 function carregarGraficoDespesasPorCategoria(uid, despesas) {
-    console.log('[Home] Montando gráfico de despesas por categoria...');
+    console.log('[Home] Montando grÃ¡fico de despesas por categoria...');
     let categorias = {};
     let total = 0;
     let categoriaIcones = {}; // map categoria -> icone personalizado
@@ -1212,7 +1212,7 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
             } else if (despesa.icone) {
                 categoriaIcones[despesa.categoria] = despesa.icone;
             } else {
-                // fallback usando função já existente
+                // fallback usando funÃ§Ã£o jÃ¡ existente
                 categoriaIcones[despesa.categoria] = obterIconePorCategoria(despesa.categoria, 'despesa');
             }
         }
@@ -1299,26 +1299,26 @@ function carregarGraficoDespesasPorCategoria(uid, despesas) {
 
         if (containerDespesas) containerDespesas.style.display = 'flex';
         if (vazioDespesas) vazioDespesas.style.display = 'none';
-        console.log('[Home] Gráfico de despesas por categoria criado.');
+        console.log('[Home] GrÃ¡fico de despesas por categoria criado.');
     } else {
         if (containerDespesas) containerDespesas.style.display = 'none';
         if (vazioDespesas) vazioDespesas.style.display = 'flex';
         const listaCategorias = document.getElementById('lista-categorias-despesas');
         if (listaCategorias) listaCategorias.innerHTML = '';
-        console.log('[Home] Nenhuma despesa para gráfico de categoria.');
+        console.log('[Home] Nenhuma despesa para grÃ¡fico de categoria.');
     }
 }
 
-// ===== NOVO CÁLCULO DE SALDO POR CONTA (AGREGAÇÃO ÚNICA) =====
-// Cache simples para nomes de conta em notificações e montagens rápidas
+// ===== NOVO CÃLCULO DE SALDO POR CONTA (AGREGAÃ‡ÃƒO ÃšNICA) =====
+// Cache simples para nomes de conta em notificaÃ§Ãµes e montagens rÃ¡pidas
 const cacheNomesContas = {};
 
-// (Deprecated) calcularSaldoConta antigo removido em favor de agregação única em carregarContasHome
-// Nova estratégia: buscamos todas as contas, receitas e despesas uma única vez e agregamos por ID da carteira
+// (Deprecated) calcularSaldoConta antigo removido em favor de agregaÃ§Ã£o Ãºnica em carregarContasHome
+// Nova estratÃ©gia: buscamos todas as contas, receitas e despesas uma Ãºnica vez e agregamos por ID da carteira
 
 function agregarTransacoesPorConta({contas, receitas, despesas, filtrarMes, mesSelecionado, anoSelecionado}) {
     const mapa = {};
-    // Pré-popular mapa com saldo inicial
+    // PrÃ©-popular mapa com saldo inicial
     contas.forEach(c => {
         mapa[c.id] = {
             conta: c,
@@ -1330,12 +1330,12 @@ function agregarTransacoesPorConta({contas, receitas, despesas, filtrarMes, mesS
     });
 
     const mesmaCompetencia = (dataStr) => {
-        if (!filtrarMes) return true; // Se não precisamos filtrar, sempre inclui
+        if (!filtrarMes) return true; // Se nÃ£o precisamos filtrar, sempre inclui
         return isDataNoMesSelecionado(dataStr, mesSelecionado, anoSelecionado);
     };
 
     receitas.forEach(r => {
-        // Campo de vínculo é 'carteira' contendo o ID da conta
+        // Campo de vÃ­nculo Ã© 'carteira' contendo o ID da conta
         if (!r.carteira || !mapa[r.carteira]) {
             return;
         }
@@ -1358,9 +1358,9 @@ function agregarTransacoesPorConta({contas, receitas, despesas, filtrarMes, mesS
     return mapa;
 }
 
-// Renderiza contas e esconde/mostra cartão vazio
+// Renderiza contas e esconde/mostra cartÃ£o vazio
 async function carregarContasHome(uid) {
-    console.log('[Home] (Nova) agregação de contas para usuário:', uid);
+    console.log('[Home] (Nova) agregaÃ§Ã£o de contas para usuÃ¡rio:', uid);
     console.log('[Home] Firestore instance:', firebase.firestore());
     try {
         const dbRef = firebase.firestore();
@@ -1406,8 +1406,8 @@ async function carregarContasHome(uid) {
             anoSelecionado
         });
 
-        console.log('[Home] Resultado da agregação:', mapa);
-        console.log('[Home] Mês selecionado:', mesSelecionado, 'Ano:', anoSelecionado);
+        console.log('[Home] Resultado da agregaÃ§Ã£o:', mapa);
+        console.log('[Home] MÃªs selecionado:', mesSelecionado, 'Ano:', anoSelecionado);
 
         const container = document.getElementById('container-contas-home');
         const vazio = document.getElementById('cartao-estado-vazio-contas');
@@ -1444,7 +1444,7 @@ async function carregarContasHome(uid) {
                             </div>
                             <div class="conta-ux-info">
                                 <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
-                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancÃ¡ria'}</div>
                             </div>
                         </div>
                         <div class="conta-ux-direita">
@@ -1462,7 +1462,7 @@ async function carregarContasHome(uid) {
                             </div>
                             <div class="conta-ux-info">
                                 <div class="conta-ux-nome" title="${conta.nome || conta.descricao || 'Conta'}">${conta.nome || conta.descricao || 'Conta'}</div>
-                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancária'}</div>
+                                <div class="conta-ux-tipo">${conta.tipo || 'Conta bancÃ¡ria'}</div>
                             </div>
                         </div>
                         <div class="conta-ux-direita">
@@ -1493,13 +1493,13 @@ async function carregarContasHome(uid) {
 
         carregarCartoesCreditoHome(uid);
     } catch (err) {
-        console.error('[Home] Erro na agregação de contas:', err);
+        console.error('[Home] Erro na agregaÃ§Ã£o de contas:', err);
     }
 }
-// Exemplo de carregamento de cartões de crédito
+// Exemplo de carregamento de cartÃµes de crÃ©dito
 function carregarCartoesCreditoHome(uid) {
-    console.log('[Home] Buscando cartões de crédito para o usuário:', uid);
-    // Tenta buscar, mas trata erro de permissão de forma amigável
+    console.log('[Home] Buscando cartÃµes de crÃ©dito para o usuÃ¡rio:', uid);
+    // Tenta buscar, mas trata erro de permissÃ£o de forma amigÃ¡vel
     firebase.firestore().collection('cartoes')
         .where('userId', '==', uid)
         .get()
@@ -1508,22 +1508,22 @@ function carregarCartoesCreditoHome(uid) {
             snapshot.forEach(doc => {
                 cartoes.push({ ...doc.data(), id: doc.id });
             });
-            console.log('[Home] Total de cartões de crédito carregados:', cartoes.length);
-            // Aqui você pode renderizar os cartões na tela, se desejar
+            console.log('[Home] Total de cartÃµes de crÃ©dito carregados:', cartoes.length);
+            // Aqui vocÃª pode renderizar os cartÃµes na tela, se desejar
         })
         .catch(error => {
             if (
                 error.code === 'permission-denied' ||
                 (error.message && error.message.includes('Missing or insufficient permissions'))
             ) {
-                console.warn('[Home] Permissão insuficiente para buscar cartões de crédito. Coleção "cartoes" não está acessível para este usuário.');
+                console.warn('[Home] PermissÃ£o insuficiente para buscar cartÃµes de crÃ©dito. ColeÃ§Ã£o "cartoes" nÃ£o estÃ¡ acessÃ­vel para este usuÃ¡rio.');
             } else {
-                console.error('[Home] Erro ao buscar cartões de crédito:', error);
+                console.error('[Home] Erro ao buscar cartÃµes de crÃ©dito:', error);
             }
         });
 }
 
-// Eventos para popup de exclusão de conta (mantém apenas este listener global)
+// Eventos para popup de exclusÃ£o de conta (mantÃ©m apenas este listener global)
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('botao-excluir-conta') || event.target.closest('.botao-excluir-conta')) {
         const btn = event.target.closest('.botao-excluir-conta');
@@ -1567,7 +1567,7 @@ function atualizarValorComAnimacao(el, novoValor) {
     setTimeout(() => { el.style.background = 'transparent'; }, 600);
 }
 
-// UX: Animação ao adicionar/remover contas/despesas/receitas
+// UX: AnimaÃ§Ã£o ao adicionar/remover contas/despesas/receitas
 function animarEntradaElemento(el) {
     if (!el) return;
     el.style.opacity = 0;
@@ -1579,7 +1579,7 @@ function animarEntradaElemento(el) {
     }, 10);
 }
 
-// UX: Mensagem amigável se não houver dados
+// UX: Mensagem amigÃ¡vel se nÃ£o houver dados
 function mostrarMensagemVazia(container, mensagem, icone = 'info') {
     if (!container) return;
     container.innerHTML = `
@@ -1590,7 +1590,7 @@ function mostrarMensagemVazia(container, mensagem, icone = 'info') {
     `;
 }
 
-// Função para obter o mês atual no formato MM/YYYY
+// FunÃ§Ã£o para obter o mÃªs atual no formato MM/YYYY
 function getMesAnoAtual() {
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -1598,7 +1598,7 @@ function getMesAnoAtual() {
     return `${mes}/${ano}`;
 }
 
-// Função para verificar se uma data está no mês atual
+// FunÃ§Ã£o para verificar se uma data estÃ¡ no mÃªs atual
 function isDataNoMesAtual(dataStr) {
     if (!dataStr) return false;
     // Suporta formatos dd/mm/yyyy ou yyyy-mm-dd
@@ -1615,7 +1615,7 @@ function isDataNoMesAtual(dataStr) {
     return mesAno === getMesAnoAtual();
 }
 
-// Função para calcular o saldo total do mês atual
+// FunÃ§Ã£o para calcular o saldo total do mÃªs atual
 async function calcularSaldoTotalMesAtual(uid) {
     try {
         let saldoInicialContas = 0;
@@ -1624,29 +1624,29 @@ async function calcularSaldoTotalMesAtual(uid) {
         let totalTransferenciasEntrada = 0;
         let totalTransferenciasSaida = 0;
 
-        console.log('[Home] Iniciando cálculo do saldo atual...');
+        console.log('[Home] Iniciando cÃ¡lculo do saldo atual...');
 
-        // 1. Buscar contas ativas que devem ser incluídas na soma
+        // 1. Buscar contas ativas que devem ser incluÃ­das na soma
         const contasSnapshot = await firebase.firestore().collection('contas')
             .where('userId', '==', uid)
             .get();
 
         contasSnapshot.forEach(doc => {
             const conta = doc.data();
-            // Verificar se a conta está ativa e deve ser incluída na soma
-            const contaAtiva = conta.ativa !== false; // Por padrão, ativa se não especificado
-            const incluirNaSoma = conta.incluirNaHome !== false; // Mudança para usar incluirNaHome
+            // Verificar se a conta estÃ¡ ativa e deve ser incluÃ­da na soma
+            const contaAtiva = conta.ativa !== false; // Por padrÃ£o, ativa se nÃ£o especificado
+            const incluirNaSoma = conta.incluirNaHome !== false; // MudanÃ§a para usar incluirNaHome
             
             if (contaAtiva && incluirNaSoma) {
                 const saldoInicial = parseFloat(conta.saldoInicial || conta.saldo || 0);
                 saldoInicialContas += saldoInicial;
                 console.log(`[Home] Conta ${conta.nome}: Saldo Inicial = ${saldoInicial}, Incluir na soma: ${incluirNaSoma}`);
             } else {
-                console.log(`[Home] Conta ${conta.nome}: Excluída da soma (ativa: ${contaAtiva}, incluir: ${incluirNaSoma})`);
+                console.log(`[Home] Conta ${conta.nome}: ExcluÃ­da da soma (ativa: ${contaAtiva}, incluir: ${incluirNaSoma})`);
             }
         });
 
-        // 2. Buscar receitas efetivadas do mês/ano selecionado
+        // 2. Buscar receitas efetivadas do mÃªs/ano selecionado
         const receitasSnapshot = await firebase.firestore().collection('receitas')
             .where('userId', '==', uid)
             .get();
@@ -1656,7 +1656,7 @@ async function calcularSaldoTotalMesAtual(uid) {
             // Consideramos efetivada se recebido === true ou concluida === true
             const efetivada = receita.recebido === true || receita.concluida === true;
             
-            // Verificar se a receita é do mês/ano selecionado
+            // Verificar se a receita Ã© do mÃªs/ano selecionado
             const dataReceita = receita.data;
             const isDoMesSelecionado = isDataNoMesSelecionado(dataReceita, mesSelecionado, anoSelecionado);
             
@@ -1666,7 +1666,7 @@ async function calcularSaldoTotalMesAtual(uid) {
             }
         });
 
-        // 3. Buscar despesas efetivadas do mês/ano selecionado
+        // 3. Buscar despesas efetivadas do mÃªs/ano selecionado
         const despesasSnapshot = await firebase.firestore().collection('despesas')
             .where('userId', '==', uid)
             .get();
@@ -1676,7 +1676,7 @@ async function calcularSaldoTotalMesAtual(uid) {
             // Consideramos efetivada se pago === true ou concluida === true
             const efetivada = despesa.pago === true || despesa.concluida === true;
             
-            // Verificar se a despesa é do mês/ano selecionado
+            // Verificar se a despesa Ã© do mÃªs/ano selecionado
             const dataDespesa = despesa.data;
             const isDoMesSelecionado = isDataNoMesSelecionado(dataDespesa, mesSelecionado, anoSelecionado);
             
@@ -1686,7 +1686,7 @@ async function calcularSaldoTotalMesAtual(uid) {
             }
         });
 
-        // 4. Buscar transferências do mês/ano selecionado
+        // 4. Buscar transferÃªncias do mÃªs/ano selecionado
         const transferenciasSnapshot = await firebase.firestore().collection('transferencias')
             .where('userId', '==', uid)
             .get();
@@ -1694,7 +1694,7 @@ async function calcularSaldoTotalMesAtual(uid) {
         transferenciasSnapshot.forEach(doc => {
             const transferencia = doc.data();
             
-            // Verificar se a transferência é do mês/ano selecionado
+            // Verificar se a transferÃªncia Ã© do mÃªs/ano selecionado
             const dataTransferencia = transferencia.data;
             const isDoMesSelecionado = isDataNoMesSelecionado(dataTransferencia, mesSelecionado, anoSelecionado);
             
@@ -1703,15 +1703,15 @@ async function calcularSaldoTotalMesAtual(uid) {
                 
                 if (transferencia.tipo === 'entrada') {
                     totalTransferenciasEntrada += valor;
-                    console.log(`[Home] Transferência entrada do mês ${mesSelecionado+1}/${anoSelecionado}: R$ ${valor.toFixed(2)}`);
+                    console.log(`[Home] TransferÃªncia entrada do mÃªs ${mesSelecionado+1}/${anoSelecionado}: R$ ${valor.toFixed(2)}`);
                 } else if (transferencia.tipo === 'saida') {
                     totalTransferenciasSaida += valor;
-                    console.log(`[Home] Transferência saída do mês ${mesSelecionado+1}/${anoSelecionado}: R$ ${valor.toFixed(2)}`);
+                    console.log(`[Home] TransferÃªncia saÃ­da do mÃªs ${mesSelecionado+1}/${anoSelecionado}: R$ ${valor.toFixed(2)}`);
                 }
             }
         });
 
-        // 5. Aplicar a fórmula: Saldo atual = Saldo Inicial + (Receitas + Transf. Entrada) - (Despesas + Transf. Saída)
+        // 5. Aplicar a fÃ³rmula: Saldo atual = Saldo Inicial + (Receitas + Transf. Entrada) - (Despesas + Transf. SaÃ­da)
         const saldoAtual = saldoInicialContas + totalReceitasEfetivadas + totalTransferenciasEntrada - totalDespesasEfetivadas - totalTransferenciasSaida;
 
         // 6. Atualizar a interface
@@ -1724,19 +1724,19 @@ async function calcularSaldoTotalMesAtual(uid) {
             saldoEl.textContent = saldoFormatado;
             console.log('[Home] Saldo atualizado na interface');
         } else {
-            console.error('[Home] Elemento .valor-saldo não encontrado no DOM');
+            console.error('[Home] Elemento .valor-saldo nÃ£o encontrado no DOM');
         }
 
-        console.log(`[Home] === CÁLCULO DO SALDO PARA ${mesSelecionado+1}/${anoSelecionado} ===`);
+        console.log(`[Home] === CÃLCULO DO SALDO PARA ${mesSelecionado+1}/${anoSelecionado} ===`);
         console.log(`[Home] Saldo Inicial das Contas: ${saldoInicialContas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
         console.log(`[Home] Receitas Efetivadas: ${totalReceitasEfetivadas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
-        console.log(`[Home] Transferências Entrada: ${totalTransferenciasEntrada.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+        console.log(`[Home] TransferÃªncias Entrada: ${totalTransferenciasEntrada.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
         console.log(`[Home] Despesas Efetivadas: ${totalDespesasEfetivadas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
-        console.log(`[Home] Transferências Saída: ${totalTransferenciasSaida.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+        console.log(`[Home] TransferÃªncias SaÃ­da: ${totalTransferenciasSaida.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
         console.log(`[Home] SALDO ATUAL: ${saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
         console.log(`[Home] ============================================`);
 
-        // Atualizar indicador vs mês anterior
+        // Atualizar indicador vs mÃªs anterior
         atualizarIndicadorSaldo(uid, saldoAtual);
 
     } catch (error) {
@@ -1750,14 +1750,14 @@ async function calcularSaldoTotalMesAtual(uid) {
     }
 }
 
-// Função auxiliar para converter valores para número (reutilizar da Lista de Receitas)
+// FunÃ§Ã£o auxiliar para converter valores para nÃºmero (reutilizar da Lista de Receitas)
 function parseValueToNumber(value) {
     if (typeof value === 'number') {
         return value;
     }
     
     if (typeof value === 'string') {
-        // Remove símbolos de moeda e espaços
+        // Remove sÃ­mbolos de moeda e espaÃ§os
         let cleanValue = value.replace(/[R$\s]/g, '');
         
         // Formato brasileiro completo: 5.000,00 ou 1.234.567,89
@@ -1768,30 +1768,30 @@ function parseValueToNumber(value) {
         else if (/^\d{1,3}(\.\d{3})+$/.test(cleanValue)) {
             cleanValue = cleanValue.replace(/\./g, '');
         }
-        // Formato simples com vírgula: 5000,00
+        // Formato simples com vÃ­rgula: 5000,00
         else if (/^\d+,\d{1,2}$/.test(cleanValue)) {
             cleanValue = cleanValue.replace(',', '.');
         }
         // Formato americano: 5000.00
         else if (/^\d+\.\d{1,2}$/.test(cleanValue)) {
-            // Já está no formato correto
+            // JÃ¡ estÃ¡ no formato correto
         }
-        // Apenas número: 5000
+        // Apenas nÃºmero: 5000
         else if (/^\d+$/.test(cleanValue)) {
-            // Já está no formato correto
+            // JÃ¡ estÃ¡ no formato correto
         }
-        // Fallback - se tem ponto e vírgula, formato brasileiro
+        // Fallback - se tem ponto e vÃ­rgula, formato brasileiro
         else if (cleanValue.includes('.') && cleanValue.includes(',')) {
             cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
         }
-        // Só vírgula = decimal
+        // SÃ³ vÃ­rgula = decimal
         else if (cleanValue.includes(',') && !cleanValue.includes('.')) {
             cleanValue = cleanValue.replace(',', '.');
         }
-        // Só ponto - verificar se é decimal ou milhares
+        // SÃ³ ponto - verificar se Ã© decimal ou milhares
         else if (cleanValue.includes('.') && !cleanValue.includes(',')) {
             const parts = cleanValue.split('.');
-            // Se última parte tem mais de 2 dígitos = separador de milhares
+            // Se Ãºltima parte tem mais de 2 dÃ­gitos = separador de milhares
             if (parts.length > 1 && parts[parts.length - 1].length > 2) {
                 cleanValue = cleanValue.replace(/\./g, '');
             }
@@ -1804,19 +1804,19 @@ function parseValueToNumber(value) {
     return 0;
 }
 
-// Função para verificar se uma data está no mês/ano selecionado
+// FunÃ§Ã£o para verificar se uma data estÃ¡ no mÃªs/ano selecionado
 function isDataNoMesSelecionado(dataStr, mes, ano) {
     if (!dataStr) return false;
     
     let dataObj;
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataStr)) {
         const [dia, mesStr, anoStr] = dataStr.split('/');
-        // Converter mês para base 0 (janeiro = 0, dezembro = 11)
+        // Converter mÃªs para base 0 (janeiro = 0, dezembro = 11)
         const mesNumerico = parseInt(mesStr, 10) - 1;
         dataObj = new Date(parseInt(anoStr, 10), mesNumerico, parseInt(dia, 10));
     } else if (/^\d{4}-\d{2}-\d{2}$/.test(dataStr)) {
         const [anoStr, mesStr, dia] = dataStr.split('-');
-        // Converter mês para base 0
+        // Converter mÃªs para base 0
         const mesNumerico = parseInt(mesStr, 10) - 1;
         dataObj = new Date(parseInt(anoStr, 10), mesNumerico, parseInt(dia, 10));
     } else {
@@ -1826,7 +1826,7 @@ function isDataNoMesSelecionado(dataStr, mes, ano) {
     return dataObj.getMonth() === mes && dataObj.getFullYear() === ano;
 }
 
-// UX: Toast para feedback rápido
+// UX: Toast para feedback rÃ¡pido
 function mostrarToast(mensagem, cor = "#21C25E") {
     let toast = document.getElementById('toast-ux');
     if (!toast) {
@@ -1840,7 +1840,7 @@ function mostrarToast(mensagem, cor = "#21C25E") {
     setTimeout(() => { toast.style.opacity = 0; }, 2200);
 }
 
-// Função para calcular e exibir o valor total das receitas do mês selecionado
+// FunÃ§Ã£o para calcular e exibir o valor total das receitas do mÃªs selecionado
 function calcularValorTotalReceitas(uid) {
     firebase.firestore().collection('receitas')
         .where('userId', '==', uid)
@@ -1849,7 +1849,7 @@ function calcularValorTotalReceitas(uid) {
             let total = 0;
             snapshot.forEach(doc => {
                 const receita = doc.data();
-                // Verificar se está efetivada e é do mês selecionado
+                // Verificar se estÃ¡ efetivada e Ã© do mÃªs selecionado
                 const efetivada = receita.recebido !== false;
                 const isDoMesSelecionado = isDataNoMesSelecionado(receita.data, mesSelecionado, anoSelecionado);
                 
@@ -1872,7 +1872,7 @@ function calcularValorTotalReceitas(uid) {
         });
 }
 
-// Função para calcular e exibir o valor total das despesas do mês selecionado
+// FunÃ§Ã£o para calcular e exibir o valor total das despesas do mÃªs selecionado
 function calcularValorTotalDespesas(uid) {
     firebase.firestore().collection('despesas')
         .where('userId', '==', uid)
@@ -1881,7 +1881,7 @@ function calcularValorTotalDespesas(uid) {
             let total = 0;
             snapshot.forEach(doc => {
                 const despesa = doc.data();
-                // Verificar se está efetivada e é do mês selecionado
+                // Verificar se estÃ¡ efetivada e Ã© do mÃªs selecionado
                 const efetivada = despesa.pago !== false;
                 const isDoMesSelecionado = isDataNoMesSelecionado(despesa.data, mesSelecionado, anoSelecionado);
                 
@@ -1904,7 +1904,7 @@ function calcularValorTotalDespesas(uid) {
         });
 }
 
-// Função para atualizar indicador de saldo vs mês anterior
+// FunÃ§Ã£o para atualizar indicador de saldo vs mÃªs anterior
 async function atualizarIndicadorSaldo(uid, saldoAtual) {
     try {
         const hoje = new Date();
@@ -1916,7 +1916,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
             anoAnterior = anoSelecionado - 1;
         }
 
-        // Calcular saldo do mês anterior
+        // Calcular saldo do mÃªs anterior
         let saldoInicialContas = 0;
         let totalReceitasEfetivadas = 0;
         let totalDespesasEfetivadas = 0;
@@ -1930,7 +1930,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
 
         contasSnapshot.forEach(doc => {
             const conta = doc.data();
-            // Filtrar contas ativas e que devem ser incluídas na soma
+            // Filtrar contas ativas e que devem ser incluÃ­das na soma
             const contaAtiva = conta.ativa !== false;
             const incluirNaHome = conta.incluirNaHome !== false;
             
@@ -1940,7 +1940,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
             }
         });
 
-        // Buscar receitas do mês anterior
+        // Buscar receitas do mÃªs anterior
         const receitasSnapshot = await db.collection('receitas')
             .where('userId', '==', uid)
             .get();
@@ -1953,7 +1953,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
             }
         });
 
-        // Buscar despesas do mês anterior
+        // Buscar despesas do mÃªs anterior
         const despesasSnapshot = await db.collection('despesas')
             .where('userId', '==', uid)
             .get();
@@ -1966,7 +1966,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
             }
         });
 
-        // Buscar transferências do mês anterior
+        // Buscar transferÃªncias do mÃªs anterior
         const transferenciasSnapshot = await db.collection('transferencias')
             .where('userId', '==', uid)
             .get();
@@ -1981,7 +1981,7 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
 
         const saldoAnterior = saldoInicialContas + totalReceitasEfetivadas + totalTransferenciasEntrada - totalDespesasEfetivadas - totalTransferenciasSaida;
         
-        // Calcular variação percentual
+        // Calcular variaÃ§Ã£o percentual
         let variacao = 0;
         let icone = 'trending_flat';
         
@@ -2007,23 +2007,23 @@ async function atualizarIndicadorSaldo(uid, saldoAtual) {
         
         if (indicadorText) {
             const variacaoAbs = Math.abs(variacao);
-            indicadorText.textContent = `${variacaoAbs.toFixed(1)}% vs mês anterior`;
+            indicadorText.textContent = `${variacaoAbs.toFixed(1)}% vs mÃªs anterior`;
         }
 
-        console.log(`[Home] Indicador atualizado: ${variacao.toFixed(1)}% vs mês anterior`);
+        console.log(`[Home] Indicador atualizado: ${variacao.toFixed(1)}% vs mÃªs anterior`);
 
     } catch (error) {
         console.error('[Home] Erro ao calcular indicador de saldo:', error);
     }
 }
 
-// ATENÇÃO: Para resolver os erros de permissão do Firestore, você precisa ajustar as regras de segurança do Firestore no console do Firebase.
+// ATENÃ‡ÃƒO: Para resolver os erros de permissÃ£o do Firestore, vocÃª precisa ajustar as regras de seguranÃ§a do Firestore no console do Firebase.
 // Siga o passo a passo abaixo:
 
 /*
 1. Acesse o console do Firebase: https://console.firebase.google.com/
 2. No menu lateral, clique em "Firestore Database" e depois na aba "Regras".
-3. Para desenvolvimento, use temporariamente as regras abaixo para permitir acesso apenas a usuários autenticados:
+3. Para desenvolvimento, use temporariamente as regras abaixo para permitir acesso apenas a usuÃ¡rios autenticados:
 
 rules_version = '2';
 service cloud.firestore {
@@ -2036,7 +2036,7 @@ service cloud.firestore {
 
 4. Clique em "Publicar" para salvar as regras.
 
-5. Para produção, utilize regras mais restritivas, por exemplo:
+5. Para produÃ§Ã£o, utilize regras mais restritivas, por exemplo:
 
 rules_version = '2';
 service cloud.firestore {
@@ -2061,16 +2061,16 @@ service cloud.firestore {
 
 6. Clique em "Publicar" novamente.
 
-IMPORTANTE: Nunca deixe as regras abertas (allow read, write: if true) em produção!
+IMPORTANTE: Nunca deixe as regras abertas (allow read, write: if true) em produÃ§Ã£o!
 */
 
-// [FUNÇÃO REMOVIDA - DUPLICADA]
+// [FUNÃ‡ÃƒO REMOVIDA - DUPLICADA]
 
-// [CÓDIGO DO MUTATIONOBSERVER REMOVIDO - USANDO EVENTO DIRETO]
+// [CÃ“DIGO DO MUTATIONOBSERVER REMOVIDO - USANDO EVENTO DIRETO]
 
-// ===== SISTEMA DE NOTIFICAÇÕES =====
+// ===== SISTEMA DE NOTIFICAÃ‡Ã•ES =====
 
-// Configuração das notificações
+// ConfiguraÃ§Ã£o das notificaÃ§Ãµes
 const notificacoesConfig = {
     maxNotificacoes: 50,
     tiposIcones: {
@@ -2085,7 +2085,7 @@ const notificacoesConfig = {
     }
 };
 
-// Gerenciador de notificações
+// Gerenciador de notificaÃ§Ãµes
 class NotificacoesManager {
     constructor() {
         this.notificacoes = [];
@@ -2109,7 +2109,7 @@ class NotificacoesManager {
         // Event listeners
         this.setupEventListeners();
         
-        // Carregar notificações
+        // Carregar notificaÃ§Ãµes
         this.carregarNotificacoes();
     }
 
@@ -2136,16 +2136,16 @@ class NotificacoesManager {
         const btnLimparTodas = document.querySelector('.btn-marcar-todas-lidas');
         if (btnLimparTodas) {
             btnLimparTodas.addEventListener('click', () => {
-                console.log('Botão Limpar Todas clicado!');
+                console.log('BotÃ£o Limpar Todas clicado!');
                 this.marcarTodasComoLidas();
             });
         }
 
-        // Event delegation como fallback para o botão limpar todas
+        // Event delegation como fallback para o botÃ£o limpar todas
         document.addEventListener('click', (e) => {
             if (e.target && (e.target.classList.contains('btn-marcar-todas-lidas') || 
                 e.target.textContent.includes('Limpar Todas'))) {
-                console.log('Botão Limpar Todas clicado via event delegation!');
+                console.log('BotÃ£o Limpar Todas clicado via event delegation!');
                 e.preventDefault();
                 e.stopPropagation();
                 this.marcarTodasComoLidas();
@@ -2162,7 +2162,7 @@ class NotificacoesManager {
 
     async carregarNotificacoes() {
         if (!usuario || !db) {
-            // Se não há usuário ou Firebase, carregar apenas do localStorage
+            // Se nÃ£o hÃ¡ usuÃ¡rio ou Firebase, carregar apenas do localStorage
             this.carregarNotificacoesLocal();
             return;
         }
@@ -2170,11 +2170,11 @@ class NotificacoesManager {
         this.mostrarLoading();
 
         try {
-            // Carregar apenas notificações individuais pendentes
-            console.log('📱 Inicializando sistema de notificações individuais');
+            // Carregar apenas notificaÃ§Ãµes individuais pendentes
+            console.log('ðŸ“± Inicializando sistema de notificaÃ§Ãµes individuais');
             
 
-            // Fallback: Carregar notificações do Firebase (método antigo)
+            // Fallback: Carregar notificaÃ§Ãµes do Firebase (mÃ©todo antigo)
             const snapshot = await db.collection('notificacoes')
                 .where('userId', '==', usuario.uid)
                 .limit(notificacoesConfig.maxNotificacoes)
@@ -2189,8 +2189,8 @@ class NotificacoesManager {
                 this.naoLidas++;
             });
 
-            // Carregar também notificações do localStorage
-            this.carregarNotificacoesLocal(false); // false = não limpar as notificações já carregadas
+            // Carregar tambÃ©m notificaÃ§Ãµes do localStorage
+            this.carregarNotificacoesLocal(false); // false = nÃ£o limpar as notificaÃ§Ãµes jÃ¡ carregadas
 
             // Ordenar no cliente por dataHora (mais recente primeiro)
             this.notificacoes.sort((a, b) => {
@@ -2203,13 +2203,13 @@ class NotificacoesManager {
             this.atualizarBadge();
 
         } catch (error) {
-            console.error('Erro ao carregar notificações:', error);
+            console.error('Erro ao carregar notificaÃ§Ãµes:', error);
             // Em caso de erro, carregar pelo menos do localStorage
             this.carregarNotificacoesLocal();
         }
     }
 
-    // Nova função para carregar notificações do localStorage
+    // Nova funÃ§Ã£o para carregar notificaÃ§Ãµes do localStorage
     carregarNotificacoesLocal(limpar = true) {
         try {
             if (limpar) {
@@ -2235,7 +2235,7 @@ class NotificacoesManager {
             }
 
         } catch (error) {
-            console.error('Erro ao carregar notificações do localStorage:', error);
+            console.error('Erro ao carregar notificaÃ§Ãµes do localStorage:', error);
         }
     }
 
@@ -2246,7 +2246,7 @@ class NotificacoesManager {
         content.innerHTML = `
             <div class="notificacoes-loading">
                 <div class="loading-spinner"></div>
-                <p>Carregando notificações...</p>
+                <p>Carregando notificaÃ§Ãµes...</p>
             </div>
         `;
     }
@@ -2270,11 +2270,11 @@ class NotificacoesManager {
 
         if (this.notificacoes.length === 0) {
             const mensagem = window.notificacoesLimpas ? 
-                'Notificações foram limpas' : 
-                'Nenhuma notificação';
+                'NotificaÃ§Ãµes foram limpas' : 
+                'Nenhuma notificaÃ§Ã£o';
             const submensagem = window.notificacoesLimpas ? 
-                'Todas as notificações foram removidas com sucesso' : 
-                'Suas notificações aparecerão aqui';
+                'Todas as notificaÃ§Ãµes foram removidas com sucesso' : 
+                'Suas notificaÃ§Ãµes aparecerÃ£o aqui';
                 
             content.innerHTML = `
                 <div class="notificacoes-vazio">
@@ -2305,14 +2305,14 @@ class NotificacoesManager {
     }
 
     criarItemNotificacao(notificacao) {
-        // Usar timestamp da notificação individual ou dataHora
+        // Usar timestamp da notificaÃ§Ã£o individual ou dataHora
         const timestamp = notificacao.timestamp || notificacao.dataHora;
         const tempo = this.formatarTempo(timestamp);
         
-        // Usar ícone da notificação individual ou ícone padrão do tipo
+        // Usar Ã­cone da notificaÃ§Ã£o individual ou Ã­cone padrÃ£o do tipo
         const icone = notificacao.icone || notificacoesConfig.tiposIcones[notificacao.tipo] || 'notifications';
         
-        // Usar cor da notificação individual ou cor baseada no tipo
+        // Usar cor da notificaÃ§Ã£o individual ou cor baseada no tipo
         let cor = notificacao.cor;
         if (!cor) {
             // Cores baseadas no tipo
@@ -2323,21 +2323,21 @@ class NotificacoesManager {
             } else if (notificacao.tipo === 'conta' || notificacao.tipo === 'conta_criada') {
                 cor = '#2196F3'; // Azul
             } else {
-                cor = '#21C25E'; // Verde padrão
+                cor = '#21C25E'; // Verde padrÃ£o
             }
         }
         
-        // Descrição pode vir de vários campos
+        // DescriÃ§Ã£o pode vir de vÃ¡rios campos
         const descricao = notificacao.descricao || notificacao.mensagem || '';
         
-        // Formatar valor se disponível
+        // Formatar valor se disponÃ­vel
         let valorHtml = '';
         if (notificacao.valor) {
-            // Se já é string formatada (ex: "R$ 100,00"), usar direto
+            // Se jÃ¡ Ã© string formatada (ex: "R$ 100,00"), usar direto
             if (typeof notificacao.valor === 'string' && notificacao.valor.includes('R$')) {
                 valorHtml = `<div class="notificacao-valor" style="color: ${cor}">${notificacao.valor}</div>`;
             } else {
-                // Se é número, formatar
+                // Se Ã© nÃºmero, formatar
                 const valor = typeof notificacao.valor === 'number' ? notificacao.valor : parseFloat(notificacao.valor) || 0;
                 const valorFormatado = new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
@@ -2347,13 +2347,13 @@ class NotificacoesManager {
             }
         }
         
-        // Informações extras para notificações individuais
+        // InformaÃ§Ãµes extras para notificaÃ§Ãµes individuais
         let infoExtra = '';
         if (notificacao.categoria) {
-            infoExtra += `<span class="notificacao-categoria">📂 ${notificacao.categoria}</span>`;
+            infoExtra += `<span class="notificacao-categoria">ðŸ“‚ ${notificacao.categoria}</span>`;
         }
         if (notificacao.status) {
-            const statusIcon = notificacao.status === 'Recebida' || notificacao.status === 'Paga' || notificacao.status === 'Ativa' ? '✅' : '⏳';
+            const statusIcon = notificacao.status === 'Recebida' || notificacao.status === 'Paga' || notificacao.status === 'Ativa' ? 'âœ…' : 'â³';
             infoExtra += `<span class="notificacao-status">${statusIcon} ${notificacao.status}</span>`;
         }
         
@@ -2397,7 +2397,7 @@ class NotificacoesManager {
         if (!notificacao || notificacao.lida) return;
 
         try {
-            // Em vez de atualizar, vamos deletar a notificação
+            // Em vez de atualizar, vamos deletar a notificaÃ§Ã£o
             await db.collection('notificacoes').doc(id).delete();
             
             // Remover da lista local
@@ -2418,19 +2418,19 @@ class NotificacoesManager {
             }
 
         } catch (error) {
-            console.error('Erro ao remover notificação:', error);
+            console.error('Erro ao remover notificaÃ§Ã£o:', error);
         }
     }
 
     async marcarTodasComoLidas() {
-        console.log('marcarTodasComoLidas chamada, notificações não lidas:', this.naoLidas);
+        console.log('marcarTodasComoLidas chamada, notificaÃ§Ãµes nÃ£o lidas:', this.naoLidas);
         
         if (this.naoLidas === 0) {
-            console.log('Nenhuma notificação não lida para limpar');
+            console.log('Nenhuma notificaÃ§Ã£o nÃ£o lida para limpar');
             return;
         }
 
-        // Mostrar popup de confirmação personalizado
+        // Mostrar popup de confirmaÃ§Ã£o personalizado
         this.mostrarPopupConfirmacao();
     }
 
@@ -2449,15 +2449,15 @@ class NotificacoesManager {
         btnConfirmar.parentNode.replaceChild(confirmarClone, btnConfirmar);
         btnCancelar.parentNode.replaceChild(cancelarClone, btnCancelar);
 
-        // Event listeners para os botões
+        // Event listeners para os botÃµes
         const confirmarClick = () => {
-            console.log('Confirmando limpeza de notificações');
+            console.log('Confirmando limpeza de notificaÃ§Ãµes');
             popup.style.display = 'none';
             this.executarLimpeza();
         };
         
         const cancelarClick = () => {
-            console.log('Cancelando limpeza de notificações');
+            console.log('Cancelando limpeza de notificaÃ§Ãµes');
             popup.style.display = 'none';
         };
         
@@ -2476,16 +2476,16 @@ class NotificacoesManager {
     }
 
     async executarLimpeza() {
-        console.log('Executando limpeza de notificações...');
-        console.log('Notificações antes da limpeza:', this.notificacoes.length);
+        console.log('Executando limpeza de notificaÃ§Ãµes...');
+        console.log('NotificaÃ§Ãµes antes da limpeza:', this.notificacoes.length);
         
         try {
-            // Definir flag para impedir regeneração automática
+            // Definir flag para impedir regeneraÃ§Ã£o automÃ¡tica
             window.notificacoesLimpas = true;
             
-            // Se Firebase estiver disponível, deletar do Firestore
+            // Se Firebase estiver disponÃ­vel, deletar do Firestore
             if (typeof db !== 'undefined' && db) {
-                // Deletar todas as notificações do usuário
+                // Deletar todas as notificaÃ§Ãµes do usuÃ¡rio
                 const userId = window.firebaseUser?.uid || usuario?.uid || 'anonimo';
                 const snapshot = await db.collection('notificacoes')
                     .where('userId', '==', userId)
@@ -2493,47 +2493,47 @@ class NotificacoesManager {
                 
                 const batch = db.batch();
                 snapshot.docs.forEach(doc => {
-                    console.log('Deletando notificação do Firebase:', doc.id);
+                    console.log('Deletando notificaÃ§Ã£o do Firebase:', doc.id);
                     batch.delete(doc.ref);
                 });
 
                 await batch.commit();
-                console.log('Todas as notificações deletadas do Firebase');
+                console.log('Todas as notificaÃ§Ãµes deletadas do Firebase');
             }
             
             // Limpar localStorage e sessionStorage completamente
             localStorage.removeItem('notificacoes');
             sessionStorage.removeItem('notificacoesCarregadas');
-            console.log('Notificações removidas do localStorage e sessionStorage');
+            console.log('NotificaÃ§Ãµes removidas do localStorage e sessionStorage');
             
-            // Limpar todas as notificações locais
+            // Limpar todas as notificaÃ§Ãµes locais
             this.notificacoes = [];
             this.naoLidas = 0;
             
-            console.log('Notificações após limpeza:', this.notificacoes.length);
+            console.log('NotificaÃ§Ãµes apÃ³s limpeza:', this.notificacoes.length);
             
             this.atualizarBadge();
             this.renderizarNotificacoes();
             
-            // Fechar o painel de notificações
+            // Fechar o painel de notificaÃ§Ãµes
             this.fecharPainel();
             
-            // Marcar timestamp da limpeza no localStorage para persistir entre sessões
+            // Marcar timestamp da limpeza no localStorage para persistir entre sessÃµes
             const agora = Date.now();
             localStorage.setItem('notificacoesLimpasEm', agora.toString());
-            console.log('Notificações limpas e timestamp salvo:', agora);
+            console.log('NotificaÃ§Ãµes limpas e timestamp salvo:', agora);
             
-            // Reabilitar notificações após 1 hora
+            // Reabilitar notificaÃ§Ãµes apÃ³s 1 hora
             setTimeout(() => {
                 window.notificacoesLimpas = false;
                 localStorage.removeItem('notificacoesLimpasEm');
-                console.log('Notificações reabilitadas após 1 hora');
+                console.log('NotificaÃ§Ãµes reabilitadas apÃ³s 1 hora');
             }, 3600000); // 1 hora = 3600000ms
             
-            console.log('Notificações limpas com sucesso!');
+            console.log('NotificaÃ§Ãµes limpas com sucesso!');
 
         } catch (error) {
-            console.error('Erro ao remover todas as notificações:', error);
+            console.error('Erro ao remover todas as notificaÃ§Ãµes:', error);
         }
     }
 
@@ -2544,7 +2544,7 @@ class NotificacoesManager {
         // Fechar painel
         this.fecharPainel();
 
-        // Processar ação baseada no tipo
+        // Processar aÃ§Ã£o baseada no tipo
         switch (notificacao.acao.tipo) {
             case 'navegacao':
                 if (notificacao.acao.url) {
@@ -2576,14 +2576,14 @@ class NotificacoesManager {
         this.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
         
-        // Carregar notificações atualizadas
+        // Carregar notificaÃ§Ãµes atualizadas
         this.carregarNotificacoes();
         
-        // Verificar se há notificações antigas/de exemplo para limpar
+        // Verificar se hÃ¡ notificaÃ§Ãµes antigas/de exemplo para limpar
         this.verificarLimpezaNotificacoes();
     }
 
-    // Verificar e limpar notificações desnecessárias
+    // Verificar e limpar notificaÃ§Ãµes desnecessÃ¡rias
     async verificarLimpezaNotificacoes() {
         if (!usuario || !db) return;
 
@@ -2596,11 +2596,11 @@ class NotificacoesManager {
             
             snapshot.forEach(doc => {
                 const data = doc.data();
-                // Remover apenas notificações de exemplo antigas específicas
+                // Remover apenas notificaÃ§Ãµes de exemplo antigas especÃ­ficas
                 const isNotificacaoExemplo = 
-                    (data.titulo === 'Bem-vindo ao Poup+!' && data.descricao?.includes('aplicação financeira está configurada')) ||
-                    (data.titulo === 'Lembrete de Pagamento' && data.descricao?.includes('conta de luz até sexta-feira')) ||
-                    (data.titulo === 'Receita Adicionada' && data.descricao?.includes('Salário foi adicionado')) ||
+                    (data.titulo === 'Bem-vindo ao Poup+!' && data.descricao?.includes('aplicaÃ§Ã£o financeira estÃ¡ configurada')) ||
+                    (data.titulo === 'Lembrete de Pagamento' && data.descricao?.includes('conta de luz atÃ© sexta-feira')) ||
+                    (data.titulo === 'Receita Adicionada' && data.descricao?.includes('SalÃ¡rio foi adicionado')) ||
                     (data.titulo === 'Despesa Registrada' && data.descricao?.includes('Compra no supermercado'));
 
                 if (isNotificacaoExemplo) {
@@ -2615,9 +2615,9 @@ class NotificacoesManager {
                 });
                 
                 await batch.commit();
-                console.log(`${notificacoesParaRemover.length} notificações de exemplo removidas`);
+                console.log(`${notificacoesParaRemover.length} notificaÃ§Ãµes de exemplo removidas`);
                 
-                // Recarregar após limpeza
+                // Recarregar apÃ³s limpeza
                 setTimeout(() => this.carregarNotificacoes(), 500);
             }
 
@@ -2633,13 +2633,13 @@ class NotificacoesManager {
         document.body.style.overflow = '';
     }
 
-    // Métodos públicos para criar notificações
+    // MÃ©todos pÃºblicos para criar notificaÃ§Ãµes
     async criarNotificacao(dados) {
         if (!usuario || !db) return;
         
-        // Verificar se as notificações foram limpas recentemente
+        // Verificar se as notificaÃ§Ãµes foram limpas recentemente
         if (window.notificacoesLimpas) {
-            console.log('Notificações foram limpas, não criando nova notificação');
+            console.log('NotificaÃ§Ãµes foram limpas, nÃ£o criando nova notificaÃ§Ã£o');
             return;
         }
 
@@ -2657,10 +2657,10 @@ class NotificacoesManager {
         try {
             await db.collection('notificacoes').add(notificacao);
             
-            // Limpar notificações antigas (mais de 7 dias)
+            // Limpar notificaÃ§Ãµes antigas (mais de 7 dias)
             this.limparNotificacoesAntigas();
             
-            // Recarregar notificações se o painel estiver aberto
+            // Recarregar notificaÃ§Ãµes se o painel estiver aberto
             if (this.overlay && this.overlay.classList.contains('show')) {
                 this.carregarNotificacoes();
             } else {
@@ -2670,11 +2670,11 @@ class NotificacoesManager {
             }
 
         } catch (error) {
-            console.error('Erro ao criar notificação:', error);
+            console.error('Erro ao criar notificaÃ§Ã£o:', error);
         }
     }
 
-    // Função para limpar notificações antigas automaticamente
+    // FunÃ§Ã£o para limpar notificaÃ§Ãµes antigas automaticamente
     async limparNotificacoesAntigas() {
         if (!usuario || !db) return;
 
@@ -2694,20 +2694,20 @@ class NotificacoesManager {
                 });
                 
                 await batch.commit();
-                console.log(`${snapshot.size} notificações antigas removidas`);
+                console.log(`${snapshot.size} notificaÃ§Ãµes antigas removidas`);
             }
 
         } catch (error) {
-            console.error('Erro ao limpar notificações antigas:', error);
+            console.error('Erro ao limpar notificaÃ§Ãµes antigas:', error);
         }
     }
 
-    // Métodos de conveniência para tipos específicos
+    // MÃ©todos de conveniÃªncia para tipos especÃ­ficos
     async notificarReceita(receita) {
         const desc = receita?.descricao || receita?.mensagem || 'Receita adicionada';
         await this.criarNotificacao({
             titulo: 'Nova Receita Adicionada',
-            descricao: `${desc} foi adicionada à sua conta`,
+            descricao: `${desc} foi adicionada Ã  sua conta`,
             tipo: 'receita',
             valor: receita?.valor ? `+${receita.valor}` : null,
             acao: {
@@ -2721,7 +2721,7 @@ class NotificacoesManager {
         const desc = despesa?.descricao || despesa?.mensagem || 'Despesa adicionada';
         await this.criarNotificacao({
             titulo: 'Nova Despesa Adicionada',
-            descricao: `${desc} foi adicionada à sua conta`,
+            descricao: `${desc} foi adicionada Ã  sua conta`,
             tipo: 'despesa',
             valor: despesa?.valor ? `-${despesa.valor}` : null,
             acao: {
@@ -2740,10 +2740,10 @@ class NotificacoesManager {
     }
 }
 
-// Instância global do gerenciador
+// InstÃ¢ncia global do gerenciador
 let notificacoesManager = null;
 
-// Inicializar quando o usuário estiver autenticado
+// Inicializar quando o usuÃ¡rio estiver autenticado
 function inicializarNotificacoes() {
     if (usuario && !notificacoesManager) {
         notificacoesManager = new NotificacoesManager();
@@ -2751,21 +2751,21 @@ function inicializarNotificacoes() {
         // Disponibilizar globalmente
         window.notificacoesManager = notificacoesManager;
         
-        // Processar notificações pendentes de outras páginas
+        // Processar notificaÃ§Ãµes pendentes de outras pÃ¡ginas
         if (typeof window.processarNotificacoesPendentes === 'function') {
             setTimeout(() => {
                 window.processarNotificacoesPendentes();
             }, 1000);
         }
         
-        // Carregar notificações de transações existentes
+        // Carregar notificaÃ§Ãµes de transaÃ§Ãµes existentes
         setTimeout(() => {
             if (notificacoesManager && usuario) {
                 carregarNotificacoesTransacoes(usuario.uid);
             }
         }, 2000);
         
-        // DESABILITADO: Notificações de resumo (apenas as transações individuais)
+        // DESABILITADO: NotificaÃ§Ãµes de resumo (apenas as transaÃ§Ãµes individuais)
         // setTimeout(() => {
         //     if (notificacoesManager) {
         //         gerarNotificacoesBasedadosReais();
@@ -2774,28 +2774,28 @@ function inicializarNotificacoes() {
     }
 }
 
-// Função para gerar notificações baseadas nos dados reais da conta
+// FunÃ§Ã£o para gerar notificaÃ§Ãµes baseadas nos dados reais da conta
 async function gerarNotificacoesBasedadosReais() {
     if (!usuario || !db || !notificacoesManager) return;
     
-    // Verificar se as notificações foram limpas recentemente
+    // Verificar se as notificaÃ§Ãµes foram limpas recentemente
     if (window.notificacoesLimpas) {
-        console.log('Notificações foram limpas recentemente, não gerando novas');
+        console.log('NotificaÃ§Ãµes foram limpas recentemente, nÃ£o gerando novas');
         return;
     }
     
     try {
-        // Verificar se já existem notificações para evitar duplicatas
+        // Verificar se jÃ¡ existem notificaÃ§Ãµes para evitar duplicatas
         const notificacoesExistentes = await db.collection('notificacoes')
             .where('userId', '==', usuario.uid)
             .get();
             
         if (!notificacoesExistentes.empty) {
-            console.log('Notificações já existem, não criando novas');
+            console.log('NotificaÃ§Ãµes jÃ¡ existem, nÃ£o criando novas');
             return;
         }
 
-        // Carregar receitas recentes (últimos 7 dias)
+        // Carregar receitas recentes (Ãºltimos 7 dias)
         const seteDiasAtras = new Date();
         seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
         
@@ -2807,7 +2807,7 @@ async function gerarNotificacoesBasedadosReais() {
             .where('userId', '==', usuario.uid)
             .get();
 
-        // Criar notificações para receitas recentes
+        // Criar notificaÃ§Ãµes para receitas recentes
         let receitasRecentes = 0;
         receitasSnapshot.forEach(doc => {
             const receita = doc.data();
@@ -2819,7 +2819,7 @@ async function gerarNotificacoesBasedadosReais() {
             }
         });
 
-        // Criar notificações para despesas recentes
+        // Criar notificaÃ§Ãµes para despesas recentes
         let despesasRecentes = 0;
         despesasSnapshot.forEach(doc => {
             const despesa = doc.data();
@@ -2831,11 +2831,11 @@ async function gerarNotificacoesBasedadosReais() {
             }
         });
 
-        // Criar notificação de resumo se houver atividade
+        // Criar notificaÃ§Ã£o de resumo se houver atividade
         if (receitasRecentes > 0) {
             await notificacoesManager.criarNotificacao({
                 titulo: 'Receitas Adicionadas',
-                descricao: `Você adicionou ${receitasRecentes} receita${receitasRecentes > 1 ? 's' : ''} nos últimos 7 dias`,
+                descricao: `VocÃª adicionou ${receitasRecentes} receita${receitasRecentes > 1 ? 's' : ''} nos Ãºltimos 7 dias`,
                 tipo: 'receita',
                 acao: {
                     tipo: 'navegacao',
@@ -2847,7 +2847,7 @@ async function gerarNotificacoesBasedadosReais() {
         if (despesasRecentes > 0) {
             await notificacoesManager.criarNotificacao({
                 titulo: 'Despesas Registradas',
-                descricao: `Você registrou ${despesasRecentes} despesa${despesasRecentes > 1 ? 's' : ''} nos últimos 7 dias`,
+                descricao: `VocÃª registrou ${despesasRecentes} despesa${despesasRecentes > 1 ? 's' : ''} nos Ãºltimos 7 dias`,
                 tipo: 'despesa',
                 acao: {
                     tipo: 'navegacao',
@@ -2856,16 +2856,16 @@ async function gerarNotificacoesBasedadosReais() {
             });
         }
 
-        // Notificação de boas-vindas se for primeiro acesso
+        // NotificaÃ§Ã£o de boas-vindas se for primeiro acesso
         if (receitasRecentes === 0 && despesasRecentes === 0) {
             await notificacoesManager.criarNotificacao({
                 titulo: 'Bem-vindo ao Poup+',
-                descricao: 'Comece adicionando suas receitas e despesas para ter controle total das suas finanças',
+                descricao: 'Comece adicionando suas receitas e despesas para ter controle total das suas finanÃ§as',
                 tipo: 'sistema'
             });
         }
 
-        // Verificar contas sem movimentação recente
+        // Verificar contas sem movimentaÃ§Ã£o recente
         const contasSnapshot = await db.collection('contas')
             .where('userId', '==', usuario.uid)
             .get();
@@ -2883,14 +2883,14 @@ async function gerarNotificacoesBasedadosReais() {
         }
 
     } catch (error) {
-        console.error('Erro ao gerar notificações baseadas em dados reais:', error);
+        console.error('Erro ao gerar notificaÃ§Ãµes baseadas em dados reais:', error);
     }
 }
 
-// Disponibilizar o notificacoesManager globalmente para outras páginas
+// Disponibilizar o notificacoesManager globalmente para outras pÃ¡ginas
 window.notificacoesManager = notificacoesManager;
 
-// Menu de Ações Flutuante
+// Menu de AÃ§Ãµes Flutuante
 class MenuAcoes {
     constructor() {
         this.menuElement = document.getElementById('menu-acoes');
@@ -2902,11 +2902,11 @@ class MenuAcoes {
 
     init() {
         if (!this.menuElement || !this.botaoAdicionar) {
-            console.warn('Elementos do menu de ações não encontrados');
+            console.warn('Elementos do menu de aÃ§Ãµes nÃ£o encontrados');
             return;
         }
 
-        // Event listener para o botão adicionar
+        // Event listener para o botÃ£o adicionar
         this.botaoAdicionar.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -2925,11 +2925,11 @@ class MenuAcoes {
             }
         });
 
-        // Event listeners para as ações
+        // Event listeners para as aÃ§Ãµes
         const acaoItems = this.menuElement?.querySelectorAll('.acao-item');
         acaoItems?.forEach(item => {
             item.addEventListener('click', (e) => {
-                // Permitir navegação normal
+                // Permitir navegaÃ§Ã£o normal
                 this.fecharMenu();
             });
         });
@@ -2946,7 +2946,7 @@ class MenuAcoes {
     abrirMenu() {
         this.isMenuAberto = true;
         this.menuElement.style.display = 'block';
-        // Pequeno delay para permitir a transição
+        // Pequeno delay para permitir a transiÃ§Ã£o
         setTimeout(() => {
             this.menuElement.classList.add('ativo');
         }, 10);
@@ -2954,14 +2954,14 @@ class MenuAcoes {
         // Bloquear scroll do body
         document.body.style.overflow = 'hidden';
         
-        console.log('Menu de ações aberto');
+        console.log('Menu de aÃ§Ãµes aberto');
     }
 
     fecharMenu() {
         this.isMenuAberto = false;
         this.menuElement.classList.remove('ativo');
         
-        // Aguardar animação antes de esconder
+        // Aguardar animaÃ§Ã£o antes de esconder
         setTimeout(() => {
             this.menuElement.style.display = 'none';
         }, 300);
@@ -2969,11 +2969,11 @@ class MenuAcoes {
         // Restaurar scroll do body
         document.body.style.overflow = '';
         
-        console.log('Menu de ações fechado');
+        console.log('Menu de aÃ§Ãµes fechado');
     }
 }
 
-// Inicializar menu de ações quando a página carregar
+// Inicializar menu de aÃ§Ãµes quando a pÃ¡gina carregar
 document.addEventListener('DOMContentLoaded', () => {
     // Aguardar um pouco para garantir que todos os elementos estejam prontos
     setTimeout(() => {
@@ -2981,10 +2981,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 
-// ===== FUNÇÕES UTILITÁRIAS PARA NOTIFICAÇÕES GLOBAIS =====
+// ===== FUNÃ‡Ã•ES UTILITÃRIAS PARA NOTIFICAÃ‡Ã•ES GLOBAIS =====
 
-// Função para criar notificação de nova conta
-// Evitar redefinição se já existir (definida em js/notificacoes-utils.js)
+// FunÃ§Ã£o para criar notificaÃ§Ã£o de nova conta
+// Evitar redefiniÃ§Ã£o se jÃ¡ existir (definida em js/notificacoes-utils.js)
 if (typeof window.criarNotificacaoNovaConta !== 'function') {
     window.criarNotificacaoNovaConta = async function(conta) {
         try {
@@ -2998,12 +2998,12 @@ if (typeof window.criarNotificacaoNovaConta !== 'function') {
                 });
             }
         } catch (error) {
-            console.error('Erro ao criar notificação de nova conta:', error);
+            console.error('Erro ao criar notificaÃ§Ã£o de nova conta:', error);
         }
     };
 }
 
-// Função para criar notificação de nova receita
+// FunÃ§Ã£o para criar notificaÃ§Ã£o de nova receita
 if (typeof window.criarNotificacaoNovaReceita !== 'function') {
     window.criarNotificacaoNovaReceita = async function(receita) {
         try {
@@ -3033,12 +3033,12 @@ if (typeof window.criarNotificacaoNovaReceita !== 'function') {
                 acao: { tipo: 'navegacao', url: '../Lista-de-receitas/Lista-de-receitas.html' }
             });
         } catch (error) {
-            console.error('Erro ao criar notificação de nova receita:', error);
+            console.error('Erro ao criar notificaÃ§Ã£o de nova receita:', error);
         }
     };
 }
 
-// Função para criar notificação de nova despesa
+// FunÃ§Ã£o para criar notificaÃ§Ã£o de nova despesa
 if (typeof window.criarNotificacaoNovaDespesa !== 'function') {
     window.criarNotificacaoNovaDespesa = async function(despesa) {
         try {
@@ -3072,14 +3072,14 @@ if (typeof window.criarNotificacaoNovaDespesa !== 'function') {
                 }
             });
         } catch (error) {
-            console.error('Erro ao criar notificação de nova despesa:', error);
+            console.error('Erro ao criar notificaÃ§Ã£o de nova despesa:', error);
         }
     };
 }
 
-// Função para otimizar exibição de valores em dispositivos móveis
+// FunÃ§Ã£o para otimizar exibiÃ§Ã£o de valores em dispositivos mÃ³veis
 function otimizarExibicaoValor(elemento, valor) {
-    // Verificar se estamos em dispositivo móvel
+    // Verificar se estamos em dispositivo mÃ³vel
     const isMobile = window.innerWidth <= 768;
     
     if (isMobile && valor.length > 12) {
@@ -3102,9 +3102,136 @@ function otimizarExibicaoValor(elemento, valor) {
     }
 }
 
-// Executar otimização quando a janela for redimensionada
+// Executar otimizaÃ§Ã£o quando a janela for redimensionada
 window.addEventListener('resize', () => {
     document.querySelectorAll('.valor-receitas, .valor-despesas').forEach(el => {
         otimizarExibicaoValor(el, el.textContent);
     });
 });
+
+// Renderizar cartÃµes de crÃ©dito na interface
+function renderizarCartoesCredito(cartoes) {
+    const secaoCartoes = document.querySelector('.secao:has(h2:contains("CartÃµes de crÃ©dito"))');
+    let secaoCartoesAlternativa = null;
+    
+    // Fallback: procurar pela estrutura conhecida
+    if (!secaoCartoes) {
+        const titulosSecao = document.querySelectorAll('h2.titulo-secao');
+        titulosSecao.forEach(titulo => {
+            if (titulo.textContent.includes('CartÃµes de crÃ©dito')) {
+                secaoCartoesAlternativa = titulo.closest('.secao');
+            }
+        });
+    }
+    
+    const secaoFinal = secaoCartoes || secaoCartoesAlternativa;
+    
+    if (!secaoFinal) {
+        console.warn('[Home] SeÃ§Ã£o de cartÃµes nÃ£o encontrada');
+        return;
+    }
+    
+    // Limpar conteÃºdo existente (remover estado vazio)
+    const estadoVazio = secaoFinal.querySelector('.cartao-estado-vazio');
+    if (estadoVazio) {
+        estadoVazio.remove();
+    }
+    
+    if (cartoes.length === 0) {
+        // Mostrar estado vazio
+        const estadoVazioHTML = `
+            <div class="cartao-estado-vazio">
+                <div class="icone-vazio">
+                    <span class="material-icons-round">credit_card</span>
+                </div>
+                <p>Nenhum cartÃ£o cadastrado</p>
+                <a href="../Novo CartÃ£o/Novo CartÃ£o.html" class="botao-primario">Adicionar cartÃ£o</a>
+            </div>
+        `;
+        secaoFinal.insertAdjacentHTML('beforeend', estadoVazioHTML);
+        return;
+    }
+    
+    // Criar container para cartÃµes
+    let containerCartoes = secaoFinal.querySelector('.container-cartoes');
+    if (!containerCartoes) {
+        containerCartoes = document.createElement('div');
+        containerCartoes.className = 'container-cartoes';
+        containerCartoes.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        `;
+        secaoFinal.appendChild(containerCartoes);
+    }
+    
+    // Limpar cartÃµes existentes
+    containerCartoes.innerHTML = '';
+    
+    // Renderizar cada cartÃ£o
+    cartoes.forEach(cartao => {
+        const cartaoHTML = criarCartaoCredito(cartao);
+        containerCartoes.insertAdjacentHTML('beforeend', cartaoHTML);
+    });
+}
+
+// Criar HTML para um cartÃ£o de crÃ©dito
+function criarCartaoCredito(cartao) {
+    const limite = parseFloat(cartao.limite || 0);
+    const usado = parseFloat(cartao.gastoAtual || 0);
+    const disponivel = limite - usado;
+    const percentualUsado = limite > 0 ? (usado / limite * 100) : 0;
+    
+    // Determinar cor baseada no percentual usado
+    let corBarra = '#22c55e'; // Verde
+    if (percentualUsado > 80) {
+        corBarra = '#ef4444'; // Vermelho
+    } else if (percentualUsado > 60) {
+        corBarra = '#f59e0b'; // Amarelo
+    }
+    
+    return `
+        <div class="cartao-credito" style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        " onclick="window.location.href='../Lista-de-cartoes/Lista-de-cartoes.html'" 
+           onmouseover="this.style.transform='translateY(-2px)'" 
+           onmouseout="this.style.transform='translateY(0)'">
+            <div style="position: relative; z-index: 2;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 0.25rem 0;">${cartao.descricao || 'CartÃ£o de CrÃ©dito'}</h3>
+                        <p style="font-size: 0.875rem; opacity: 0.8; margin: 0;">${cartao.bandeira || 'Visa'}</p>
+                    </div>
+                    <span class="material-icons-round" style="font-size: 1.5rem; opacity: 0.8;">credit_card</span>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <p style="font-size: 0.75rem; opacity: 0.7; margin: 0 0 0.25rem 0;">Limite disponÃ­vel</p>
+                    <p style="font-size: 1.25rem; font-weight: 600; margin: 0;">${disponivel.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                </div>
+                
+                <div style="margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; opacity: 0.7;">Usado: ${usado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        <span style="font-size: 0.75rem; opacity: 0.7;">${percentualUsado.toFixed(0)}%</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; overflow: hidden;">
+                        <div style="background: ${corBarra}; height: 100%; width: ${percentualUsado}%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PadrÃ£o decorativo -->
+            <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); z-index: 1;"></div>
+        </div>
+    `;
+}
