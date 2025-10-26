@@ -35,7 +35,31 @@ const categoryDetails = {
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 // --- INICIALIZAÇÃO ---
+// Configurar menu adicionar
+function configurarMenuAdicionar() {
+    const botaoAdicionar = document.getElementById('botao-adicionar-despesas');
+    const menu = document.getElementById('menu-adicionar-despesas');
+
+    if (!botaoAdicionar || !menu) return;
+
+    botaoAdicionar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (menu.style.display === 'none' || !menu.style.display) {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && e.target !== botaoAdicionar && !botaoAdicionar.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    configurarMenuAdicionar();
     initializeAuth();
     initializeUI();
 });
@@ -53,33 +77,33 @@ function initializeAuth() {
 }
 
 function initializeUI() {
-    document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
-    document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+    const prevMonth = document.getElementById('prev-month');
+    const nextMonth = document.getElementById('next-month');
+    if (prevMonth) prevMonth.addEventListener('click', () => changeMonth(-1));
+    if (nextMonth) nextMonth.addEventListener('click', () => changeMonth(1));
     
-    // Listener para o botão adicionar da barra de navegação
-    const botaoAdicionar = document.querySelector('.botao-adicionar');
-    if (botaoAdicionar) {
-        botaoAdicionar.addEventListener('click', () => {
+    // Configurar menu adicionar
+    configurarMenuAdicionar();
+    
+    // Configurar listeners do modal
+    initializeModalListeners();
+    
+    // Adicionar listener específico para botão despesa
+    const botaoDespesa = document.querySelector('.botao-despesa');
+    if (botaoDespesa) {
+        botaoDespesa.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             window.location.href = '../Nova-Despesa/Nova-Despesa.html';
         });
     }
     
     // Listeners do popup de exclusão
-    document.getElementById('popup-cancelar').addEventListener('click', () => {
-        document.getElementById('popup-confirmacao').style.display = 'none';
-    });
-    document.getElementById('popup-excluir').addEventListener('click', confirmDeleteDespesa);
-    
-    // Adicionar listeners para dropdown, filtros e busca
-    setupDropdownAndFilters();
-    setupBusca();
-    setupPopupFiltros();
-    
-    // Botão de filtros no cabeçalho
-    const botaoFiltros = document.getElementById('botao-filtros');
-    if (botaoFiltros) {
-        botaoFiltros.addEventListener('click', () => {
-            abrirPopupFiltros();
+    const popupCancelar = document.getElementById('popup-cancelar');
+    if (popupCancelar) {
+        popupCancelar.addEventListener('click', () => {
+            const popupConfirmacao = document.getElementById('popup-confirmacao');
+            if (popupConfirmacao) popupConfirmacao.style.display = 'none';
         });
     }
 }
@@ -166,17 +190,6 @@ function setupDropdownAndFilters() {
     });
 }
 
-function toggleDropdown() {
-    const dropdown = document.getElementById('dropdown-menu');
-    
-    if (!dropdown) {
-        createDropdown();
-    } else {
-        const isVisible = dropdown.style.display === 'block';
-        dropdown.style.display = isVisible ? 'none' : 'block';
-    }
-}
-
 function createDropdown() {
     const dropdown = document.createElement('div');
     dropdown.id = 'dropdown-menu';
@@ -220,7 +233,10 @@ function changeMonth(direction) {
 }
 
 function updateMonthDisplay() {
-    document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    const currentMonthEl = document.getElementById('current-month');
+    if (currentMonthEl) {
+        currentMonthEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    }
 }
 
 // --- LÓGICA DE DADOS (Mantida do seu código original) ---
@@ -723,8 +739,8 @@ function formatarData(dataString) {
     }
 }
 
-// Event listeners para o modal
-document.addEventListener('DOMContentLoaded', () => {
+// Event listeners para o modal - Consolidado na inicialização principal
+function initializeModalListeners() {
     // Listeners do modal de despesa
     const fechar = document.getElementById('fechar-modal-detalhes');
     if (fechar) fechar.addEventListener('click', fecharModalDetalhesDespesa);
@@ -764,7 +780,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-});
+}
 
 // Função para mostrar popup de mensagem
 function mostrarPopup(mensagem, callback) {
@@ -954,3 +970,51 @@ function aplicarFiltrosDespesas() {
     // Mostrar mensagem de sucesso
     mostrarPopup('Filtros aplicados com sucesso!');
 }
+
+// Funções do Dropdown de Navegação
+function toggleDropdown() {
+    console.log('toggleDropdown chamado!');
+    
+    const dropdown = document.getElementById('dropdown-menu');
+    if (!dropdown) {
+        console.error('Elemento dropdown-menu não encontrado');
+        return;
+    }
+    
+    console.log('Estado atual do dropdown:', dropdown.style.display);
+    const isVisible = dropdown.style.display === 'block';
+    
+    // Fechar todos os dropdowns primeiro
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+    
+    // Abrir/fechar o dropdown atual
+    const newDisplay = isVisible ? 'none' : 'block';
+    dropdown.style.display = newDisplay;
+    
+    // Rotacionar ícone
+    const icon = document.querySelector('.titulo-pagina .material-icons');
+    if (icon) {
+        icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        console.log('Ícone rotacionado:', icon.style.transform);
+    }
+    
+    console.log('Novo estado do dropdown:', dropdown.style.display);
+}
+
+function navegarPara(url) {
+    window.location.href = url;
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('dropdown-menu');
+    const tituloPagina = document.querySelector('.titulo-pagina');
+    
+    if (!tituloPagina.contains(event.target)) {
+        dropdown.style.display = 'none';
+        const icon = document.querySelector('.titulo-pagina .material-icons');
+        icon.style.transform = 'rotate(0deg)';
+    }
+});

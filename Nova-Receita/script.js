@@ -224,11 +224,13 @@ document.addEventListener('DOMContentLoaded', function() {
             addEventListenerOnce(elementos.corCategoriaInput, 'input', atualizarCorPreview, 'cor-categoria');
         }
 
-        // Toggle de repetição
-        addEventListenerOnce(elementos.toggleRepetir, 'change', function() {
-            console.log('Toggle de repetição alterado:', this.checked);
-            elementos.camposRepetir.style.display = this.checked ? 'block' : 'none';
-        }, 'toggle-repetir');
+        // Toggle de repetição (se existir)
+        if (elementos.toggleRepetir) {
+            addEventListenerOnce(elementos.toggleRepetir, 'change', function() {
+                console.log('Toggle de repetição alterado:', this.checked);
+                elementos.camposRepetir.style.display = this.checked ? 'block' : 'none';
+            }, 'toggle-repetir');
+        }
 
         // Configurar eventos de categoria personalizada
         configurarEventosCategoriaPersonalizada();
@@ -303,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Coleta dados de forma otimizada
-        const repetir = elementos.toggleRepetir.checked;
+        const repetir = elementos.toggleRepetir?.checked || false;
         const receitaFixa = document.getElementById('toggle-receita-fixa')?.checked || false;
         
         // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
@@ -362,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             mostrarPopup(mensagem, () => {
                 limparFormulario();
-                window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
+                window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
             });
         }).catch(error => {
             console.error('Erro ao salvar:', error);
@@ -589,8 +591,12 @@ document.addEventListener('DOMContentLoaded', function() {
         elementos.opcaoSelecionadaCarteira.innerHTML = '<span>Selecione uma conta</span>';
         elementos.nomeArquivo.textContent = '';
         elementos.inputAnexo.value = '';
-        elementos.toggleRepetir.checked = false;
-        elementos.camposRepetir.style.display = 'none';
+        if (elementos.toggleRepetir) {
+            elementos.toggleRepetir.checked = false;
+        }
+        if (elementos.camposRepetir) {
+            elementos.camposRepetir.style.display = 'none';
+        }
         
         estado.categoriaSelecionada = null;
         estado.carteiraSelecionada = null;
@@ -1334,3 +1340,71 @@ function mostrarOpcaoCriarConta() {
     });
     opcoesCarteira.appendChild(opcaoCrear);
 }
+
+// === CONTROLE DO MODAL DE REPETIÇÃO ===
+let quantidadeRepetir = 1;
+let periodoRepetir = 'meses';
+let periodoTextoRepetir = 'Mensal';
+
+function abrirModalRepetir() {
+    const modal = document.getElementById('modal-repetir');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('quantidade-repeticoes-modal').value = quantidadeRepetir;
+        document.getElementById('periodo-texto').textContent = periodoTextoRepetir;
+    }
+}
+
+function fecharModalRepetir() {
+    const modal = document.getElementById('modal-repetir');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    const dropdown = document.getElementById('periodo-dropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+function alterarQuantidadeModal(delta) {
+    quantidadeRepetir = Math.max(1, quantidadeRepetir + delta);
+    document.getElementById('quantidade-repeticoes-modal').value = quantidadeRepetir;
+}
+
+function togglePeriodoDropdown() {
+    const dropdown = document.getElementById('periodo-dropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+}
+
+function selecionarPeriodo(texto, valor) {
+    periodoTextoRepetir = texto;
+    periodoRepetir = valor;
+    document.getElementById('periodo-texto').textContent = texto;
+    togglePeriodoDropdown();
+}
+
+function confirmarRepetir() {
+    document.getElementById('quantidade-repeticoes').value = quantidadeRepetir;
+    document.getElementById('frequencia-repeticoes').value = periodoRepetir;
+    
+    const textoRepeticoes = document.getElementById('texto-repeticoes');
+    if (textoRepeticoes) {
+        if (quantidadeRepetir > 1) {
+            textoRepeticoes.textContent = `${quantidadeRepetir}x - ${periodoTextoRepetir}`;
+        } else {
+            textoRepeticoes.textContent = '';
+        }
+    }
+    
+    fecharModalRepetir();
+}
+
+// Event listener para fechar modal ao clicar fora
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('modal-repetir');
+    if (modal && e.target === modal) {
+        fecharModalRepetir();
+    }
+});

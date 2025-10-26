@@ -93,10 +93,24 @@ body {
     justify-content: center;
     font-size: 2rem;
     box-shadow: 0 2px 8px rgba(33,194,94,0.08);
+    overflow: hidden;
+    border: 3px solid #21C25E;
+}
+
+.avatar-usuario img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-usuario .material-icons-round {
+    font-size: 24px;
+    color: #21C25E;
 }
 
 .usuario-saudacao .saudacao {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     color: #6c757d;
     margin-bottom: 2px;
 }
@@ -255,7 +269,7 @@ body {
 }
 
 .rotulo-saldo {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     color: var(--texto-secundario);
     margin-bottom: 4px;
 }
@@ -340,18 +354,25 @@ body {
 .cartao-conteudo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    justify-content: flex-start;
+}
+
+.valor-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .icone-container {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 2rem;
+    font-size: 1.5rem;
     border: 2px solid #21C25E22;
     box-shadow: 0 2px 8px rgba(33,194,94,0.10);
     transition: box-shadow 0.2s, border 0.2s, background 0.3s;
@@ -529,7 +550,7 @@ body {
     border-radius: var(--borda-arredondada-pequena);
     padding: 10px 20px;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -733,7 +754,7 @@ a.botao-primario {
 .conta-ux-nome {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 1.07rem;
+    font-size: 1.25rem;
     color: #222;
     white-space: nowrap;
     overflow: hidden;
@@ -741,7 +762,7 @@ a.botao-primario {
 }
 
 .conta-ux-tipo {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     color: #6c757d;
     white-space: nowrap;
     overflow: hidden;
@@ -1009,7 +1030,7 @@ a.botao-primario {
     }
     
     .usuario-saudacao .nome-usuario {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
     }
     
     .cartao-saldo-mensal {
@@ -1025,7 +1046,7 @@ a.botao-primario {
     }
 
     .botao-adicionar-conta-ux {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         padding: 10px 16px;
     }
 
@@ -1060,22 +1081,24 @@ a.botao-primario {
 .valor-receitas {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--sucesso);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    line-height: 1.2;
 }
 .valor-despesas {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--erro);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    line-height: 1.2;
+}
+
+/* Classe especial para valores longos em mobile */
+.valor-longo {
+    font-weight: 600 !important;
+    letter-spacing: -0.5px;
 }
 
 /* Ícone receitas/despesas: cor correta */
@@ -1252,7 +1275,7 @@ a.botao-primario {
 .conta-ux-nome {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 1.07rem;
+    font-size: 1.25rem;
     color: #222;
     white-space: nowrap;
     overflow: hidden;
@@ -1260,7 +1283,7 @@ a.botao-primario {
 }
 
 .conta-ux-tipo {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     color: #6c757d;
     white-space: nowrap;
     overflow: hidden;
@@ -1528,7 +1551,7 @@ a.botao-primario {
     }
     
     .usuario-saudacao .nome-usuario {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
     }
     
     .cartao-saldo-mensal {
@@ -1544,7 +1567,7 @@ a.botao-primario {
     }
 
     .botao-adicionar-conta-ux {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         padding: 10px 16px;
     }
 
@@ -1920,7 +1943,7 @@ a.botao-primario {
 .nome-categoria {
     font-weight: 600;
     color: var(--texto);
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     letter-spacing: 0.3px;
 }
 
@@ -2225,7 +2248,7 @@ a.botao-primario {
 }
 
 .grafico-categoria-percent {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     color: #888;
     font-weight: 600;
     margin-top: 1px;
@@ -2282,16 +2305,158 @@ a.botao-primario {
     }
 
     .cartao-cabecalho h3 {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
     }
 
     .valor-receitas, .valor-despesas {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
+        white-space: nowrap;
+        line-height: 1.1;
+        min-width: 0;
+        flex: 1;
     }
 
+    /* Ajustar nomes e tipos das contas para mobile */
+    .conta-ux-nome {
+        font-size: 1rem;
+    }
+
+    .conta-ux-tipo {
+        font-size: 0.85rem;
+    }
+
+    .valor-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: visible;
+    }
+
+    /* Otimizar layout dos cartões em mobile */
+    .cartao-conteudo {
+        gap: 16px;
+        min-height: 50px;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+/* Layout específico para valores grandes */
+@media (max-width: 380px) {
+    .valor-receitas, .valor-despesas {
+        font-size: 0.95rem;
+        line-height: 1.1;
+    }
+
+    /* Nomes e tipos das contas ainda menores em telas pequenas */
+    .conta-ux-nome {
+        font-size: 0.9rem;
+    }
+
+    .conta-ux-tipo {
+        font-size: 0.8rem;
+    }
+    
+    .cartao-conteudo {
+        gap: 6px;
+    }
+    
+    .valor-container {
+        max-width: 65%;
+    }
+    
+    /* Otimizar layout dos items mini para valores maiores */
+    .item-mini-ux {
+        gap: 6px;
+        padding: 6px 8px;
+    }
+    
+    .item-mini-ux .mini-icone {
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+    }
+    
+    .item-mini-ux .mini-icone .material-icons-round {
+        font-size: 1rem;
+    }
+    
+    .item-mini-ux .mini-descricao {
+        font-size: 0.85rem;
+        max-width: 80px;
+    }
+    
+    .item-mini-ux .mini-data {
+        font-size: 0.75rem;
+        max-width: 50px;
+    }
+    
+    .item-mini-ux .mini-valor {
+        font-size: 0.9rem;
+        font-weight: 700;
+        min-width: 80px;
+        text-align: right;
+        white-space: nowrap;
+    }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 320px) {
+    .valor-receitas, .valor-despesas {
+        font-size: 0.9rem;
+    }
+
+    /* Nomes e tipos das contas muito pequenos para telas mínimas */
+    .conta-ux-nome {
+        font-size: 0.85rem;
+    }
+
+    .conta-ux-tipo {
+        font-size: 0.75rem;
+    }
+    
+    .valor-container {
+        max-width: 60%;
+    }
+    
+    /* Layout ainda mais compacto para valores */
+    .item-mini-ux {
+        gap: 4px;
+        padding: 5px 6px;
+    }
+    
+    .item-mini-ux .mini-icone {
+        min-width: 26px;
+        width: 26px;
+        height: 26px;
+    }
+    
+    .item-mini-ux .mini-icone .material-icons-round {
+        font-size: 0.9rem;
+    }
+    
+    .item-mini-ux .mini-descricao {
+        font-size: 0.8rem;
+        max-width: 70px;
+    }
+    
+    .item-mini-ux .mini-data {
+        font-size: 0.7rem;
+        max-width: 45px;
+    }
+    
+    .item-mini-ux .mini-valor {
+        font-size: 0.85rem;
+        font-weight: 700;
+        min-width: 85px;
+        text-align: right;
+        white-space: nowrap;
+    }
+}
+
     .icone-container {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.3rem;
     }
 
     .barra-navegacao-inferior {
@@ -2370,7 +2535,7 @@ a.botao-primario {
     }
     
     .usuario-saudacao .nome-usuario {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
     }
     
     .cartao-saldo-mensal {
@@ -2386,7 +2551,7 @@ a.botao-primario {
     }
 
     .botao-adicionar-conta-ux {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         padding: 10px 16px;
     }
 
@@ -2728,7 +2893,7 @@ a.botao-primario {
 .nome-categoria {
     font-weight: 600;
     color: var(--texto);
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     letter-spacing: 0.3px;
 }
 
@@ -2995,7 +3160,7 @@ a.botao-primario {
 }
 
 .notificacao-titulo {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--texto);
     margin-bottom: 4px;
@@ -3007,6 +3172,47 @@ a.botao-primario {
     color: var(--texto-secundario);
     margin-bottom: 8px;
     line-height: 1.4;
+}
+
+/* Estilos para notificações históricas */
+.notificacao-valor {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.notificacao-extras {
+    display: flex;
+    gap: 12px;
+    margin: 6px 0;
+    font-size: 0.75rem;
+}
+
+.notificacao-categoria,
+.notificacao-status {
+    background: rgba(33, 194, 94, 0.1);
+    color: #21C25E;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(33, 194, 94, 0.2);
+}
+
+.notificacao-status {
+    background: rgba(158, 158, 158, 0.1);
+    color: #666;
+    border-color: rgba(158, 158, 158, 0.2);
+}
+
+.notificacao-icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .notificacao-meta {
@@ -3283,4 +3489,477 @@ a.botao-primario {
 .menu-acoes.ativo ~ nav .botao-adicionar {
     transform: rotate(45deg);
     background: #ef4444;
+}
+/* === BARRA DE NAVEGAÃ‡ÃƒO INFERIOR === */
+.barra-navegacao-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: #fff;
+    border-top: 1px solid #e0e7e3;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+    z-index: 1000;
+    box-shadow: 0 -2px 12px rgba(33,194,94,0.04);
+}
+
+.item-navegacao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    gap: 4px;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.item-navegacao .material-icons-round {
+    font-size: 1.7rem;
+    margin-bottom: 2px;
+}
+
+.item-navegacao.ativo,
+.item-navegacao:hover {
+    color: #21C25E;
+    background: #e8f5ee;
+}
+
+.botao-adicionar-menu {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
+    background: #21C25E;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    margin-top: -36px;
+    box-shadow: 0 6px 24px rgba(33,194,94,0.35);
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 4px solid #fff;
+    font-size: 2.2rem;
+    flex-shrink: 0;
+}
+
+.botao-adicionar-menu:hover {
+    background: #1a9d4d;
+    transform: scale(1.07) translateY(-2px);
+    box-shadow: 0 8px 28px rgba(33,194,94,0.45);
+}
+
+.botao-adicionar-menu .material-icons-round {
+    font-size: 2.2rem;
+}
+
+/* Menu Adicionar - MELHORADO */
+.menu-adicionar {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(33, 194, 94, 0.15),
+                0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 99;
+    animation: slideUpBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 1px solid rgba(33, 194, 94, 0.1);
+    max-width: calc(100vw - 48px);
+}
+
+@keyframes slideUpBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    60% {
+        transform: translateY(-5px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.menu-opcao {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 240px;
+    position: relative;
+}
+
+.menu-opcao::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: #21C25E;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.menu-opcao:hover::before {
+    transform: scaleY(1);
+}
+
+.menu-opcao:not(:last-child) {
+    border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+}
+
+.menu-opcao:hover {
+    background: linear-gradient(90deg, rgba(33, 194, 94, 0.08) 0%, transparent 100%);
+    transform: translateX(4px);
+}
+
+.menu-opcao:active {
+    background: rgba(33, 194, 94, 0.12);
+    transform: translateX(4px) scale(0.98);
+}
+
+.menu-opcao .material-icons-round {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.menu-opcao:nth-child(1) .material-icons-round {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    color: #21C25E;
+}
+
+.menu-opcao:nth-child(2) .material-icons-round {
+    background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+    color: #D32F2F;
+}
+
+.menu-opcao:nth-child(3) .material-icons-round {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    color: #2196F3;
+}
+
+.menu-opcao:hover .material-icons-round {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menu-opcao span:last-child {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    letter-spacing: 0.3px;
+}
+
+/* Responsividade do menu para mobile */
+@media (max-width: 768px) {
+    .menu-adicionar {
+        right: 16px;
+        bottom: 85px;
+        max-width: calc(100vw - 32px);
+    }
+    
+    .menu-opcao {
+        padding: 16px 20px;
+        min-width: 200px;
+        gap: 14px;
+    }
+    
+    .menu-opcao .material-icons-round {
+        font-size: 24px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .menu-opcao span:last-child {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-adicionar {
+        right: 12px;
+        bottom: 80px;
+    }
+    
+    .menu-opcao {
+        padding: 14px 18px;
+        min-width: 180px;
+        gap: 12px;
+    }
+    
+    .menu-opcao .material-icons-round {
+        font-size: 22px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .menu-opcao span:last-child {
+        font-size: 0.9rem;
+    }
+}
+
+/* Responsividade mÃ³vel */
+@media (max-width: 600px) {
+    .barra-navegacao-inferior {
+        height: 68px;
+        padding: 0 2px;
+    }
+    .item-navegacao {
+        font-size: 0.8rem;
+        padding: 6px 2px;
+    }
+    .botao-adicionar-menu {
+        width: 50px;
+        height: 50px;
+        font-size: 1.7rem;
+        margin-top: -24px;
+    }
+    .botao-adicionar-menu .material-icons-round {
+        font-size: 1.7rem;
+    }
+}
+
+/* Seção de Cartões de Crédito */
+.secao-cartoes {
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.secao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.secao-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2b2d42;
+    margin: 0;
+}
+
+.ver-todos {
+    color: #21C25E;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ver-todos:hover {
+    text-decoration: underline;
+}
+
+.cartoes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cartao-credito-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.cartao-credito-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cartao-icone {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #21C25E, #1a9d4d);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.cartao-icone span {
+    color: white;
+    font-size: 24px;
+}
+
+.cartao-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2b2d42;
+}
+
+.cartao-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Cartões de Crédito na Home */
+.cartao-credito-home {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cartao-credito-home:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cartao-credito-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.cartao-credito-icone {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.cartao-credito-icone span {
+    color: white;
+    font-size: 24px;
+}
+
+.cartao-credito-info {
+    flex: 1;
+}
+
+.cartao-credito-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2b2d42;
+}
+
+.cartao-bandeira {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.cartao-credito-valores {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.fatura-atual,
+.limite-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.fatura-atual .label,
+.limite-total .label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+.fatura-atual .valor {
+    font-size: 16px;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.limite-total .valor {
+    font-size: 14px;
+    font-weight: 500;
+    color: #28a745;
+}
+
+.cartao-credito-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.barra-progresso {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barra-preenchida {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.porcentagem {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Responsividade para cartões */
+@media (max-width: 768px) {
+    .cartao-credito-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .cartao-credito-valores {
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .fatura-atual,
+    .limite-total {
+        align-items: flex-start;
+    }
 }

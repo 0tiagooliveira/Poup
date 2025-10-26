@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poup+ - Início</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/menu-inferior-padrao.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
@@ -34,7 +35,7 @@
         <header class="cabecalho">
             <div class="cabecalho-conteudo">
                 <div class="usuario-info-container"> <!-- Container para posicionamento -->
-                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;">
+                    <div class="usuario-info" id="avatar-usuario-btn" style="cursor: pointer;" title="Clique para alterar foto de perfil">
                         <div class="avatar-usuario">
                             <span class="material-icons-round">account_circle</span>
                         </div>
@@ -107,7 +108,9 @@
                             <div class="icone-container receita">
                                 <span class="material-icons-round">savings</span>
                             </div>
-                            <span class="valor-receitas">R$ 0,00</span>
+                            <div class="valor-container">
+                                <span class="valor-receitas" title="Receitas do mês">R$ 0,00</span>
+                            </div>
                         </div>
                     </a>
                     <a href="../Lista-de-despesas/Lista-de-despesas.html" class="cartao cartao-despesas">
@@ -119,7 +122,9 @@
                             <div class="icone-container despesa">
                                 <span class="material-icons-round">shopping_cart</span>
                             </div>
-                            <span class="valor-despesas">R$ 0,00</span>
+                            <div class="valor-container">
+                                <span class="valor-despesas" title="Despesas do mês">R$ 0,00</span>
+                            </div>
                         </div>
                     </a>
                 </div>
@@ -153,6 +158,30 @@
                     </div>
                 </div>
 
+                <!-- Seção de Cartões de Crédito -->
+                <div class="secao" id="secao-cartoes-credito">
+                    <div class="secao-cabecalho">
+                        <h2 class="titulo-secao">Cartões de Crédito</h2>
+                        <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="ver-todos">Ver todos</a>
+                    </div>
+                    <!-- Container para cartões de crédito -->
+                    <div id="container-cartoes-home" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Os cartões serão inseridos aqui pelo script.js -->
+                    </div>
+                    <!-- Estado vazio para cartões -->
+                    <div class="cartao-estado-vazio" id="cartao-estado-vazio-cartoes" style="display:block;">
+                        <div class="icone-vazio">
+                            <span class="material-icons-round">credit_card</span>
+                        </div>
+                        <h3>Nenhum cartão cadastrado</h3>
+                        <p>Adicione seus cartões de crédito para ter um controle completo das suas finanças</p>
+                        <a href="../Novo Cartão/Novo Cartão.html" class="botao-primario">
+                            <span class="material-icons-round">add</span>
+                            Adicionar cartão
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Seção de Receitas e Despesas (cards lado a lado, visual consistente) -->
                 <div class="secao" style="display:flex; flex-direction:row; gap:24px; flex-wrap:wrap;">
                     <div style="flex:1; min-width:260px;">
@@ -165,7 +194,9 @@
                                 <div class="icone-container receita">
                                     <span class="material-icons-round">savings</span>
                                 </div>
-                                <span class="valor-receitas">R$ 0,00</span>
+                                <div class="valor-container">
+                                    <span class="valor-receitas" title="Receitas do mês">R$ 0,00</span>
+                                </div>
                             </div>
                             <div id="lista-receitas-home" class="lista-mini-ux"></div>
                             <a href="../Lista-de-receitas/Lista-de-receitas.html" class="botao-primario botao-mini-ux">Ver todas</a>
@@ -181,7 +212,9 @@
                                 <div class="icone-container despesa">
                                     <span class="material-icons-round">shopping_cart</span>
                                 </div>
-                                <span class="valor-despesas">R$ 0,00</span>
+                                <div class="valor-container">
+                                    <span class="valor-despesas" title="Despesas do mês">R$ 0,00</span>
+                                </div>
                             </div>
                             <div id="lista-despesas-home" class="lista-mini-ux"></div>
                             <a href="../Lista-de-despesas/Lista-de-despesas.html" class="botao-primario botao-mini-ux">Ver todas</a>
@@ -189,31 +222,10 @@
                     </div>
                 </div>
 
-                <!-- Seção de Cartões -->
-                <div class="secao">
-                    <div class="secao-cabecalho">
-                        <h2 class="titulo-secao">Cartões de crédito</h2>
-                        <button class="botao-secao">
-                        </button>
-                    </div>
-                    <div class="cartao-estado-vazio">
-                        <div class="icone-vazio">
-                            <span class="material-icons-round">credit_card</span>
-                        </div>
-                        <p>Nenhum cartão cadastrado</p>
-                        <a href="../Novo Cartão/Novo Cartão.html" class="botao-primario">Adicionar cartão</a>
-                    </div>
-                </div>
-
                 <!-- Seção de Receitas por Categoria -->
                 <div class="secao">
                     <div class="secao-cabecalho">
                         <h2 class="titulo-secao">Receitas por categoria</h2>
-                        <div class="filtros-categoria">
-                            <button class="botao-filtro-receita ativo" data-filtro="atual">Atual</button>
-                            <button class="botao-filtro-receita" data-filtro="anterior">Anterior</button>
-                            <button class="botao-filtro-receita" data-filtro="todos">Todos</button>
-                        </div>
                     </div>
                     <div id="container-receitas-categoria">
                         <!-- Estado vazio será inserido dinamicamente -->
@@ -246,11 +258,6 @@
                 <div class="secao">
                     <div class="secao-cabecalho">
                         <h2 class="titulo-secao">Despesas por categoria</h2>
-                        <div class="filtros-categoria">
-                            <button class="botao-filtro ativo" data-filtro="atual">Atual</button>
-                            <button class="botao-filtro" data-filtro="anterior">Anterior</button>
-                            <button class="botao-filtro" data-filtro="todos">Todos</button>
-                        </div>
                     </div>
 
                     <!-- Container dinâmico para gráfico -->
@@ -283,28 +290,7 @@
             </div>
         </main>
 
-        <!-- Barra de navegação inferior -->
-        <nav class="barra-navegacao-inferior">
-            <a href="#" class="item-navegacao ativo">
-                <span class="material-icons-round">home</span>
-                <span>Principal</span>
-            </a>
-            <a href="../Transações/Transações.html" class="item-navegacao">
-                <span class="material-icons-round">receipt_long</span>
-                <span>Transações</span>
-            </a>
-            <div class="botao-adicionar">
-                <span class="material-icons-round">add</span>
-            </div>
-            <a href="../Gráficos/Gráficos.html" class="item-navegacao">
-                <span class="material-icons-round">bar_chart</span>
-                <span>Gráficos</span>
-            </a>
-            <a href="../Configurações/Configuracoes.html" class="item-navegacao">
-                <span class="material-icons-round">settings</span>
-                <span>Configurações</span>
-            </a>
-        </nav>
+
 
     <!-- Menu de Ações Flutuante -->
     <div class="menu-acoes" id="menu-acoes" style="display: none;">
@@ -338,6 +324,8 @@
     </div>
     </div>
 
+    <script src="../js/menu-inferior-padrao.js"></script>
+    <script src="../js/menu-adicionar-padrao.js"></script>
     <script src="script.js" defer></script>
 
     <!-- Popup de confirmação de exclusão de conta (customizado) -->
@@ -405,6 +393,31 @@
             </div>
         </div>
     </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao ativo">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-menu">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+
 </body>
 
 </html>

@@ -115,10 +115,50 @@ body[cz-shortcut-listen="true"] {
     padding: 4px 8px;
     border-radius: 8px;
     transition: background 0.2s;
+    position: relative;
 }
 
 .titulo-pagina:hover {
     background: rgba(255,255,255,0.1);
+}
+
+.titulo-pagina .material-icons {
+    transition: transform 0.3s ease;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #333;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    background: #f5f5f5;
+}
+
+.dropdown-item .material-icons {
+    font-size: 20px;
+    color: #666;
 }
 
 .titulo-pagina h1 {
@@ -205,11 +245,11 @@ body[cz-shortcut-listen="true"] {
 
 /* Compact new style */
 .secao-resumo.compacta { 
-    padding: 16px 0 4px; 
-    justify-content: center; 
-    gap: 56px; 
-    width: fit-content; 
-    margin: -16px auto 12px; 
+    padding: 4px 16px 0; 
+    justify-content: space-between; 
+    gap: 16px; 
+    width: 100%; 
+    margin: 0 0 12px; 
     border: none; 
 }
 
@@ -916,13 +956,14 @@ input:checked + .toggle-slider:before {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 74px;
+    height: 80px;
     background: #fff;
     border-top: 1px solid #e0e7e3;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index: 1000; /* Z-index alto para ficar sempre por cima */
+    padding: 0 8px;
+    z-index: 1000;
     box-shadow: 0 -2px 12px rgba(33,194,94,0.04);
 }
 
@@ -947,31 +988,40 @@ input:checked + .toggle-slider:before {
 
 .item-navegacao.ativo,
 .item-navegacao:hover {
-    color: #D32F2F;
-    background: #fdecec; /* tom claro derivado do vermelho */
+    color: #21C25E;
+    background: #e8f5ee;
 }
 
-.botao-adicionar {
-    width: 62px;
-    height: 62px;
+.botao-adicionar-menu {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
     background: #D32F2F;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     color: #ffffff;
-    margin-top: -32px;
+    margin-top: -36px;
     box-shadow: 0 6px 24px rgba(211,47,47,0.35);
     transition: all 0.3s;
     cursor: pointer;
     border: 4px solid #fff;
     font-size: 2.2rem;
+    flex-shrink: 0;
 }
 
-.botao-adicionar:hover {
-    background: #b71c1c;
+.botao-adicionar-menu:hover {
+    background: #B71C1C;
     transform: scale(1.07) translateY(-2px);
-    box-shadow: 0 8px 28px rgba(183,28,28,0.45);
+    box-shadow: 0 8px 28px rgba(211,47,47,0.45);
+}
+
+.botao-adicionar-menu .material-icons-round {
+    font-size: 2.2rem;
 }
 
 /* Responsividade móvel igual à Home */
@@ -1424,4 +1474,154 @@ input:checked + .slider:before {
 
 .botao-fechar-modal:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+/* Bot�o vermelho para despesas */
+.botao-adicionar-menu.botao-despesa { background: #D32F2F; box-shadow: 0 6px 24px rgba(211,47,47,0.35); }
+.botao-adicionar-menu.botao-despesa:hover { background: #9a0007; box-shadow: 0 8px 28px rgba(211,47,47,0.45); }
+
+/* Menu Adicionar - MELHORADO */
+.menu-adicionar {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(33, 194, 94, 0.15),
+                0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 99;
+    animation: slideUpBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 1px solid rgba(33, 194, 94, 0.1);
+}
+
+@keyframes slideUpBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    60% {
+        transform: translateY(-5px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.menu-opcao {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 240px;
+    position: relative;
+}
+
+.menu-opcao::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: #21C25E;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.menu-opcao:hover::before {
+    transform: scaleY(1);
+}
+
+.menu-opcao:not(:last-child) {
+    border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+}
+
+.menu-opcao:hover {
+    background: linear-gradient(90deg, rgba(33, 194, 94, 0.08) 0%, transparent 100%);
+    transform: translateX(4px);
+}
+
+.menu-opcao:active {
+    background: rgba(33, 194, 94, 0.12);
+    transform: translateX(4px) scale(0.98);
+}
+
+.menu-opcao .material-icons {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.menu-opcao:nth-child(1) .material-icons {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    color: #21C25E;
+}
+
+.menu-opcao:nth-child(2) .material-icons {
+    background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+    color: #D32F2F;
+}
+
+.menu-opcao:nth-child(3) .material-icons {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    color: #2196F3;
+}
+
+.menu-opcao:hover .material-icons {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menu-opcao span:last-child {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    letter-spacing: 0.3px;
+}
+
+/* Responsividade móvel */
+@media (max-width: 600px) {
+    .barra-navegacao-inferior {
+        height: 68px;
+        padding: 0 2px;
+    }
+    .item-navegacao {
+        font-size: 0.8rem;
+        padding: 6px 2px;
+    }
+    .botao-adicionar-menu {
+        width: 50px;
+        height: 50px;
+        font-size: 1.7rem;
+        margin-top: -24px;
+    }
+    .botao-adicionar-menu .material-icons-round {
+        font-size: 1.7rem;
+    }
+}
+
+
+/* Bot�o vermelho para despesas */
+.botao-adicionar-menu.botao-despesa { background: #D32F2F !important; box-shadow: 0 6px 24px rgba(211,47,47,0.35) !important; }
+.botao-adicionar-menu.botao-despesa:hover { background: #B71C1C !important; box-shadow: 0 8px 28px rgba(211,47,47,0.45) !important; }
+
+
+
+/* === BOT�O VERMELHO PARA DESPESAS === */
+.botao-adicionar-menu.botao-despesa {
+    background: #D32F2F !important;
+    box-shadow: 0 6px 24px rgba(211,47,47,0.35) !important;
+}
+
+.botao-adicionar-menu.botao-despesa:hover {
+    background: #B71C1C !important;
+    box-shadow: 0 8px 28px rgba(211,47,47,0.45) !important;
 }

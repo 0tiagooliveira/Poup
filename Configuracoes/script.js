@@ -143,7 +143,33 @@ let configuracoes = {
     moeda: 'BRL'
 };
 
+// Configurar menu adicionar
+function configurarMenuAdicionar() {
+    const botaoAdicionar = document.getElementById('botao-adicionar-config');
+    const menu = document.getElementById('menu-adicionar-config');
+
+    if (!botaoAdicionar || !menu) return;
+
+    botaoAdicionar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (menu.style.display === 'none' || !menu.style.display) {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && e.target !== botaoAdicionar && !botaoAdicionar.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    configurarMenuAdicionar();
+    inicializarFotoPerfil();
+    
     // Verificar autenticação
     auth.onAuthStateChanged(user => {
         if (!user) {
@@ -256,23 +282,116 @@ function salvarPerfil() {
     
     const user = auth.currentUser;
     
-    user.updateProfile({
-        displayName: nome
-    }).then(() => {
-        // Salvar no Firestore também
-        return db.collection('users').doc(user.uid).update({
-            name: nome,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    }).then(() => {
-        mostrarLoading('btn-salvar-perfil', false);
-        fecharPopup('popup-editar-perfil');
-        mostrarSucesso('Perfil Atualizado', 'Suas informações foram atualizadas com sucesso!');
-    }).catch(error => {
-        console.error('Erro ao atualizar perfil:', error);
-        mostrarLoading('btn-salvar-perfil', false);
-        mostrarErro('Erro', 'Não foi possível atualizar o perfil. Tente novamente.');
-    });
+    // Função para atualizar o perfil
+    async function atualizarPerfil() {
+        try {
+            let fotoURL = null;
+            
+            // Processar foto de perfil
+            if (fotoPerfilAtual) {
+                if (fotoPerfilAtual === 'removed') {
+                    fotoURL = null; // Remover foto
+                } else if (typeof fotoPerfilAtual === 'object') {
+                    // Nova foto selecionada - converter para Base64
+                    try {
+                        fotoURL = await fileToBase64(fotoPerfilAtual);
+                        
+                        // Verificar tamanho da string Base64 (Firebase Auth tem limite)
+                        if (fotoURL.length > 100000) { // ~100KB limit
+                            throw new Error('Imagem muito grande. Tente uma imagem menor.');
+                        }
+                    } catch (imageError) {
+                        console.error('Erro ao processar imagem:', imageError);
+                        mostrarLoading('btn-salvar-perfil', false);
+                        mostrarErro('Erro na Imagem', imageError.message || 'Erro ao processar a imagem. Tente uma imagem menor.');
+                        return;
+                    }
+                } else if (typeof fotoPerfilAtual === 'string') {
+                    // Manter foto atual
+                    fotoURL = fotoPerfilAtual;
+                }
+            }
+            
+            // Preparar dados para Firebase Auth (apenas nome, sem foto devido ao limite de tamanho)
+            const authUpdateData = { displayName: nome };
+            
+            // Atualizar profile do Firebase Auth apenas se necessário
+            try {
+                await user.updateProfile(authUpdateData);
+                console.log('✅ Firebase Auth profile atualizado');
+            } catch (authError) {
+                console.error('❌ Erro no Firebase Auth:', authError);
+                // Continue mesmo com erro no Auth, tente salvar no Firestore
+            }
+            
+            // Preparar dados para Firestore
+            const updateData = {
+                name: nome,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            if (fotoPerfilAtual === 'removed') {
+                updateData.fotoPerfilURL = firebase.firestore.FieldValue.delete();
+            } else if (fotoURL && typeof fotoPerfilAtual === 'object') {
+                // Só atualizar se for nova foto
+                updateData.fotoPerfilURL = fotoURL;
+            }
+            
+            // Salvar no Firestore (criar se não existir)
+            try {
+                await db.collection('users').doc(user.uid).set(updateData, { merge: true });
+                console.log('✅ Documento de usuário salvo/atualizado no Firestore');
+            } catch (firestoreError) {
+                console.error('❌ Erro ao salvar no Firestore:', firestoreError);
+                // Se falhar o update, tentar criar
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        name: nome,
+                        email: user.email,
+                        fotoPerfilURL: fotoURL || null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Documento de usuário criado no Firestore');
+                } catch (createError) {
+                    console.error('❌ Erro ao criar documento no Firestore:', createError);
+                    throw createError;
+                }
+            }
+            
+            mostrarLoading('btn-salvar-perfil', false);
+            fecharPopup('popup-editar-perfil');
+            mostrarSucesso('Perfil Atualizado', 'Suas informações foram atualizadas com sucesso!');
+            
+            // Atualizar avatar na Home se estiver na mesma aba
+            atualizarAvatarHome(fotoURL);
+            
+        } catch (error) {
+            console.error('❌ Erro ao atualizar perfil:', error);
+            console.error('❌ Detalhes do erro:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
+            
+            mostrarLoading('btn-salvar-perfil', false);
+            
+            // Mensagem de erro mais específica
+            let mensagemErro = 'Não foi possível atualizar o perfil. Tente novamente.';
+            
+            if (error.code === 'auth/invalid-photo-url') {
+                mensagemErro = 'Formato de imagem inválido. Tente uma imagem JPG ou PNG.';
+            } else if (error.code === 'auth/argument-error') {
+                mensagemErro = 'Dados inválidos. Verifique se todos os campos estão preenchidos corretamente.';
+            } else if (error.message && error.message.includes('imagem')) {
+                mensagemErro = error.message;
+            }
+            
+            mostrarErro('Erro', mensagemErro);
+        }
+    }
+    
+    atualizarPerfil();
 }
 
 function alterarSenha() {
@@ -461,4 +580,177 @@ function fazerLogout() {
             mostrarErro('Erro', 'Não foi possível sair da conta.');
         });
     });
+}
+
+// =====================
+// SISTEMA DE FOTO DE PERFIL
+// =====================
+
+let fotoPerfilAtual = null;
+
+// Inicializar sistema de foto de perfil
+function inicializarFotoPerfil() {
+    const inputFoto = document.getElementById('input-foto-perfil');
+    if (inputFoto) {
+        inputFoto.addEventListener('change', handleFotoSelecionada);
+    }
+    carregarFotoPerfilAtual();
+}
+
+// Carregar foto atual do usuário
+function carregarFotoPerfilAtual() {
+    const user = auth.currentUser;
+    if (user && user.uid) {
+        db.collection('users').doc(user.uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    if (userData.fotoPerfilURL) {
+                        mostrarFotoPerfil(userData.fotoPerfilURL);
+                        fotoPerfilAtual = userData.fotoPerfilURL;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar foto de perfil:', error);
+            });
+    }
+}
+
+// Mostrar foto de perfil no preview
+function mostrarFotoPerfil(url) {
+    const preview = document.getElementById('foto-perfil-preview');
+    const btnRemover = document.getElementById('btn-remover-foto');
+    
+    if (preview && url) {
+        preview.innerHTML = `<img src="${url}" alt="Foto de Perfil">`;
+        if (btnRemover) {
+            btnRemover.style.display = 'flex';
+        }
+    }
+}
+
+// Lidar com foto selecionada
+function handleFotoSelecionada(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Validar tamanho (máx 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            mostrarWarning('Arquivo muito grande', 'A foto deve ter no máximo 5MB.');
+            return;
+        }
+        
+        // Validar tipo
+        if (!file.type.startsWith('image/')) {
+            mostrarWarning('Tipo inválido', 'Por favor, selecione apenas arquivos de imagem.');
+            return;
+        }
+        
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            mostrarFotoPerfil(e.target.result);
+            fotoPerfilAtual = file; // Guardar arquivo para upload
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Remover foto de perfil
+function removerFotoPerfil() {
+    const preview = document.getElementById('foto-perfil-preview');
+    const btnRemover = document.getElementById('btn-remover-foto');
+    const inputFoto = document.getElementById('input-foto-perfil');
+    
+    if (preview) {
+        preview.innerHTML = '<span class="material-icons-round">account_circle</span>';
+    }
+    if (btnRemover) {
+        btnRemover.style.display = 'none';
+    }
+    if (inputFoto) {
+        inputFoto.value = '';
+    }
+    
+    fotoPerfilAtual = 'removed';
+}
+
+// Converter arquivo para Base64 comprimido para salvar no Firestore
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        // Verificar tamanho do arquivo (máximo 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            reject(new Error('Arquivo muito grande. Máximo 5MB.'));
+            return;
+        }
+        
+        // Criar canvas para compressão
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            // Definir tamanho máximo menor para avatar (150x150)
+            const maxSize = 150;
+            let { width, height } = img;
+            
+            // Calcular proporções
+            if (width > height) {
+                if (width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                }
+            } else {
+                if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+            }
+            
+            // Configurar canvas
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Desenhar imagem redimensionada
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Converter para Base64 com qualidade mais baixa para reduzir tamanho
+            let quality = 0.5;
+            let base64 = canvas.toDataURL('image/jpeg', quality);
+            
+            // Se ainda muito grande, reduzir qualidade
+            while (base64.length > 50000 && quality > 0.1) {
+                quality -= 0.1;
+                base64 = canvas.toDataURL('image/jpeg', quality);
+            }
+            
+            console.log(`📷 Imagem processada: ${Math.round(base64.length/1024)}KB, qualidade: ${Math.round(quality*100)}%`);
+            resolve(base64);
+        };
+        
+        img.onerror = () => reject(new Error('Formato de imagem inválido'));
+        
+        // Carregar arquivo
+        const reader = new FileReader();
+        reader.onload = (e) => img.src = e.target.result;
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+        reader.readAsDataURL(file);
+    });
+}
+
+// Atualizar avatar na Home (comunicação entre páginas)
+function atualizarAvatarHome(fotoURL) {
+    // Usar localStorage para comunicar mudança
+    if (fotoURL) {
+        localStorage.setItem('avatarUsuario', fotoURL);
+    } else {
+        localStorage.removeItem('avatarUsuario');
+    }
+    
+    // Disparar evento customizado para outras abas
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('avatarAtualizado', { 
+            detail: { fotoURL } 
+        }));
+    }
 }

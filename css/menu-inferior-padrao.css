@@ -1,0 +1,144 @@
+/* CSS para menu inferior padronizado */
+.barra-navegacao-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-top: 1px solid #e1e5e9;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.item-navegacao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 12px;
+    min-width: 60px;
+}
+
+.item-navegacao:hover {
+    color: #21C25E;
+    background-color: rgba(33, 194, 94, 0.1);
+}
+
+.item-navegacao.ativo {
+    color: #21C25E;
+    font-weight: 600;
+}
+
+.item-navegacao span:first-child {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.item-navegacao span:last-child {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.botao-adicionar-menu {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #21C25E, #1a9d4d);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(33, 194, 94, 0.3);
+}
+
+.botao-adicionar-menu:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(33, 194, 94, 0.4);
+}
+
+.botao-adicionar-menu span {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.menu-adicionar {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    padding: 16px;
+    min-width: 200px;
+}
+
+.menu-opcao {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 8px;
+}
+
+.menu-opcao:last-child {
+    margin-bottom: 0;
+}
+
+.menu-opcao:hover {
+    background-color: #f8f9fa;
+}
+
+.menu-opcao span:first-child {
+    margin-right: 12px;
+    font-size: 20px;
+    color: #6c757d;
+}
+
+.menu-opcao span:last-child {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2b2d42;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .barra-navegacao-inferior {
+        padding: 6px 0;
+    }
+    
+    .item-navegacao {
+        padding: 6px 8px;
+        min-width: 50px;
+    }
+    
+    .item-navegacao span:first-child {
+        font-size: 22px;
+    }
+    
+    .item-navegacao span:last-child {
+        font-size: 11px;
+    }
+    
+    .botao-adicionar-menu {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .botao-adicionar-menu span {
+        font-size: 20px;
+    }
+}

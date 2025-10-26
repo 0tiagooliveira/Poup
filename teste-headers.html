@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Headers Padronizados</title>
+    <link rel="stylesheet" href="css/header-padrao.css">
+    <link rel="stylesheet" href="css/header-despesas.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+        .content {
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header vermelho para despesas -->
+    <header class="header">
+        <div class="header-container">
+            <button class="btn-voltar" onclick="window.history.back()">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h1 class="header-title">Lista de Despesas (Header Vermelho)</h1>
+            <div class="dropdown-container">
+                <button class="btn-dropdown" onclick="toggleDropdown(event)">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item active">
+                        <span class="material-icons-round">receipt_long</span>
+                        Lista de Despesas
+                    </a>
+                    <a href="Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
+                        <span class="material-icons-round">payment</span>
+                        Lista de Receitas
+                    </a>
+                    <a href="Transações/Transações.html" class="dropdown-item">
+                        <span class="material-icons-round">swap_horiz</span>
+                        Transações
+                    </a>
+                    <a href="Gráficos/Gráficos.html" class="dropdown-item">
+                        <span class="material-icons-round">bar_chart</span>
+                        Gráficos
+                    </a>
+                    <a href="Configuracoes/Configuracoes.html" class="dropdown-item">
+                        <span class="material-icons-round">settings</span>
+                        Configurações
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="test-section">
+            <h2>✅ Correções Implementadas:</h2>
+            <ul>
+                <li><strong>Header vermelho para despesas:</strong> Lista-de-despesas agora tem header vermelho</li>
+                <li><strong>Lista de cartões padronizada:</strong> Header agora segue o padrão estabelecido</li>
+                <li><strong>Configurações corrigida:</strong> Removido CSS conflitante do styles.css local</li>
+                <li><strong>Nova-Despesa e Nova-Receita:</strong> Removido header padrão conforme solicitado</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Páginas com Header Padrão:</h2>
+            <ul>
+                <li>Lista-de-despesas (com CSS vermelho)</li>
+                <li>Lista-de-receitas</li>
+                <li>Transações</li>
+                <li>Gráficos</li>
+                <li>Lista-de-cartoes</li>
+                <li>Configurações</li>
+                <li>Contas</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🚫 Páginas SEM Header Padrão (mantidas originais):</h2>
+            <ul>
+                <li>Nova-Despesa</li>
+                <li>Nova-Receita</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/header-padrao.js"></script>
+</body>
+</html>

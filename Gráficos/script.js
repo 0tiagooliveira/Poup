@@ -1,4 +1,4 @@
-// === FIREBASE E CONFIGURAÇÃO ===
+﻿// === FIREBASE E CONFIGURAÇÃO ===
 // Usando Firebase v8 para compatibilidade
 
 // Configuração do Firebase (mesma da home)
@@ -63,8 +63,8 @@ let dadosBrutos = {
 };
 
 // Estado atual dos gráficos
-let tipoAtivo = 'linha'; // Inicia com gráfico de linha
-let categoriaAtiva = 'despesas-mes'; // Mostra o mês atual
+let tipoAtivo = 'donut'; // Inicia com gráfico de rosca (Despesas por categoria)
+let categoriaAtiva = 'despesas-categoria'; // Mostra despesas por categoria
 let graficoAtual = null;
 
 // Período selecionado
@@ -84,8 +84,33 @@ logInfo('🗄', 'Firestore conectado');
 logInfo('🔐', 'Auth conectado');
 
 // Aguardar DOM e autenticação
+// Configurar menu adicionar
+function configurarMenuAdicionar() {
+    const botaoAdicionar = document.getElementById('botao-adicionar-graficos');
+    const menu = document.getElementById('menu-adicionar-graficos');
+
+    if (!botaoAdicionar || !menu) return;
+
+    botaoAdicionar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (menu.style.display === 'none' || !menu.style.display) {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && e.target !== botaoAdicionar && !botaoAdicionar.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     logInfo('🏠', 'DOM carregado, inicializando aplicação...');
+    
+    configurarMenuAdicionar();
     
     // Verificar autenticação
     auth.onAuthStateChanged((user) => {
@@ -557,30 +582,30 @@ function mapearCategoria(categoria) {
 
 // === INICIALIZAÇÃO DA UI ===
 function inicializarUIInicial() {
-    // Ativar botão de linha
+    // Ativar botão de rosca/donut
     document.querySelectorAll('.tipo-grafico').forEach(btn => {
-        if (btn.dataset.tipo === 'linha') {
+        if (btn.dataset.tipo === 'donut' || btn.dataset.tipo === 'rosca') {
             btn.classList.add('ativo');
         } else {
             btn.classList.remove('ativo');
         }
     });
     
-    // Ativar filtro de despesas do mês
+    // Ativar filtro de despesas por categoria
     document.querySelectorAll('.filtro-categoria').forEach(btn => {
-        if (btn.dataset.categoria === 'despesas-mes') {
+        if (btn.dataset.categoria === 'despesas-categoria') {
             btn.classList.add('ativo');
         } else {
             btn.classList.remove('ativo');
         }
     });
     
-    // Mostrar filtros de linha, ocultar os outros
-    document.getElementById('filtros-donut').style.display = 'none';
-    document.getElementById('filtros-linha').style.display = 'flex';
+    // Mostrar filtros de donut/rosca, ocultar os outros
+    document.getElementById('filtros-donut').style.display = 'flex';
+    document.getElementById('filtros-linha').style.display = 'none';
     document.getElementById('filtros-colunas').style.display = 'none';
     
-    logInfo('✅', 'UI inicializada com gráfico de linha (mês atual)');
+    logInfo('✅', 'UI inicializada com gráfico de rosca (Despesas por categoria)');
 }
 
 // === CONTROLES ===
@@ -588,7 +613,30 @@ function inicializarControles() {
     // Botões de tipo
     document.querySelectorAll('.tipo-grafico').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            tipoAtivo = e.currentTarget.dataset.tipo;
+            const novoTipo = e.currentTarget.dataset.tipo;
+            
+            // Se mudou o tipo de gráfico, ajustar categoria padrão
+            if (novoTipo !== tipoAtivo) {
+                if (novoTipo === 'linha') {
+                    // Ao clicar em linha, mostrar Despesas da semana
+                    categoriaAtiva = 'despesas-semana';
+                } else if (novoTipo === 'colunas') {
+                    // Ao clicar em barras, mostrar Balanço mensal
+                    categoriaAtiva = 'balanco-mensal';
+                } else if (novoTipo === 'donut' || novoTipo === 'rosca') {
+                    // Ao clicar em rosca, mostrar Despesas por categoria
+                    categoriaAtiva = 'despesas-categoria';
+                }
+                
+                // Atualizar botões de categoria ativos
+                document.querySelectorAll('.filtro-categoria').forEach(b => b.classList.remove('ativo'));
+                const btnCategoriaCorrespondente = document.querySelector(`.filtro-categoria[data-categoria="${categoriaAtiva}"]`);
+                if (btnCategoriaCorrespondente) {
+                    btnCategoriaCorrespondente.classList.add('ativo');
+                }
+            }
+            
+            tipoAtivo = novoTipo;
             
             // Atualizar UI
             document.querySelectorAll('.tipo-grafico').forEach(b => b.classList.remove('ativo'));
@@ -817,12 +865,6 @@ function criarGraficoDonut(ctx, dados) {
     // Calcular total
     const total = valores.reduce((a, b) => a + b, 0);
     
-    // Atualizar o valor total exibido
-    const valorTotalElement = document.querySelector('#valor-total .valor');
-    if (valorTotalElement) {
-        valorTotalElement.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
-    
     try {
         graficoAtual = new Chart(ctx, {
             type: 'doughnut',
@@ -854,7 +896,8 @@ function criarGraficoDonut(ctx, dados) {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const valor = context.parsed;
-                                const porcentagem = ((valor / total) * 100).toFixed(1);
+                                const porcentagemNum = ((valor / total) * 100);
+                                const porcentagem = porcentagemNum % 1 === 0 ? porcentagemNum.toFixed(0) : porcentagemNum.toFixed(1);
                                 return `${context.label}: R$ ${valor.toFixed(2)} (${porcentagem}%)`;
                             }
                         }
@@ -922,12 +965,6 @@ function criarGraficoLinha(ctx, dados) {
     
     // Calcular total
     const total = valores.reduce((a, b) => a + b, 0);
-    
-    // Atualizar valor total
-    const valorTotalElement = document.querySelector('#valor-total .valor');
-    if (valorTotalElement) {
-        valorTotalElement.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
     
     try {
         graficoAtual = new Chart(ctx, {
@@ -1657,7 +1694,8 @@ function atualizarListaItens(dados) {
     // Criar item para cada categoria
     labels.forEach((label, index) => {
         const valor = dados[label];
-        const porcentagem = ((valor / total) * 100).toFixed(2);
+        const porcentagemNum = ((valor / total) * 100);
+        const porcentagem = porcentagemNum % 1 === 0 ? porcentagemNum.toFixed(0) : porcentagemNum.toFixed(1);
         
         const item = document.createElement('div');
         item.className = 'item-lista';

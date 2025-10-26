@@ -24,8 +24,7 @@ if (firebase && !firebase.apps.length) {
 // Usar instâncias existentes ou criar novas (sem redeclarar)
 const notifDb = firebase.firestore();
 const notifAuth = firebase.auth();
-
-// Função para salvar notificação diretamente no Firestore
+            // Função para salvar notificação diretamente no Firestore
 async function salvarNotificacaoFirestore(notificacao) {
     try {
         const user = notifAuth.currentUser;
@@ -50,6 +49,7 @@ async function salvarNotificacaoFirestore(notificacao) {
     }
 }
 
+// Função para verificar se o sistema de notificações está disponível
 // Função para verificar se o sistema de notificações está disponível
 function verificarSistemaNotificacoes() {
     return typeof window !== 'undefined' && 
@@ -112,7 +112,15 @@ window.criarNotificacaoNovaReceita = async function(receita) {
     console.log('📢 [notificacoes-utils] Dados da receita:', receita);
     
     try {
-        const valor = receita.valor || 0;
+        // Converter valor para número se for string formatada
+        let valor = receita.valor || 0;
+        if (typeof valor === 'string') {
+            // Remove formatação e converte para número
+            valor = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+        }
+        
+        console.log('📢 [notificacoes-utils] Valor processado:', valor);
+        
         const formatCurrency = (val) => {
             const num = typeof val === 'number' ? val : parseFloat(val) || 0;
             return new Intl.NumberFormat('pt-BR', {
@@ -121,11 +129,17 @@ window.criarNotificacaoNovaReceita = async function(receita) {
             }).format(num);
         };
         
+        // Criar mensagem com categoria em vez de valor
+        const categoria = receita.categoria || 'Categoria não definida';
+        const mensagem = `Receita "${receita.descricao || 'Nova receita'}" foi criada na categoria ${categoria}!`;
+        
         const notificacao = {
             tipo: 'receita_criada',
             titulo: 'Nova receita adicionada',
-            mensagem: `Receita "${receita.descricao || 'Nova receita'}" de ${formatCurrency(valor)} foi criada!`,
-            icone: 'trending_up',
+            mensagem: mensagem,
+            icone: receita.icone || receita.categoria?.icone || 'trending_up',
+            cor: '#4CAF50', // Verde para receitas
+            valor: valor,
             dados: { receitaId: receita.id }
         };
         
@@ -170,7 +184,15 @@ window.criarNotificacaoNovaReceita = async function(receita) {
 window.criarNotificacaoNovaDespesa = async function(despesa) {
     console.log('💸 Criando notificação de nova despesa:', despesa);
     try {
-        const valor = despesa.valor || 0;
+        // Converter valor para número se for string formatada
+        let valor = despesa.valor || 0;
+        if (typeof valor === 'string') {
+            // Remove formatação e converte para número
+            valor = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+        }
+        
+        console.log('💸 Valor processado para despesa:', valor);
+        
         const formatCurrency = (val) => {
             const num = typeof val === 'number' ? val : parseFloat(val) || 0;
             return new Intl.NumberFormat('pt-BR', {
@@ -179,11 +201,17 @@ window.criarNotificacaoNovaDespesa = async function(despesa) {
             }).format(num);
         };
         
+        // Criar mensagem com categoria em vez de valor
+        const categoria = despesa.categoria || 'Categoria não definida';
+        const mensagem = `Despesa "${despesa.descricao || 'Nova despesa'}" foi criada na categoria ${categoria}!`;
+        
         const notificacao = {
             tipo: 'despesa_criada',
             titulo: 'Nova despesa adicionada',
-            mensagem: `Despesa "${despesa.descricao || 'Nova despesa'}" de ${formatCurrency(valor)} foi criada!`,
-            icone: 'trending_down',
+            mensagem: mensagem,
+            icone: despesa.icone || despesa.categoria?.icone || 'trending_down',
+            cor: '#D32F2F', // Vermelho para despesas
+            valor: valor,
             dados: { despesaId: despesa.id }
         };
 
@@ -336,40 +364,40 @@ window.criarNotificacaoDespesaExcluida = async function(despesa) {
 // Função para processar notificações pendentes (chamar na Home)
 window.processarNotificacoesPendentes = async function() {
     console.log('🔄 Processando notificações pendentes...');
+    
     try {
-        const notificacoesPendentesString = localStorage.getItem('notificacoesPendentes');
-        console.log('📱 LocalStorage notificacoesPendentes:', notificacoesPendentesString);
+        // Primeiro verificar se temos um usuário autenticado
+        const user = notifAuth.currentUser;
+        if (!user) {
+            console.log('❌ Usuário não autenticado');
+            return;
+        }
+
+        console.log(`👤 Processando notificações individuais pendentes`);
         
-        const notificacoesPendentes = JSON.parse(notificacoesPendentesString || '[]');
+
+        // Processar notificações pendentes do localStorage (se houver)
+        const notificacoesPendentes = JSON.parse(localStorage.getItem('notificacoesPendentes') || '[]');
+        console.log('📱 LocalStorage notificacoesPendentes:', localStorage.getItem('notificacoesPendentes'));
         console.log('📋 Notificações pendentes encontradas:', notificacoesPendentes.length);
         
         if (notificacoesPendentes.length > 0) {
-            console.log('📌 Notificações Manager disponível:', !!window.notificacoesManager);
+            console.log('🔄 Processando notificações pendentes do localStorage...');
             
-            if (window.notificacoesManager) {
-                for (const notificacao of notificacoesPendentes) {
-                    console.log('⏰ Processando notificação:', notificacao);
-                    
-                    // Criar notificação se foi criada nos últimos 5 minutos
-                    if (Date.now() - notificacao.timestamp < 5 * 60 * 1000) {
-                        const { timestamp, ...dadosNotificacao } = notificacao;
-                        console.log('✅ Criando notificação:', dadosNotificacao);
-                        await window.notificacoesManager.criarNotificacao(dadosNotificacao);
-                    } else {
-                        console.log('⏳ Notificação muito antiga, ignorando:', notificacao);
-                    }
+            for (const notificacao of notificacoesPendentes) {
+                if (window.notificacoesManager) {
+                    await window.notificacoesManager.criarNotificacao(notificacao);
                 }
-                
-                // Limpar notificações pendentes
-                localStorage.removeItem('notificacoesPendentes');
-                console.log('🗑️ Notificações pendentes removidas do localStorage');
-            } else {
-                console.log('❌ Notificações Manager não disponível');
             }
+            
+            // Limpar localStorage após processar
+            localStorage.removeItem('notificacoesPendentes');
+            console.log('✅ Notificações pendentes processadas e localStorage limpo');
         } else {
             console.log('📭 Nenhuma notificação pendente encontrada');
         }
+        
     } catch (error) {
-        console.error('❌ Erro ao processar notificações pendentes:', error);
+        console.error('❌ Erro ao processar notificações:', error);
     }
 };
