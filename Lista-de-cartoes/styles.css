@@ -123,6 +123,10 @@ body {
     align-items: center;
     justify-content: space-between;
     padding-bottom: 16px;
+<<<<<<< HEAD
+=======
+    margin: 0;
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 .botao-navegacao {
@@ -211,6 +215,7 @@ body {
 
 /* === RESUMO === */
 .secao-resumo {
+<<<<<<< HEAD
     background: var(--cor-branco);
     border-radius: var(--radius);
     padding: 20px;
@@ -222,6 +227,53 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+=======
+    display: flex;
+    justify-content: flex-start;
+    gap: 48px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: var(--cor-fundo-conteudo);
+    z-index: 10;
+    padding: 16px 0;
+    margin: -16px 0 12px 0;
+}
+
+.secao-resumo.compacta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 8px 16px;
+    width: 100%;
+    margin: 0;
+    background-color: var(--cor-branco);
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+}
+
+.secao-resumo.compacta .resumo-bloco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.secao-resumo.compacta .resumo-label {
+    font-size: 0.85rem;
+    color: var(--cor-texto-secundario);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.secao-resumo.compacta .resumo-valor {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--cor-texto);
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 .resumo-bloco {
@@ -952,3 +1004,14 @@ body {
         gap: 12px;
     }
 }
+<<<<<<< HEAD
+=======
+
+@media (max-width: 768px) {
+    .secao-resumo {
+        flex-direction: column;
+        gap: 12px;
+        padding: 0 16px;
+    }
+}
+>>>>>>> 3b0767c (Cartões de Crédito)

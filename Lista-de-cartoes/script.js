@@ -52,6 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarEventos();
     atualizarMesDisplay();
     verificarAutenticacao();
+<<<<<<< HEAD
+=======
+    
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    dropdownMenu.style.display = 'none';
+>>>>>>> 3b0767c (Cartões de Crédito)
 });
 
 // === CONFIGURAR EVENTOS ===
@@ -116,6 +122,18 @@ function configurarEventos() {
             e.target.style.display = 'none';
         }
     });
+<<<<<<< HEAD
+=======
+    
+    document.addEventListener('click', (event) => {
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        const tituloPagina = document.querySelector('.titulo-pagina');
+
+        if (dropdownMenu.style.display === 'block' && !tituloPagina.contains(event.target)) {
+            dropdownMenu.style.display = 'none';
+        }
+    });
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 // === ATUALIZAR MÊS DISPLAY ===
@@ -574,4 +592,15 @@ function formatarMoeda(valor) {
     }).format(valor);
 }
 
+<<<<<<< HEAD
+=======
+function toggleDropdown() {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+}
+
+const tituloPagina = document.querySelector('.titulo-pagina');
+tituloPagina.addEventListener('click', toggleDropdown);
+
+>>>>>>> 3b0767c (Cartões de Crédito)
 console.log('✅ Script Lista de Cartões carregado');

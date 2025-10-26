@@ -214,6 +214,14 @@ document.addEventListener('DOMContentLoaded', function() {
             fecharPopup(e.target.id);
         }
     });
+<<<<<<< HEAD
+=======
+    
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    if (dropdownMenu) {
+        dropdownMenu.style.display = 'none';
+    }
+>>>>>>> 3b0767c (Cartões de Crédito)
 });
 
 function carregarDadosUsuario(user) {

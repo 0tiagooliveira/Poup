@@ -1402,4 +1402,104 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+<<<<<<< HEAD
 });
+=======
+});
+
+// Função para carregar cartões
+function carregarCartoes() {
+    const seletorCartao = document.getElementById('seletor-cartao');
+    const opcoesCartao = seletorCartao.querySelector('.opcoes-cartao');
+
+    if (!opcoesCartao) return;
+
+    opcoesCartao.innerHTML = '';
+
+    const cartoes = [
+        { id: '1', nome: 'Cartão Visa', bandeira: 'visa' },
+        { id: '2', nome: 'Cartão MasterCard', bandeira: 'mastercard' },
+        { id: '3', nome: 'Cartão Elo', bandeira: 'elo' }
+    ];
+
+    cartoes.forEach(cartao => {
+        const opcao = document.createElement('div');
+        opcao.className = 'opcao-cartao';
+        opcao.setAttribute('data-id', cartao.id);
+        opcao.innerHTML = `
+            <span class="material-icons">credit_card</span>
+            <span>${cartao.nome}</span>
+        `;
+
+        opcao.addEventListener('click', function() {
+            const opcaoSelecionada = seletorCartao.querySelector('.opcao-selecionada');
+            opcaoSelecionada.innerHTML = `
+                <span class="material-icons">credit_card</span>
+                <span>${cartao.nome}</span>
+            `;
+            opcoesCartao.classList.remove('mostrar');
+        });
+
+        opcoesCartao.appendChild(opcao);
+    });
+
+    seletorCartao.querySelector('.opcao-selecionada').addEventListener('click', function() {
+        opcoesCartao.classList.toggle('mostrar');
+    });
+}
+
+// Chamar a função ao carregar a página
+document.addEventListener('DOMContentLoaded', carregarCartoes);
+
+// Função para carregar cartões do Firebase
+function carregarCartoesDoFirebase() {
+    const seletorCartao = document.getElementById('seletor-cartao');
+    const opcoesCartao = seletorCartao.querySelector('.opcoes-cartao');
+
+    if (!opcoesCartao) return;
+
+    opcoesCartao.innerHTML = '';
+
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        const user = firebase.auth().currentUser;
+        if (user) {
+            firebase.firestore().collection('cartoes')
+                .where('userId', '==', user.uid)
+                .get()
+                .then(snapshot => {
+                    snapshot.forEach(doc => {
+                        const cartao = doc.data();
+                        const opcao = document.createElement('div');
+                        opcao.className = 'opcao-cartao';
+                        opcao.setAttribute('data-id', doc.id);
+                        opcao.innerHTML = `
+                            <span class="material-icons">credit_card</span>
+                            <span>${cartao.nome}</span>
+                        `;
+
+                        opcao.addEventListener('click', function() {
+                            const opcaoSelecionada = seletorCartao.querySelector('.opcao-selecionada');
+                            opcaoSelecionada.innerHTML = `
+                                <span class="material-icons">credit_card</span>
+                                <span>${cartao.nome}</span>
+                            `;
+                            opcoesCartao.classList.remove('mostrar');
+                        });
+
+                        opcoesCartao.appendChild(opcao);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar cartões do Firebase:', error);
+                });
+        }
+    }
+
+    seletorCartao.querySelector('.opcao-selecionada').addEventListener('click', function() {
+        opcoesCartao.classList.toggle('mostrar');
+    });
+}
+
+// Chamar a função ao carregar a página
+document.addEventListener('DOMContentLoaded', carregarCartoesDoFirebase);
+>>>>>>> 3b0767c (Cartões de Crédito)

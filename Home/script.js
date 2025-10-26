@@ -898,6 +898,7 @@ function renderizarCartoesCredito(cartoes) {
             const faturaAtualFormatada = cartao.valorFatura ? `R$ ${cartao.valorFatura.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ 0,00';
             const limitePorcentagem = cartao.limite > 0 ? ((cartao.utilizado || 0) / cartao.limite * 100).toFixed(1) : 0;
             
+<<<<<<< HEAD
             const cartaoHTML = `
                 <div class="cartao-credito-home" onclick="window.location.href='../Lista-de-cartoes/Lista-de-cartoes.html'">
                     <div class="cartao-credito-header">
@@ -916,12 +917,78 @@ function renderizarCartoesCredito(cartoes) {
                             <div class="limite-total">
                                 <span class="label">Limite</span>
                                 <span class="valor">${limiteTotalFormatado}</span>
+=======
+            // Obter ícone SVG e cor do banco
+            let iconeSvg = null;
+            let corBanco = '#820ad1'; // Padrão Nubank
+            
+            if (cartao.nomeBanco) {
+                const banco = cartao.nomeBanco.toLowerCase();
+                
+                // Buscar ícone SVG usando o mesmo sistema das contas
+                if (bancosIcones[cartao.nomeBanco]) {
+                    iconeSvg = bancosIcones[cartao.nomeBanco];
+                }
+                
+                // Buscar cor do banco
+                const corEncontrada = bancosCores.find(b => banco.includes(b.chave));
+                if (corEncontrada) {
+                    corBanco = corEncontrada.hex;
+                }
+            }
+            
+            // Se não encontrou ícone específico, usar ícones padrão baseado no nome
+            if (!iconeSvg) {
+                const banco = (cartao.nomeBanco || '').toLowerCase();
+                if (banco.includes('nubank')) {
+                    iconeSvg = '../Icon/Nubank.svg';
+                } else if (banco.includes('bradesco')) {
+                    iconeSvg = '../Icon/bradesco.svg';
+                } else if (banco.includes('itau') || banco.includes('itaú')) {
+                    iconeSvg = '../Icon/itau.svg';
+                } else if (banco.includes('santander')) {
+                    iconeSvg = '../Icon/santander.svg';
+                } else if (banco.includes('caixa')) {
+                    iconeSvg = '../Icon/caixa.svg';
+                } else if (banco.includes('banco do brasil') || banco.includes('bb')) {
+                    iconeSvg = '../Icon/banco-do-brasil.svg';
+                } else if (banco.includes('picpay')) {
+                    iconeSvg = '../Icon/picpay.svg';
+                }
+            }
+            
+            const cartaoHTML = `
+                <div class="cartao-credito-home" onclick="window.location.href='../Lista-de-cartoes/Lista-de-cartoes.html'">
+                    <div class="cartao-credito-header">
+                        <div class="cartao-credito-left">
+                            <div class="cartao-credito-icone conta-ux-icone conta-ux-icone-svg" data-color="${corBanco}" style="background:${corBanco};border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
+                                ${iconeSvg ? `<img src="${iconeSvg}" alt="${cartao.nomeBanco || 'Banco'}" style="width:28px;height:28px;object-fit:contain;">` : 
+                                `<span class="material-icons-round" style="color:white;">credit_card</span>`}
+                            </div>
+                            <div class="cartao-credito-info">
+                                <h4>${cartao.nomeBanco || cartao.nomeCartao || 'Cartão'}</h4>
+                                <p class="cartao-bandeira">${cartao.bandeira || cartao.tipo || 'Mastercard'}</p>
+                            </div>
+                        </div>
+                        <div class="cartao-credito-valores">
+                            <div class="fatura-atual">
+                                <div class="label">Fatura Atual</div>
+                                <div class="valor">${faturaAtualFormatada}</div>
+                            </div>
+                            <div class="limite-total">
+                                <div class="label">Limite</div>
+                                <div class="valor">${limiteTotalFormatado}</div>
+>>>>>>> 3b0767c (Cartões de Crédito)
                             </div>
                         </div>
                     </div>
                     <div class="cartao-credito-barra">
                         <div class="barra-progresso">
+<<<<<<< HEAD
                             <div class="barra-preenchida" style="width: ${limitePorcentagem}%"></div>
+=======
+                            <div class="barra-preenchida" style="width: ${limitePorcentagem}%; background-color: ${corBanco};"></div>
+>>>>>>> 3b0767c (Cartões de Crédito)
                         </div>
                         <span class="porcentagem">${limitePorcentagem}%</span>
                     </div>

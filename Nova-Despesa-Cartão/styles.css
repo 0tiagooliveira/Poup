@@ -1,13 +1,23 @@
 :root {
+<<<<<<< HEAD
     --cor-primaria: #D32F2F;
+=======
+    --cor-primaria: #1976D2; /* Azul para diferenciar */
+>>>>>>> 3b0767c (Cartões de Crédito)
     --cor-texto: #333333;
     --cor-texto-secundario: #666666;
     --cor-fundo: #FFFFFF;
     --cor-borda: #E0E0E0;
     --cor-icone: #757575;
+<<<<<<< HEAD
     --cor-destaque: #D32F2F;
     --cor-erro: #D32F2F;
     --cor-sucesso: #D32F2F;
+=======
+    --cor-destaque: #1976D2;
+    --cor-erro: #D32F2F;
+    --cor-sucesso: #388E3C;
+>>>>>>> 3b0767c (Cartões de Crédito)
     --sombra: 0 2px 4px rgba(0, 0, 0, 0.1);
     --sombra-calendario: 0 4px 12px rgba(0, 0, 0, 0.15);
     --sombra-elevada: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -37,6 +47,7 @@ body, html {
 
 /* Cabeçalho */
 .cabecalho {
+<<<<<<< HEAD
     background-color: var(--cor-primaria);
     color: white;
     padding: 18px 20px;
@@ -46,6 +57,15 @@ body, html {
     position: sticky;
     top: 0;
     z-index: 100;
+=======
+    background-color: var(--cor-primaria); /* Garantir que use azul */
+    color: white;
+    padding: 18px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Mantém a sombra existente */
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 .botao-voltar {
@@ -186,6 +206,10 @@ body, html {
 }
 
 .opcao-selecionada {
+<<<<<<< HEAD
+=======
+    width: 100%; /* Ajustar para ocupar toda a largura */
+>>>>>>> 3b0767c (Cartões de Crédito)
     display: flex;
     align-items: center;
     gap: 8px;
@@ -263,7 +287,11 @@ body, html {
 }
 
 .botao-primario:hover {
+<<<<<<< HEAD
     background-color: #D32F2F;
+=======
+    background-color: #1565C0;
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 /* Estilos da calculadora */

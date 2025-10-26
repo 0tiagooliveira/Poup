@@ -173,7 +173,19 @@ function changeMonth(delta) {
 }
 
 function updateMonthDisplay() {
+<<<<<<< HEAD
     document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+=======
+    // Aguardar o elemento estar disponível
+    setTimeout(() => {
+        const mesAtualElement = document.getElementById('mes-atual');
+        if (mesAtualElement) {
+            mesAtualElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        } else {
+            console.error('[Transações] elemento #mes-atual não encontrado ao atualizar mês');
+        }
+    }, 100);
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 // Helper para converter diversos formatos de data em Date
@@ -211,6 +223,7 @@ function parseDateField(field) {
 
 // --- CARREGAR TRANSAÇÕES ---
 async function loadTransacoes() {
+<<<<<<< HEAD
     if (!currentUser) return;
     
     try {
@@ -219,44 +232,116 @@ async function loadTransacoes() {
         todasTransacoes = [];
         
         // Carregar receitas
+=======
+    if (!currentUser) {
+        console.log('[Transações] Usuário não autenticado');
+        return;
+    }
+    
+    console.log('[Transações] Iniciando carregamento...');
+    
+    try {
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+        
+        console.log('[Transações] Período:', firstDay, 'até', lastDay);
+        
+        todasTransacoes = [];
+        
+        // Helper para parsear datas (copiado de Lista-de-receitas)
+        function parseDateField(field) {
+            if (!field && field !== 0) return null;
+            if (field && typeof field.toDate === 'function') {
+                try { return field.toDate(); } catch (e) { /* fallthrough */ }
+            }
+            if (field instanceof Date) return field;
+            if (typeof field === 'number') {
+                return field > 1e12 ? new Date(field) : new Date(field * 1000);
+            }
+            if (typeof field === 'object' && (field.seconds !== undefined || field._seconds !== undefined)) {
+                const s = field.seconds !== undefined ? field.seconds : field._seconds;
+                return new Date(Number(s) * 1000);
+            }
+            if (typeof field === 'string') {
+                const parts = field.split('/');
+                if (parts.length === 3) {
+                    const [d, m, y] = parts.map(p => Number(p));
+                    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) return new Date(y, m - 1, d);
+                }
+                const iso = new Date(field);
+                if (!isNaN(iso)) return iso;
+            }
+            return null;
+        }
+        
+        // Carregar receitas
+        console.log('[Transações] Carregando receitas...');
+>>>>>>> 3b0767c (Cartões de Crédito)
         const receitasSnap = await db.collection('receitas')
             .where('userId', '==', currentUser.uid)
             .get();
         
         receitasSnap.forEach(doc => {
             const data = doc.data();
+<<<<<<< HEAD
             if (!data.data) return;
             
             const dataFirestore = parseDateField(data.data);
             if (!dataFirestore) return;
             
             if (dataFirestore.getMonth() === currentMonth && dataFirestore.getFullYear() === currentYear) {
+=======
+            const dataTransacao = parseDateField(data.data);
+            
+            console.log('[Transações] Receita:', doc.id, data);
+            
+            if (dataTransacao && dataTransacao >= firstDay && dataTransacao <= lastDay) {
+>>>>>>> 3b0767c (Cartões de Crédito)
                 todasTransacoes.push({
                     id: doc.id,
                     tipo: 'receita',
                     ...data,
+<<<<<<< HEAD
                     dataObj: dataFirestore
                 });
+=======
+                    dataObj: dataTransacao
+                });
+                console.log('[Transações] Receita adicionada:', doc.id);
+>>>>>>> 3b0767c (Cartões de Crédito)
             }
         });
         
         // Carregar despesas
+<<<<<<< HEAD
+=======
+        console.log('[Transações] Carregando despesas...');
+>>>>>>> 3b0767c (Cartões de Crédito)
         const despesasSnap = await db.collection('despesas')
             .where('userId', '==', currentUser.uid)
             .get();
         
         despesasSnap.forEach(doc => {
             const data = doc.data();
+<<<<<<< HEAD
             if (!data.data) return;
             
             const dataFirestore = parseDateField(data.data);
             if (!dataFirestore) return;
             
             if (dataFirestore.getMonth() === currentMonth && dataFirestore.getFullYear() === currentYear) {
+=======
+            const dataTransacao = parseDateField(data.data);
+            
+            console.log('[Transações] Despesa:', doc.id, data);
+            
+            if (dataTransacao && dataTransacao >= firstDay && dataTransacao <= lastDay) {
+>>>>>>> 3b0767c (Cartões de Crédito)
                 todasTransacoes.push({
                     id: doc.id,
                     tipo: 'despesa',
                     ...data,
+<<<<<<< HEAD
                     dataObj: dataFirestore
                 });
             }
@@ -287,16 +372,33 @@ async function loadTransacoes() {
         } catch (e) {
             console.log('Coleção transferencias não existe');
         }
+=======
+                    dataObj: dataTransacao
+                });
+                console.log('[Transações] Despesa adicionada:', doc.id);
+            }
+        });
+        
+        console.log('[Transações] Total carregadas:', todasTransacoes.length);
+>>>>>>> 3b0767c (Cartões de Crédito)
         
         // Ordenar por data decrescente
         todasTransacoes.sort((a, b) => b.dataObj - a.dataObj);
         
+<<<<<<< HEAD
         renderTransacoes(todasTransacoes);
         updateTotals(todasTransacoes);
         
     } catch (error) {
         console.error('Erro ao carregar transações:', error);
         mostrarMensagem('Erro ao carregar transações');
+=======
+        console.log('[Transações] Renderizando transações...');
+        renderTransacoes(todasTransacoes);
+        
+    } catch (error) {
+        console.error('[Transações] Erro ao carregar:', error);
+>>>>>>> 3b0767c (Cartões de Crédito)
     }
 }
 
@@ -304,6 +406,16 @@ async function loadTransacoes() {
 function renderTransacoes(transacoes) {
     const lista = document.getElementById('transacoes-list');
     
+<<<<<<< HEAD
+=======
+    if (!lista) {
+        console.error('[Transações] elemento #transacoes-list não encontrado');
+        return;
+    }
+    
+    lista.innerHTML = '';
+    
+>>>>>>> 3b0767c (Cartões de Crédito)
     if (!transacoes || transacoes.length === 0) {
         lista.innerHTML = `
             <div class="estado-vazio">
@@ -315,6 +427,7 @@ function renderTransacoes(transacoes) {
         return;
     }
     
+<<<<<<< HEAD
     // Agrupar por data
     const grupos = {};
     transacoes.forEach(t => {
@@ -347,6 +460,97 @@ function renderTransacoes(transacoes) {
     
     // Adicionar listeners
     attachEventListeners();
+=======
+    console.log('[Transações] Renderizando', transacoes.length, 'transações');
+    
+    // Agrupar por data seguindo padrão de Lista-de-receitas
+    const grouped = {};
+    transacoes.forEach(t => {
+        const dateKey = t.dataObj.toISOString().split('T')[0];
+        if (!grouped[dateKey]) {
+            grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(t);
+    });
+    
+    const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+    
+    sortedDates.forEach(dateKey => {
+        const grupo = document.createElement('div');
+        grupo.className = 'grupo-data';
+        
+        // Formatação de data similar ao Lista-de-receitas
+        const date = new Date(dateKey + 'T00:00:00');
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        let dateLabel;
+        if (date.toDateString() === today.toDateString()) {
+            dateLabel = 'Hoje';
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            dateLabel = 'Ontem';
+        } else {
+            dateLabel = date.toLocaleDateString('pt-BR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+            });
+        }
+        
+        grupo.innerHTML = `<h3 class="titulo-data">${dateLabel}</h3>`;
+        
+        grouped[dateKey].forEach(transacao => {
+            grupo.appendChild(createTransacaoItem(transacao));
+        });
+        
+        lista.appendChild(grupo);
+    });
+}
+
+function createTransacaoItem(transacao) {
+    const item = document.createElement('div');
+    item.className = 'transacao-item';
+    
+    // Determinar ícone e cor seguindo padrão do categoryDetails
+    let icon, background;
+    
+    if (transacao.iconeCategoria && transacao.corCategoria) {
+        // Usar dados salvos no documento
+        icon = transacao.iconeCategoria;
+        background = transacao.corCategoria;
+    } else {
+        // Usar mapeamento padrão
+        const categoriaKey = (transacao.categoria || '').toLowerCase();
+        const categoryInfo = categoryDetails[categoriaKey] || 
+                            categoryDetails[`${transacao.tipo}-default`] || 
+                            categoryDetails['receita-default'];
+        icon = categoryInfo.icon;
+        background = categoryInfo.background;
+    }
+    
+    const valor = parseValueToNumber(transacao.valor) || 0;
+    const valorFormatado = formatCurrency(valor);
+    
+    // Cor do valor: verde para receitas, vermelho para despesas
+    const corValor = transacao.tipo === 'receita' ? '#21C25E' : '#D32F2F';
+    const sinalValor = transacao.tipo === 'receita' ? '+' : '-';
+    
+    item.innerHTML = `
+        <div class="transacao-icone" style="background: ${background};">
+            <span class="material-icons-round">${icon}</span>
+        </div>
+        <div class="transacao-info">
+            <div class="transacao-descricao">${transacao.descricao || 'Sem descrição'}</div>
+            <div class="transacao-categoria">${transacao.categoria || transacao.tipo}</div>
+        </div>
+        <div class="transacao-valor" style="color: ${corValor};">
+            ${sinalValor}${valorFormatado}
+        </div>
+    `;
+    
+    return item;
+>>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 function parseValueToNumber(value) {
