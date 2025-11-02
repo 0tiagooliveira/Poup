@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Detalhes da Conta</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+
+<body>
+    <!-- Tela de Carregamento -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Carregando detalhes...</p>
+        </div>
+    </div>
+
+    <div class="container-app" style="display: none;">
+        <!-- Header -->
+        <header class="header-detalhes">
+            <button class="btn-voltar" id="btn-voltar">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h1 class="titulo-detalhes">Detalhes</h1>
+            <div class="header-actions">
+                <button class="btn-header-action" id="btn-menu">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <button class="btn-header-action" id="btn-comparar">
+                    <span class="material-icons-round">balance</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Seletor de Conta -->
+        <div class="conta-selector">
+            <div class="conta-info" id="conta-atual">
+                <span class="conta-nome" id="conta-nome">Carregando...</span>
+                <span class="material-icons-round">expand_more</span>
+            </div>
+        </div>
+
+        <!-- Cartão de Saldo -->
+        <div class="saldo-card">
+            <p class="saldo-label">Saldo atual</p>
+            <h2 class="saldo-valor" id="saldo-atual">R$ 0,00</h2>
+            <button class="btn-reajustar" id="btn-reajustar">
+                REAJUSTAR SALDO
+            </button>
+        </div>
+
+        <!-- Informações da Conta - Layout igual à imagem -->
+        <div class="info-section">
+            <!-- Instituição bancária (ícone + nome) -->
+            <div class="info-item full-width">
+                <div class="info-content">
+                    <div class="banco-icone" id="banco-icone">
+                        <span class="material-icons-round">account_balance</span>
+                    </div>
+                    <div class="banco-info">
+                        <span class="info-label">Instituição bancária</span>
+                        <p class="info-value" id="banco-nome">Nubank</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid 2x2 - Tipo da conta e Saldo inicial -->
+            <div class="info-grid-row">
+                <div class="info-item half-width">
+                    <div class="info-header">
+                        <span class="material-icons-round">credit_card</span>
+                        <span class="info-label">Tipo da conta</span>
+                    </div>
+                    <p class="info-value" id="tipo-conta">Conta corrente</p>
+                </div>
+
+                <div class="info-item half-width">
+                    <div class="info-header">
+                        <span class="material-icons-round">attach_money</span>
+                        <span class="info-label">Saldo inicial</span>
+                    </div>
+                    <p class="info-value" id="saldo-inicial">R$ 0,00</p>
+                </div>
+            </div>
+
+            <!-- Grid 2x2 - Quantidade de despesas e receitas -->
+            <div class="info-grid-row">
+                <div class="info-item half-width">
+                    <div class="info-header">
+                        <span class="material-icons-round">trending_down</span>
+                        <span class="info-label">Quantidade de despesas</span>
+                    </div>
+                    <p class="info-value despesas" id="qtd-despesas">0 Despesa</p>
+                </div>
+
+                <div class="info-item half-width">
+                    <div class="info-header">
+                        <span class="material-icons-round">trending_up</span>
+                        <span class="info-label">Quantidade de receitas</span>
+                    </div>
+                    <p class="info-value receitas" id="qtd-receitas">0 Receita</p>
+                </div>
+            </div>
+
+            <!-- Quantidade de transferências (full width) -->
+            <div class="info-item full-width">
+                <div class="info-header">
+                    <span class="material-icons-round">swap_horiz</span>
+                    <span class="info-label">Quantidade de transferências</span>
+                </div>
+                <p class="info-value" id="qtd-transferencias">0 Transferência</p>
+            </div>
+
+            <!-- Toggle incluir na tela inicial -->
+            <div class="info-item toggle-item full-width">
+                <div class="info-header">
+                    <span class="material-icons-round">visibility</span>
+                    <span class="info-label">Incluir na tela inicial</span>
+                </div>
+                <div class="toggle-switch" id="toggle-incluir">
+                    <input type="checkbox" id="incluir-tela-inicial" checked>
+                    <label for="incluir-tela-inicial"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Reajustar Saldo -->
+    <div class="popup-overlay" id="popup-reajustar">
+        <div class="popup-content">
+            <h3>Reajustar Saldo</h3>
+            <p>Digite o novo saldo da conta:</p>
+            <div class="input-group">
+                <span class="input-prefix">R$</span>
+                <input type="text" id="novo-saldo" placeholder="0,00" class="input-valor">
+            </div>
+            <div class="popup-actions">
+                <button class="btn-cancelar" id="cancelar-reajuste">Cancelar</button>
+                <button class="btn-confirmar" id="confirmar-reajuste">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Seletor de Conta -->
+    <div class="popup-overlay" id="popup-selector-conta">
+        <div class="popup-content selector-content">
+            <h3>Selecionar Conta</h3>
+            <div class="contas-lista" id="contas-lista">
+                <!-- Contas serão carregadas dinamicamente -->
+            </div>
+            <button class="btn-cancelar" id="cancelar-selector">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

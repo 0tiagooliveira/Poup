@@ -1,0 +1,328 @@
+/* CSS padronizado para seção resumo */
+.secao-resumo {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 0 20px;
+}
+
+/* Versão compacta - NOVA PADRONIZAÇÃO */
+.secao-resumo.compacta {
+    display: flex;
+    justify-content: center; /* Centraliza os blocos */
+    align-items: center;
+    gap: 32px; /* Aumenta o gap entre os blocos */
+    padding: 16px 20px 20px 20px; /* Adiciona padding bottom maior */
+    margin: 0;
+    width: 100%;
+    background: white;
+    border: none;
+    box-shadow: none;
+    flex-wrap: nowrap; /* Sempre lado a lado */
+    box-sizing: border-box; /* Inclui padding na largura */
+    position: relative;
+    z-index: 1; /* Garante que fica acima de outros elementos */
+}
+
+/* Estender o fundo branco até a navegação do mês */
+.cabecalho .navegacao-mes + .secao-resumo.compacta,
+.navegacao-mes + .main-content .secao-resumo.compacta:first-child {
+    margin-top: 0;
+    border-top: none;
+}
+
+/* Garantir que o container tenha fundo branco contínuo */
+.main-content {
+    background: white;
+}
+
+.conteudo-principal .secao-resumo.compacta:first-child {
+    margin-top: 0;
+    padding-top: 16px;
+}
+
+/* Sobrepor qualquer conteúdo por trás */
+.secao-resumo.compacta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: -1;
+}
+
+/* Garantir que ocupe toda a largura da viewport */
+.secao-resumo.compacta {
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    padding-left: calc(50vw - 50%);
+    padding-right: calc(50vw - 50%);
+}
+
+/* Blocos individuais de resumo */
+.resumo-bloco {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 0 auto; /* Não cresce nem encolhe, tamanho automático */
+    min-width: 120px; /* Largura mínima para manter consistência */
+    text-align: center; /* Centraliza o conteúdo dentro de cada bloco */
+}
+
+/* Label do resumo (Saldo atual, Balanço mensal, etc.) */
+.resumo-label {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centraliza o label */
+    gap: 6px;
+    font-size: 0.72rem;
+    letter-spacing: 0.4px;
+    color: #666666;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Ícone mini no label */
+.icone-mini {
+    font-size: 16px;
+    opacity: 0.65;
+}
+
+/* Valor do resumo */
+.resumo-valor {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #21C25E;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center; /* Centraliza o valor */
+}
+
+.cartao-resumo {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.cartao-resumo:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.cartao-resumo-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.cartao-resumo-icone {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 24px;
+}
+
+.cartao-resumo-icone.saldo-atual {
+    background: linear-gradient(135deg, #21C25E, #1a9d4d);
+    color: white;
+}
+
+.cartao-resumo-icone.balanco-mensal {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.cartao-resumo-icone.receitas {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.cartao-resumo-icone.despesas {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.cartao-resumo-icone.cartoes {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.cartao-resumo-titulo {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.cartao-resumo-valor {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2b2d42;
+    margin: 8px 0 0 0;
+    line-height: 1.2;
+}
+
+.cartao-resumo-valor.positivo {
+    color: #28a745;
+}
+
+.cartao-resumo-valor.negativo {
+    color: #dc3545;
+}
+
+.cartao-resumo-valor.neutro {
+    color: #6c757d;
+}
+
+.cartao-resumo-subtitulo {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 4px 0 0 0;
+    opacity: 0.8;
+}
+
+/* Versão compacta */
+.secao-resumo.compacta .cartao-resumo {
+    padding: 16px;
+}
+
+.secao-resumo.compacta .cartao-resumo-icone {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+}
+
+.secao-resumo.compacta .cartao-resumo-valor {
+    font-size: 20px;
+}
+
+/* Responsividade para seção resumo - NOVO PADRÃO */
+@media (max-width: 768px) {
+    .secao-resumo {
+        flex-direction: column;
+        gap: 12px;
+        padding: 0 16px;
+    }
+    
+    .secao-resumo.compacta {
+        padding: 12px calc(50vw - 50% + 16px) 16px calc(50vw - 50% + 16px); /* Ajusta padding com viewport */
+        gap: 24px; /* Gap menor no tablet */
+        flex-wrap: nowrap; /* Mantém lado a lado no tablet */
+        flex-direction: row; /* FORÇA lado a lado */
+        justify-content: center; /* Mantém centralização */
+    }
+    
+    .resumo-valor {
+        font-size: 0.9rem;
+    }
+    
+    .resumo-label {
+        font-size: 0.7rem;
+    }
+    
+    .cartao-resumo {
+        padding: 16px;
+    }
+    
+    .cartao-resumo-valor {
+        font-size: 20px;
+    }
+    
+    .secao-resumo.compacta .cartao-resumo {
+        padding: 12px;
+    }
+    
+    .secao-resumo.compacta .cartao-resumo-valor {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .secao-resumo {
+        padding: 0 12px;
+    }
+    
+    .secao-resumo.compacta {
+        padding: 10px calc(50vw - 50% + 12px) 14px calc(50vw - 50% + 12px); /* Viewport padding mobile */
+        gap: 20px; /* Gap menor no mobile */
+        flex-wrap: nowrap; /* SEMPRE lado a lado, mesmo no mobile */
+        flex-direction: row; /* FORÇA lado a lado */
+        justify-content: center; /* Mantém centralização */
+    }
+    
+    .resumo-bloco {
+        gap: 1px;
+        min-width: 100px; /* Largura menor no mobile */
+        text-align: center;
+    }
+    
+    .resumo-valor {
+        font-size: 0.85rem;
+    }
+    
+    .resumo-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.2px;
+    }
+    
+    .icone-mini {
+        font-size: 14px;
+    }
+    
+    .cartao-resumo-header {
+        flex-direction: column;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    
+    .cartao-resumo-icone {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    
+    .cartao-resumo-valor {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .secao-resumo.compacta {
+        padding: 8px calc(50vw - 50% + 10px) 12px calc(50vw - 50% + 10px); /* Viewport padding pequeno */
+        gap: 16px; /* Gap adequado para telas pequenas */
+        flex-wrap: nowrap; /* GARANTIA: sempre lado a lado */
+        flex-direction: row; /* GARANTIA: sempre horizontal */
+        justify-content: center; /* Mantém centralização */
+    }
+    
+    .resumo-bloco {
+        min-width: 90px; /* Largura ainda menor */
+        text-align: center;
+    }
+    
+    .resumo-valor {
+        font-size: 0.8rem;
+    }
+    
+    .resumo-label {
+        font-size: 0.65rem;
+        gap: 4px;
+    }
+    
+    .icone-mini {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Contas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link rel="stylesheet" href="../css/menu-inferior-padrao.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="aplicativo">
+        <!-- Cabeçalho -->
+        <header class="header">
+            <div class="header-container">
+                <button class="btn-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons-round">arrow_back</span>
+                </button>
+                <h1 class="header-title">Minhas Contas</h1>
+                <div class="dropdown-container">
+                    <button class="btn-dropdown" onclick="toggleDropdown(event)">
+                        <span class="material-icons-round">menu</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
+                            <span class="material-icons-round">receipt_long</span>
+                            Lista de Despesas
+                        </a>
+                        <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
+                            <span class="material-icons-round">payment</span>
+                            Lista de Receitas
+                        </a>
+                        <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item">
+                            <span class="material-icons-round">credit_card</span>
+                            Cartões de Crédito
+                        </a>
+                        <a href="../Transações/Transações.html" class="dropdown-item">
+                            <span class="material-icons-round">swap_horiz</span>
+                            Transações
+                        </a>
+                        <a href="../Gráficos/Gráficos.html" class="dropdown-item">
+                            <span class="material-icons-round">bar_chart</span>
+                            Gráficos
+                        </a>
+                        <a href="../Configuracoes/Configuracoes.html" class="dropdown-item">
+                            <span class="material-icons-round">settings</span>
+                            Configurações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Container Principal -->
+        <main class="container-principal">
+            <div id="lista-contas" class="lista-contas">
+                <!-- As contas serão carregadas aqui pelo script.js -->
+            </div>
+        </main>
+
+        <!-- Botão Nova Conta -->
+        <button id="botao-nova-conta" class="botao-flutuante">
+            <span class="material-icons-round">add</span>
+        </button>
+    </div>
+
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-menu">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+
+    <script src="../js/header-padrao.js"></script>
+    <script src="../js/menu-inferior-padrao.js"></script>
+    <script src="../js/menu-adicionar-padrao.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

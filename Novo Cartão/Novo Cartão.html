@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Cartão | Poup+</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+</head>
+<body>
+    <!-- Etapa 1: Seleção de Instituição -->
+    <div class="container etapa-1" id="etapa-1">
+        <header class="header-gradient">
+            <button class="btn-voltar" onclick="voltar()">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h1 class="titulo-header">Adicionar Cartão</h1>
+        </header>
+
+        <main class="conteudo-branco">
+            <section class="secao-instituicao">
+                <h2 class="titulo-secao">De onde você quer trazer seus dados?</h2>
+                <p class="subtitulo-secao">Escolha abaixo a instituição para acompanhar toda sua vida financeira aqui no Poup+.</p>
+                
+                <div class="campo-busca">
+                    <span class="material-icons-round">search</span>
+                    <input type="text" id="busca-instituicao" placeholder="Buscar por nome">
+                </div>
+
+                <div class="lista-instituicoes" id="lista-instituicoes">
+                    <!-- Instituições serão carregadas aqui -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Etapa 2: Dados do Cartão -->
+    <div class="container etapa-2 hidden" id="etapa-2">
+        <header class="header-gradient">
+            <button class="btn-voltar" onclick="voltarEtapa1()">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h1 class="titulo-header">Novo cartão</h1>
+        </header>
+
+        <div class="secao-limite" onclick="abrirCalculadora()">
+            <p class="label-limite">Limite do cartão</p>
+            <h2 class="valor-limite" id="valor-limite-display">R$ 0,00</h2>
+        </div>
+
+        <main class="conteudo-branco">
+            <div class="formulario-cartao">
+                <!-- Descrição -->
+                <div class="campo-form">
+                    <span class="material-icons-round icone-campo">description</span>
+                    <input type="text" id="descricao" placeholder="Descrição" class="input-form">
+                </div>
+
+                <!-- Bandeira -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorBandeira()">
+                    <span class="material-icons-round icone-campo">credit_card</span>
+                    <div class="conteudo-seletor">
+                        <div class="bandeira-selecionada" id="bandeira-display">
+                            <img src="../Icon/visa.svg" alt="Visa" class="bandeira-icone-mini">
+                            <span class="bandeira-texto">Visa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conta -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorConta()">
+                    <span class="material-icons-round icone-campo">account_balance</span>
+                    <div class="conteudo-seletor">
+                        <div class="conta-selecionada" id="conta-display">
+                            <div class="conta-icone-mini"></div>
+                            <span class="conta-texto">Selecione a conta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dia do Fechamento -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorDia('fechamento')">
+                    <span class="material-icons-round icone-campo">event</span>
+                    <div class="conteudo-seletor">
+                        <span class="campo-label">Dia do fechamento</span>
+                        <span class="campo-valor" id="dia-fechamento-display">1</span>
+                    </div>
+                </div>
+
+                <!-- Dia do Vencimento -->
+                <div class="campo-form campo-seletor" onclick="abrirSeletorDia('vencimento')">
+                    <span class="material-icons-round icone-campo">check_circle</span>
+                    <div class="conteudo-seletor">
+                        <span class="campo-label">Dia do vencimento</span>
+                        <span class="campo-valor" id="dia-vencimento-display">5</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Botão Flutuante -->
+        <button class="btn-fab" onclick="salvarCartao()">
+            <span class="material-icons-round">check</span>
+        </button>
+    </div>
+
+    <!-- Modal: Seletor de Bandeira -->
+    <div class="modal-overlay hidden" id="modal-bandeira">
+        <div class="modal-bottom">
+            <div class="modal-header">
+                <h3>Selecionar Bandeira</h3>
+                <button class="btn-fechar" onclick="fecharModal('modal-bandeira')">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-lista">
+                <div class="opcao-modal" onclick="selecionarBandeira('visa', '../Icon/visa.svg', 'Visa')">
+                    <img src="../Icon/visa.svg" alt="Visa" class="bandeira-icone">
+                    <span>Visa</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('mastercard', '../Icon/mastercard.svg', 'Mastercard')">
+                    <img src="../Icon/mastercard.svg" alt="Mastercard" class="bandeira-icone">
+                    <span>Mastercard</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('elo', '../Icon/elo.svg', 'Elo')">
+                    <img src="../Icon/elo.svg" alt="Elo" class="bandeira-icone">
+                    <span>Elo</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('hipercard', '../Icon/hipercard.svg', 'Hipercard')">
+                    <img src="../Icon/hipercard.svg" alt="Hipercard" class="bandeira-icone">
+                    <span>Hipercard</span>
+                </div>
+                <div class="opcao-modal" onclick="selecionarBandeira('american-express', '../Icon/american-express.svg', 'American Express')">
+                    <img src="../Icon/american-express.svg" alt="American Express" class="bandeira-icone">
+                    <span>American Express</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Pesquisar Conta -->
+    <div class="modal-overlay hidden" id="modal-conta">
+        <div class="modal-full">
+            <div class="modal-header-full">
+                <button class="btn-voltar-modal" onclick="fecharModal('modal-conta')">
+                    <span class="material-icons-round">arrow_back</span>
+                </button>
+                <h3>Pesquisar conta</h3>
+            </div>
+            
+            <div class="campo-busca-modal">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="busca-conta" placeholder="Pesquisar conta">
+            </div>
+
+            <div class="lista-contas-modal" id="lista-contas-modal">
+                <!-- Contas serão carregadas aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Seletor de Dia -->
+    <div class="modal-overlay hidden" id="modal-dia">
+        <div class="modal-bottom">
+            <div class="modal-header">
+                <h3 id="modal-dia-titulo">Selecionar Dia</h3>
+                <button class="btn-fechar" onclick="fecharModal('modal-dia')">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-lista modal-lista-dias" id="lista-dias">
+                <!-- Dias serão gerados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculadora para editar limite -->
+    <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
+        <div class="input-container">
+            <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
+            <button class="apagar" id="botao-apagar" aria-label="Apagar dígito">X</button>
+        </div>
+        <div class="calculadora-botoes">
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>+</button>
+            <button>4</button>
+            <button>5</button>
+            <button>6</button>
+            <button>-</button>
+            <button>7</button>
+            <button>8</button>
+            <button>9</button>
+            <button>*</button>
+            <button>,</button>
+            <button>0</button>
+            <button>=</button>
+            <button>/</button>
+            <button class="btn-cancelar-calculadora">Cancelar</button>
+            <button class="btn-confirmar-calculadora">Concluído</button>
+        </div>
+    </div>
+
+    <!-- Popup de Aviso: Limite Obrigatório -->
+    <div id="popup-aviso-limite" class="popup-overlay" style="display: none;">
+        <div class="popup-aviso">
+            <div class="popup-aviso-icone">
+                <span class="material-icons-round">info</span>
+            </div>
+            <h3 class="popup-aviso-titulo">Defina o limite do cartão</h3>
+            <p class="popup-aviso-texto">É necessário informar um valor maior que R$ 0,00 para o limite do cartão.</p>
+            <button class="btn-popup-ok" onclick="fecharPopupAviso()">Entendi</button>
+        </div>
+    </div>
+
+    <!-- Popup de Sucesso -->
+    <div id="popup-sucesso" class="popup-overlay" style="display: none;">
+        <div class="popup-sucesso">
+            <div class="popup-sucesso-icone">
+                <span class="material-icons-round">check_circle</span>
+            </div>
+            <h3 class="popup-sucesso-titulo">Cartão criado com sucesso!</h3>
+            <p class="popup-sucesso-texto">Seu cartão foi adicionado e já está disponível.</p>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
+
+

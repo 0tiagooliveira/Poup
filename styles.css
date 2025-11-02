@@ -1,0 +1,385 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+    color: #101213;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* Logo */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+
+.logo {
+    height: 60px;
+}
+
+/* Conteúdo Principal */
+.main-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.auth-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid #F1F4F8;
+    max-width: 570px;
+    width: 100%;
+    margin: 0 20px;
+    overflow: hidden;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Abas */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #F1F4F8;
+}
+
+.tab {
+    padding: 16px 32px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 18px;
+    color: #57636C;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.tab.active {
+    color: #101213;
+    font-weight: 500;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #21C25E;
+}
+
+/* Conteúdo das Abas */
+.tab-content {
+    padding: 24px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Formulário */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-container h2 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #101213;
+    margin-bottom: 4px;
+}
+
+.form-container .subtitle {
+    font-size: 14px;
+    color: #57636C;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    color: #57636C;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 24px;
+    font-size: 16px;
+    border: 2px solid #E0E3E7;
+    border-radius: 40px;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #21c25e;
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-input input {
+    padding-right: 50px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #57636C;
+    cursor: pointer;
+}
+
+/* Botões */
+.btn-primary {
+    width: 230px;
+    height: 52px;
+    background-color: #21c25e;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 16px auto;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #21c25e;
+}
+
+/* Divisor */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    color: #57636C;
+    font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #E0E3E7;
+}
+
+.divider::before {
+    margin-right: 16px;
+}
+
+.divider::after {
+    margin-left: 16px;
+}
+
+/* Botões Sociais */
+.social-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.btn-social {
+    width: 230px;
+    height: 44px;
+    background-color: white;
+    border: 2px solid #E0E3E7;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #101213;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-social:hover {
+    background-color: #F1F4F8;
+}
+
+.btn-social i {
+    font-size: 20px;
+}
+
+/* Botão de Link */
+.btn-link {
+    background: none;
+    border: none;
+    color: #101213;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 0 auto;
+    display: block;
+    padding: 10px 32px;
+}
+
+/* Bolinha vermelha para despesas */
+.icon-circle.despesas {
+    background-color: #ffebee; /* tom claro para fundo */
+    border: 2px solid #ff1744; /* vermelho */
+    color: #ff1744; /* ícone vermelho */
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .auth-card {
+        height: auto;
+    }
+    
+    .tabs {
+        justify-content: center;
+    }
+    
+    .btn-primary, .btn-social {
+        width: 100%;
+        max-width: 230px;
+    }
+}
+
+/* Esconder botão Apple em Android */
+.android .btn-social.apple {
+    display: none;
+}
+
+/* Popup de Sucesso */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    animation: popupIn 0.3s ease-out;
+}
+
+@keyframes popupIn {
+    from {
+        transform: scale(0.9) translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup-icon {
+    margin-bottom: 16px;
+}
+
+.popup-icon i {
+    font-size: 48px;
+    color: #21C25E;
+}
+
+.popup-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #101213;
+    margin-bottom: 8px;
+}
+
+.popup-message {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+.popup-button {
+    background: #21C25E;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.popup-button:hover {
+    background: #1a9d4d;
+}
+
+/* Popup de Erro */
+.popup-content.popup-erro .popup-icon i {
+    color: #ef233c;
+}
+
+.popup-content.popup-erro .popup-button {
+    background: #ef233c;
+}
+
+.popup-content.popup-erro .popup-button:hover {
+    background: #d32535;
+}
+
+/* Popup de Informação */
+.popup-content.popup-info .popup-icon i {
+    color: #ffd166;
+}
+
+.popup-content.popup-info .popup-button {
+    background: #ffd166;
+    color: #333;
+}
+
+.popup-content.popup-info .popup-button:hover {
+    background: #ffcc4d;
+}

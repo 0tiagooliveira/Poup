@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Editar Receita</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <!-- Removido CSS inline do modal. Todos os estilos estão em styles.css -->
+</head>
+<body>
+    <div class="aplicativo desktop-layout">
+        <!-- Cabeçalho -->
+        <header class="cabecalho">
+            <div class="lado-esquerdo">
+                <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Lista-de-receitas/Lista-de-receitas.html'">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <h1>Editar Receita</h1>
+            </div>
+            <button class="botao-excluir-topo" aria-label="Excluir receita" title="Excluir receita">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
+        </header>
+
+        <!-- Seção do Valor -->
+        <section class="secao-valor" id="secao-valor">
+            <p>Valor da receita</p>
+            <h2 id="valor-receita">R$ 0,00</h2>
+        </section>
+
+        <!-- Formulário -->
+        <main class="formulario-receita">
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">paid</span>
+                    <span>Recebido</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="recebido" checked>
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="campo-formulario campo-data" id="campo-data">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">calendar_today</span>
+                    <span id="data-selecionada">Selecione a data</span>
+                </div>
+                <div class="calendario" id="calendario"></div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">description</span>
+                    <input type="text" id="descricao" placeholder="Descrição da receita">
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">category</span>
+                    <div class="seletor-categoria" id="seletor-categoria">
+                        <div class="opcao-selecionada">
+                            <span>Selecione uma categoria</span>
+                        </div>
+                        <div class="opcoes-categoria">
+                            <div class="opcao-categoria" data-value="attach_money">
+                                <span class="material-icons-round">attach_money</span> <span>Salário</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="work">
+                                <span class="material-icons-round">work</span> <span>Freelance</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="card_giftcard">
+                                <span class="material-icons-round">card_giftcard</span> <span>Bônus</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="trending_up">
+                                <span class="material-icons-round">trending_up</span> <span>Comissões</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="home">
+                                <span class="material-icons-round">home</span> <span>Aluguel Recebido</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="show_chart">
+                                <span class="material-icons-round">show_chart</span> <span>Rendimentos de Investimentos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="account_balance_wallet">
+                                <span class="material-icons-round">account_balance_wallet</span> <span>Dividendos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="percent">
+                                <span class="material-icons-round">percent</span> <span>Juros Recebidos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="credit_card">
+                                <span class="material-icons-round">credit_card</span> <span>Cashback</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="shopping_cart">
+                                <span class="material-icons-round">shopping_cart</span> <span>Venda de Produtos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="handshake">
+                                <span class="material-icons-round">handshake</span> <span>Venda de Serviços</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="receipt">
+                                <span class="material-icons-round">receipt</span> <span>Reembolso</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="account_balance">
+                                <span class="material-icons-round">account_balance</span> <span>Restituição de Imposto</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="emoji_events">
+                                <span class="material-icons-round">emoji_events</span> <span>Premiações</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="family_restroom">
+                                <span class="material-icons-round">family_restroom</span> <span>Herança</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="elderly">
+                                <span class="material-icons-round">elderly</span> <span>Aposentadoria</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="child_care">
+                                <span class="material-icons-round">child_care</span> <span>Pensão</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="volunteer_activism">
+                                <span class="material-icons-round">volunteer_activism</span> <span>Doações Recebidas</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="casino">
+                                <span class="material-icons-round">casino</span> <span>Prêmios de Loteria</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="swap_horiz">
+                                <span class="material-icons-round">swap_horiz</span> <span>Transferência de Terceiros</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="calendar_month">
+                                <span class="material-icons-round">calendar_month</span> <span>Décimo Terceiro</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="savings">
+                                <span class="material-icons-round">savings</span> <span>Resgate de Aplicações</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="business">
+                                <span class="material-icons-round">business</span> <span>Lucros de Empresa</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="construction">
+                                <span class="material-icons-round">construction</span> <span>Aluguel de Equipamentos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="support_agent">
+                                <span class="material-icons-round">support_agent</span> <span>Consultoria</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="group">
+                                <span class="material-icons-round">group</span> <span>Parcerias</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="copyright">
+                                <span class="material-icons-round">copyright</span> <span>Royalties</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="verified">
+                                <span class="material-icons-round">verified</span> <span>Licenciamento</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="library_books">
+                                <span class="material-icons-round">library_books</span> <span>Rendimentos de Direitos Autorais</span>
+                            </div>
+                            <!-- Adicione esta opção ao final -->
+                            <div class="opcao-categoria" data-value="criar-categoria" style="color:#21C25E;font-weight:600;">
+                                <span class="material-icons-round">add</span> <span>+ Criar categoria</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">account_balance</span>
+                    <div class="seletor-carteira" id="seletor-carteira">
+                        <div class="opcao-selecionada">
+                            <!-- Ícone da conta selecionada será inserido aqui via JS -->
+                            <span id="icone-conta-selecionada"></span>
+                            <span>Selecione uma conta</span>
+                        </div>
+                        <div class="opcoes-carteira"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo">
+                    <span class="material-icons icone-campo">attach_file</span>
+                    <input type="file" id="anexo" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                    <button class="botao-anexo" id="botao-anexo">Adicionar Anexo</button>
+                </div>
+                <span class="nome-arquivo" id="nome-arquivo"></span>
+            </div>
+            
+
+            <div class="campo-formulario">
+                <div class="linha-campo" id="linha-repetir">
+                    <span class="material-icons icone-campo">repeat</span>
+                    <span>Repetir</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="toggle-repetir" onchange="gerenciarToggles('repetir')">
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+                <div id="campos-repetir" style="display: none;">
+                    <div>
+                        <label for="quantidade-repeticoes">Quantidade de Repetições:</label>
+                        <div class="input-group">
+                            <button type="button" onclick="alterarQuantidade(-1)">-</button>
+                            <input type="number" id="quantidade-repeticoes" value="1" min="1" step="1">
+                            <button type="button" onclick="alterarQuantidade(1)">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="frequencia-repeticoes">Frequência:</label>
+                        <select id="frequencia-repeticoes">
+                            <option value="dias">Dias</option>
+                            <option value="semanas">Semanas</option>
+                            <option value="meses">Meses</option>
+                            <option value="anos">Anos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <div class="linha-campo" id="linha-receita-fixa">
+                    <span class="material-icons icone-campo">autorenew</span>
+                    <span>Receita Fixa</span>
+                    <label class="alternador">
+                        <input type="checkbox" id="toggle-receita-fixa" onchange="gerenciarToggles('fixa')">
+                        <span class="controle-alternador"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Botão de Ação -->
+            <div class="botoes-acao">
+                <button class="botao-primario" id="botao-salvar">Salvar Alterações</button>
+            </div>
+            <br><br><br><br>
+        </main>
+
+        <!-- Calculadora para editar saldo -->
+        <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
+            <div class="input-container">
+                <input type="text" class="calculadora-display" id="calculadora-display" readonly aria-label="Valor atual">
+                <button class="apagar" id="botao-apagar" aria-label="Apagar dígito">X</button>
+            </div>
+            <div class="calculadora-botoes">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>+</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>-</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>*</button>
+                <button>,</button>
+                <button>0</button>
+                <button>=</button>
+                <button>/</button>
+                <button class="btn-cancelar-calculadora">Cancelar</button>
+                <button class="btn-confirmar-calculadora">Concluído</button>
+            </div>
+        </div>
+
+        <!-- Popup -->
+        <div id="popup-mensagem">
+            <div>
+                <span id="popup-texto"></span>
+                <button id="popup-botao">OK</button>
+            </div>
+        </div>
+
+        <!-- Popup de Confirmação de Exclusão -->
+        <div id="popup-confirmacao" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 24px; border-radius: 12px; max-width: 350px; text-align: center;">
+                <h3 style="margin-bottom: 16px; color: #333;">Confirmar Exclusão</h3>
+                <p style="margin-bottom: 24px; color: #666;">Tem certeza que deseja excluir esta receita? Esta ação não pode ser desfeita.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="popup-cancelar" style="padding: 10px 24px; background-color: #f5f5f5; color: #333; border: none; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                    <button id="popup-confirmar-exclusao" style="padding: 10px 24px; background-color: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">Excluir</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Categoria Personalizada -->
+        <div id="modal-categoria" class="modal" style="display: none;">
+            <div class="modal-conteudo">
+                <h3>Criar Categoria</h3>
+                <form id="form-categoria">
+                    <!-- Nome da Categoria -->
+                    <label for="nome-categoria">Nome da Categoria:</label>
+                    <input type="text" id="nome-categoria" placeholder="Ex: Venda, Alimentação, Transporte" required minlength="2">
+                    <span id="erro-nome-categoria" class="erro-validacao" style="display: none;">Informe um nome válido para a categoria (mínimo 2 caracteres).</span>
+                    
+                    <!-- Ícone -->
+                    <label>Escolha um Ícone:</label>
+                    <div id="icone-selecionado-preview" class="icone-preview">
+                        <span class="material-symbols-outlined" style="color: #21c25e;">paid</span>
+                    </div>
+                    
+                    <!-- Cor -->
+                    <label for="cor-categoria">Escolha uma Cor:</label>
+                    <div class="cor-preview-container">
+                        <input type="color" id="cor-categoria" value="#4CAF50">
+                        <span id="cor-preview" class="preview-cor" style="background-color: #4CAF50;"></span>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="modal-botoes">
+                        <button type="button" id="salvar-categoria" class="botao-primario">Salvar</button>
+                        <button type="button" id="cancelar-categoria" class="botao-secundario">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Novo Popup para Escolher Ícone -->
+        <div id="popup-icone" class="modal" style="display: none;">
+            <div class="modal-conteudo">
+                <h3>Escolha um Ícone</h3>
+                <div id="galeria-icones" class="galeria-icones" style="grid-template-columns: repeat(4, 1fr);">
+                    <!-- Ícones serão carregados dinamicamente -->
+                </div>
+                <div class="modal-botoes">
+                    <button type="button" id="fechar-popup-icone" class="botao-secundario">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup para criar categoria personalizada -->
+        <div id="popup-criar-categoria" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:3000; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+            <div style="background:#fff; border-radius:12px; padding:32px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-width:260px; max-width:90vw; text-align:center;">
+                <span style="display:block; font-family:'Poppins',sans-serif; font-size:1.1rem; color:#333; margin-bottom:18px;">
+                    Criar nova categoria
+                </span>
+                <input id="nova-categoria-nome" type="text" placeholder="Nome da categoria" style="width:90%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #e0e7e3;font-size:1rem;">
+                <div style="margin-bottom:14px;">
+                    <label for="nova-categoria-icone" style="font-size:0.98rem;color:#666;">Ícone:</label>
+                    <select id="nova-categoria-icone" style="padding:8px;border-radius:8px;border:1px solid #e0e7e3;font-size:1rem;">
+                        <option value="category">Categoria padrão</option>
+                        <option value="work">Trabalho</option>
+                        <option value="construction">Freelance</option>
+                        <option value="trending_up">Investimentos</option>
+                        <option value="card_giftcard">Presente</option>
+                        <option value="star">Favorito</option>
+                        <option value="attach_money">Dinheiro</option>
+                        <option value="payments">Pagamento</option>
+                        <option value="emoji_events">Troféu</option>
+                        <option value="family_restroom">Família</option>
+                        <option value="elderly">Idoso</option>
+                        <option value="child_care">Criança</option>
+                        <option value="volunteer_activism">Doação</option>
+                        <option value="casino">Loteria</option>
+                        <option value="swap_horiz">Transferência</option>
+                        <option value="calendar_month">Calendário</option>
+                        <option value="savings">Poupança</option>
+                        <option value="business">Empresa</option>
+                        <option value="home">Casa</option>
+                        <option value="support_agent">Consultoria</option>
+                        <option value="group">Grupo</option>
+                        <option value="copyright">Copyright</option>
+                        <option value="verified">Verificado</option>
+                        <option value="library_books">Livros</option>
+                        <option value="percent">Porcentagem</option>
+                        <option value="credit_card">Cartão</option>
+                        <option value="shopping_cart">Carrinho</option>
+                        <option value="handshake">Serviço</option>
+                        <option value="receipt">Recibo</option>
+                        <option value="account_balance">Banco</option>
+                        <option value="show_chart">Gráfico</option>
+                        <option value="attach_file">Anexo</option>
+                        <option value="calendar_today">Calendário Hoje</option>
+                        <option value="description">Descrição</option>
+                        <option value="repeat">Repetir</option>
+                        <option value="autorenew">Fixo</option>
+                        <option value="paid">Pago</option>
+                        <option value="account_balance_wallet">Carteira</option>
+                        <option value="construction">Equipamento</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:16px; justify-content:center;">
+                    <button id="popup-criar-categoria-cancelar" style="padding:10px 24px; background-color:#f5f5f5; color:#333; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Cancelar</button>
+                    <button id="popup-criar-categoria-salvar" style="padding:10px 24px; background-color:#21C25E; color:#fff; border:none; border-radius:8px; font-size:1rem; font-family:'Poppins',sans-serif; cursor:pointer;">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js" defer></script>
+
+    <!-- INÍCIO: Configuração do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      // A configuração do seu app da web do Firebase
+      // Lembre-se de substituir pelas suas chaves reais
+      const firebaseConfig = {
+                apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+                authDomain: "poup-beta.firebaseapp.com",
+                projectId: "poup-beta",
+                storageBucket: "poup-beta.appspot.com",
+                messagingSenderId: "954695915981",
+                appId: "1:954695915981:web:d31b216f79eac178094c84",
+                measurementId: "G-LP9BDVD3KJ"
+      };
+      
+      // Inicializa o Firebase
+      if (!firebase.apps.length) {
+         firebase.initializeApp(firebaseConfig);
+      } else {
+         firebase.app(); // if already initialized, use that one
+      }
+      
+      // Configuração para desenvolvimento local
+      // NOTA: Para OAuth funcionar completamente, adicione 127.0.0.1 e localhost 
+      // nos domínios autorizados no Firebase Console -> Authentication -> Settings -> Authorized domains
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:') {
+         console.warn('Executando em ambiente local. Algumas funcionalidades do Firebase Auth podem não funcionar.');
+         // Simular estado de autenticação para desenvolvimento
+         setTimeout(() => {
+           if (!firebase.auth().currentUser) {
+             firebase.auth().signInAnonymously().catch(error => {
+               console.log('Modo desenvolvimento: usando dados locais');
+             });
+           }
+         }, 1000);
+      }
+    </script>
+    <!-- FIM: Configuração do Firebase -->
+</body>
+</html>

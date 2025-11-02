@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poup+ - Redirecionando...</title>
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .redirect-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .message {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <img src="../Icon/LogoPoup.svg" alt="Logo Poup+" class="logo">
+        <h1 class="title">Redirecionando...</h1>
+        <p class="message">Você será redirecionado para a página principal de login.</p>
+        <div class="spinner"></div>
+    </div>
+    
+    <script>
+        // Redirecionar imediatamente para o index.html
+        setTimeout(() => {
+            window.location.href = '../index.html';
+        }, 1000);
+        
+        // Fallback caso não funcione
+        setTimeout(() => {
+            if (window.location.href.includes('Login.html')) {
+                window.location.replace('../index.html');
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
+                </div>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content">
+                    <!-- Criar Conta -->
+                    <div class="tab-pane active" id="criar-conta">
+                        <div class="form-container">
+                            <h2>Criando conta</h2>
+                            <p class="subtitle">Vamos começar preenchendo o formulário abaixo.</p>
+
+                            <form id="form-criar-conta">
+                                <div class="form-group">
+                                    <label for="nome-criar">Nome</label>
+                                    <input type="text" id="nome-criar" placeholder="Seu nome completo" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email-criar">Email</label>
+                                    <input type="email" id="email-criar" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-criar">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-criar" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Começar</button>
+
+                                <div class="divider">
+                                    <span>Ou cadastre-se com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Login -->
+                    <div class="tab-pane" id="login">
+                        <div class="form-container">
+                            <h2>Bem-vindo de volta!</h2>
+                            <p class="subtitle">Preencha as informações abaixo para acessar sua conta.</p>
+
+                            <form id="form-login">
+                                <div class="form-group">
+                                    <label for="email-login">E-mail</label>
+                                    <input type="email" id="email-login" placeholder="Seu email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="senha-login">Senha</label>
+                                    <div class="password-input">
+                                        <input type="password" id="senha-login" placeholder="Sua senha" required>
+                                        <i class="fas fa-eye toggle-password"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">Entrar</button>
+
+                                <div class="divider">
+                                    <span>Ou entre com</span>
+                                </div>
+
+                                <div class="social-buttons">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> Continue com Google
+                                    </button>
+                                    <button type="button" class="btn-social apple" id="btn-apple-login">
+                                        <i class="fab fa-apple"></i> Continue com Apple
+                                    </button>
+                                </div>
+
+                                <button type="button" class="btn-link">Esqueceu sua senha?</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Popup de Recuperação de Senha -->
+    <div class="popup-overlay" id="popup-recuperar-senha">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon recovery">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="popup-title">Recuperar Senha</h3>
+                <p class="popup-texto">Digite seu email para receber um link de recuperação de senha.</p>
+            </div>
+
+            <form class="popup-form" id="form-popup-recuperar">
+                <div class="form-group">
+                    <label for="email-popup-recuperar">Email</label>
+                    <input type="email" id="email-popup-recuperar" placeholder="seu@email.com" required>
+                </div>
+            </form>
+
+            <div class="popup-botoes">
+                <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-recuperar-senha')">
+                    Cancelar
+                </button>
+                <button type="button" class="botao-popup primario" id="btn-popup-enviar">
+                    <span class="btn-text">Enviar</span>
+                    <span class="popup-loading">
+                        <i class="fas fa-spinner"></i> Enviando...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Sucesso -->
+    <div class="popup-overlay" id="popup-sucesso">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="popup-title">Email Enviado!</h3>
+                <p class="popup-texto">Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.</p>
+            </div>
+
+            <div class="popup-botoes">
+                <button type="button" class="botao-popup secundario" onclick="abrirPopup('popup-email-info'); fecharPopup('popup-sucesso');">
+                    Não Recebi
+                </button>
+                <button type="button" class="botao-popup secundario" id="btn-reenviar-popup" style="display: none;">
+                    Reenviar Email
+                </button>
+                <button type="button" class="botao-popup primario" onclick="fecharPopup('popup-sucesso')">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Especial para Problemas com Email -->
+    <div class="popup-overlay" id="popup-email-info">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon info">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="popup-title">Não Recebeu o Email?</h3>
+                <p class="popup-texto">
+                    Se você não recebeu o email de recuperação, verifique:
+                    <br><br>
+                    • Caixa de spam/lixo eletrônico<br>
+                    • Se o email está correto<br>
+                    • Aguarde alguns minutos<br>
+                    • Tente reenviar após 30 segundos
+                </p>
+            </div>
+
+            <div class="popup-botoes">
+                <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-email-info')">
+                    Entendi
+                </button>
+                <button type="button" class="botao-popup info" onclick="abrirPopup('popup-recuperar-senha'); fecharPopup('popup-email-info');">
+                    Tentar Novamente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Notificação Geral -->
+    <div class="popup-overlay" id="popup-notificacao">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon" id="popup-notificacao-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 class="popup-title" id="popup-notificacao-titulo">Notificação</h3>
+                <p class="popup-texto" id="popup-notificacao-texto">Mensagem de notificação.</p>
+            </div>
+
+            <div class="popup-botoes">
+                <button type="button" class="botao-popup primario" onclick="fecharPopup('popup-notificacao')">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Confirmação -->
+    <div class="popup-overlay" id="popup-confirmacao">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="popup-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="popup-title" id="popup-confirmacao-titulo">Confirmação</h3>
+                <p class="popup-texto" id="popup-confirmacao-texto">Você tem certeza?</p>
+            </div>
+
+            <div class="popup-botoes">
+                <button type="button" class="botao-popup secundario" onclick="fecharPopup('popup-confirmacao')">
+                    Cancelar
+                </button>
+                <button type="button" class="botao-popup warning" id="popup-confirmacao-confirmar">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

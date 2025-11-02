@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Meus Cartões</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/header-padrao.css">
+    <link rel="stylesheet" href="../css/secao-resumo-padrao.css">
+    <link rel="stylesheet" href="../css/menu-inferior-padrao.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
+</head>
+<body>
+    <div class="app-container">
+        <header class="cabecalho">
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons-round">arrow_back</span>
+                </button>
+                <div class="titulo-pagina" onclick="toggleDropdown()">
+                    <h1>Meus Cartões</h1>
+                    <span class="material-icons-round">expand_more</span>
+                </div>
+                
+                                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
+                    <div class="dropdown-item" onclick="window.location.href='../Lista-de-receitas/Lista-de-receitas.html'">
+                        <span class="material-icons-round">trending_up</span>
+                        <span>Receitas</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.location.href='../Lista-de-despesas/Lista-de-despesas.html'">
+                        <span class="material-icons-round">trending_down</span>
+                        <span>Despesas</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.location.href='../Transações/Transações.html'">
+                        <span class="material-icons-round">swap_horiz</span>
+                        <span>Transações</span>
+                    </div>
+                </div>
+                
+                <div class="acoes-cabecalho">
+                    <button class="botao-icone" id="botao-busca">
+                        <span class="material-icons-round">search</span>
+                    </button>
+                    <button class="botao-icone" id="botao-filtros">
+                        <span class="material-icons-round">filter_list</span>
+                    </button>
+                </div>
+            </div>
+            <nav class="navegacao-mes">
+                <button class="botao-navegacao" id="prev-month">
+                    <span class="material-icons-round">chevron_left</span>
+                </button>
+                <h2 class="mes-atual" id="mes-atual">Novembro 2025</h2>
+                <button class="botao-navegacao" id="next-month">
+                    <span class="material-icons-round">chevron_right</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Barra de Busca (inicialmente oculta) -->
+        <div class="barra-busca" id="barra-busca" style="display: none;">
+            <div class="input-busca-container">
+                <span class="material-icons">search</span>
+                <input type="text" id="input-busca" placeholder="Buscar cartões..." />
+                <button class="botao-fechar-busca" id="fechar-busca">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="conteudo-principal">
+            <!-- Resumo -->
+            <section class="secao-resumo compacta">
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">account_balance_wallet</span>
+                        <span>Limite Total</span>
+                    </div>
+                    <span class="resumo-valor" id="limite-total">R$ 0,00</span>
+                </div>
+                <div class="resumo-bloco">
+                    <div class="resumo-label">
+                        <span class="material-icons-round icone-mini">credit_card</span>
+                        <span>Total Faturas</span>
+                    </div>
+                    <span class="resumo-valor destaque" id="valor-faturas">R$ 0,00</span>
+                </div>
+            </section>
+
+            <!-- Estado Vazio -->
+            <div class="estado-vazio" id="estado-vazio" style="display: none;">
+                <span class="material-icons icone-vazio">credit_card</span>
+                <h3>Nenhum cartão encontrado</h3>
+                <p>Você ainda não registrou nenhum cartão de crédito.<br>Toque no botão (+) para adicionar.</p>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Carregando cartões...</p>
+            </div>
+
+            <!-- Lista de Cartões -->
+            <div class="lista-cartoes" id="cartoes-list">
+                <!-- Cartões serão inseridos aqui -->
+            </div>
+        </main>
+
+        <!-- Botão Adicionar Flutuante -->
+        <button class="botao-adicionar-fab" id="botao-adicionar" onclick="window.location.href='../Novo Cartão/Novo Cartão.html'">
+            <span class="material-icons-round">add</span>
+        </button>
+
+        <!-- Barra de navegação inferior -->
+        <nav class="barra-navegacao-inferior">
+            <a href="../Home/home.html" class="item-navegacao">
+                <span class="material-icons-round">home</span>
+                <span>Principal</span>
+            </a>
+            <a href="../Transações/Transações.html" class="item-navegacao">
+                <span class="material-icons-round">swap_horiz</span>
+                <span>Transações</span>
+            </a>
+            <div class="botao-adicionar-menu" id="botao-adicionar-menu">
+                <span class="material-icons-round">add</span>
+            </div>
+            <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+                <span class="material-icons-round">bar_chart</span>
+                <span>Gráficos</span>
+            </a>
+            <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+                <span class="material-icons-round">settings</span>
+                <span>Configurações</span>
+            </a>
+        </nav>
+
+
+    </div>
+
+    <!-- Modal de Filtros -->
+    <div class="modal-overlay" id="modal-filtros" style="display: none;">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <h3>Filtros</h3>
+                <button class="botao-fechar-modal" id="fechar-modal-filtros">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="campo-filtro">
+                    <label>Bandeira</label>
+                    <select id="filtro-bandeira">
+                        <option value="">Todas</option>
+                        <option value="Visa">Visa</option>
+                        <option value="Mastercard">Mastercard</option>
+                        <option value="Elo">Elo</option>
+                    </select>
+                </div>
+                <div class="campo-filtro">
+                    <label>Status da Fatura</label>
+                    <select id="filtro-status">
+                        <option value="">Todos</option>
+                        <option value="aberta">Fatura Aberta</option>
+                        <option value="fechada">Fatura Fechada</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="botao-secundario" id="limpar-filtros">Limpar</button>
+                <button class="botao-primario" id="aplicar-filtros">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal-confirmacao-overlay" id="modal-excluir-cartao" style="display: none;">
+        <div class="modal-confirmacao">
+            <div class="modal-confirmacao-icone">
+                <span class="material-icons-round">warning</span>
+            </div>
+            <h3 class="modal-confirmacao-titulo">Tem certeza que deseja excluir o cartão "<span id="nome-cartao-excluir"></span>"?</h3>
+            <p class="modal-confirmacao-texto">Esta ação não pode ser desfeita.</p>
+            <div class="modal-confirmacao-acoes">
+                <button class="btn-modal-cancelar" id="btn-cancelar-exclusao">Cancelar</button>
+                <button class="btn-modal-excluir" id="btn-confirmar-exclusao">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+    <script src="../js/header-padrao.js"></script>
+    <script src="../js/menu-inferior-padrao.js"></script>
+    <script src="../js/menu-adicionar-padrao.js"></script>
+</body>
+</html>

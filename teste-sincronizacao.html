@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Sincronização de Perfil</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+        }
+        
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-preview .material-icons-round {
+            font-size: 80px;
+            color: #999;
+        }
+        
+        .nome-preview {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-box code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #764ba2;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Teste de Sincronização</h1>
+        
+        <div class="avatar-preview" id="avatar-preview">
+            <span class="material-icons-round">account_circle</span>
+        </div>
+        
+        <div class="nome-preview" id="nome-preview">
+            Carregando...
+        </div>
+        
+        <div class="info-box">
+            <h3>📦 Dados no localStorage:</h3>
+            <p id="info-dados">Verificando...</p>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="recarregarDados()">
+                <span class="material-icons-round">refresh</span>
+                Recarregar
+            </button>
+            <button class="btn btn-secondary" onclick="irParaConfiguracoes()">
+                <span class="material-icons-round">settings</span>
+                Configurações
+            </button>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="irParaHome()">
+                <span class="material-icons-round">home</span>
+                Home
+            </button>
+            <button class="btn btn-danger" onclick="limparDados()">
+                <span class="material-icons-round">delete</span>
+                Limpar Dados
+            </button>
+        </div>
+        
+        <div class="status info" id="status">
+            ℹ️ Carregue os dados para testar
+        </div>
+    </div>
+    
+    <script>
+        function carregarDados() {
+            console.log('🔍 Verificando localStorage...');
+            
+            try {
+                // Carregar nome
+                const dadosUsuario = localStorage.getItem('dadosUsuario');
+                const nomeElement = document.getElementById('nome-preview');
+                
+                if (dadosUsuario) {
+                    const dados = JSON.parse(dadosUsuario);
+                    nomeElement.textContent = dados.nome || 'Nome não definido';
+                    console.log('✅ Nome:', dados.nome);
+                } else {
+                    nomeElement.textContent = 'Nome não definido';
+                    console.log('⚠️ Nenhum nome salvo');
+                }
+                
+                // Carregar avatar
+                const avatarSalvo = localStorage.getItem('avatarUsuario');
+                const avatarContainer = document.getElementById('avatar-preview');
+                
+                if (avatarSalvo) {
+                    avatarContainer.innerHTML = `<img src="${avatarSalvo}" alt="Avatar">`;
+                    console.log('✅ Avatar carregado');
+                } else {
+                    avatarContainer.innerHTML = '<span class="material-icons-round">account_circle</span>';
+                    console.log('⚠️ Nenhum avatar salvo');
+                }
+                
+                // Mostrar informações
+                const infoElement = document.getElementById('info-dados');
+                infoElement.innerHTML = `
+                    <strong>Nome:</strong> <code>${dadosUsuario ? JSON.parse(dadosUsuario).nome : 'Não definido'}</code><br>
+                    <strong>Avatar:</strong> <code>${avatarSalvo ? 'Imagem salva (' + (avatarSalvo.length / 1024).toFixed(2) + ' KB)' : 'Não definido'}</code>
+                `;
+                
+                // Status
+                const statusElement = document.getElementById('status');
+                if (dadosUsuario && avatarSalvo) {
+                    statusElement.className = 'status success';
+                    statusElement.textContent = '✅ Dados carregados com sucesso!';
+                } else if (dadosUsuario || avatarSalvo) {
+                    statusElement.className = 'status info';
+                    statusElement.textContent = 'ℹ️ Dados parcialmente carregados';
+                } else {
+                    statusElement.className = 'status error';
+                    statusElement.textContent = '❌ Nenhum dado encontrado';
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados:', error);
+                const statusElement = document.getElementById('status');
+                statusElement.className = 'status error';
+                statusElement.textContent = '❌ Erro ao carregar dados';
+            }
+        }
+        
+        function recarregarDados() {
+            console.log('🔄 Recarregando dados...');
+            carregarDados();
+        }
+        
+        function limparDados() {
+            if (confirm('⚠️ Tem certeza que deseja limpar todos os dados?')) {
+                localStorage.removeItem('dadosUsuario');
+                localStorage.removeItem('avatarUsuario');
+                console.log('🗑️ Dados limpos');
+                carregarDados();
+            }
+        }
+        
+        function irParaConfiguracoes() {
+            window.location.href = 'Configurações/Configuracoes.html';
+        }
+        
+        function irParaHome() {
+            window.location.href = 'Home/home.html';
+        }
+        
+        // Carregar automaticamente ao abrir
+        carregarDados();
+        
+        console.log('✅ Página de teste carregada!');
+        console.log('📋 Comandos disponíveis no console:');
+        console.log('  - carregarDados() → Recarregar dados');
+        console.log('  - limparDados() → Limpar dados');
+        console.log('  - localStorage.getItem("dadosUsuario") → Ver dados salvos');
+        console.log('  - localStorage.getItem("avatarUsuario") → Ver avatar salvo');
+    </script>
+</body>
+</html>
