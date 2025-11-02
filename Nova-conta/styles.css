@@ -410,10 +410,18 @@ a {
     outline: 2px solid var(--cor-primaria);
 }
 
+.item-navegacao.ativo {
+    color: var(--cor-primaria);
+}
+
 .item-navegacao .material-icons {
     font-size: 24px;
     margin-bottom: 4px;
     transition: all 0.3s ease;
+}
+
+.item-navegacao.ativo .material-icons {
+    transform: translateY(-5px);
 }
 
 .botao-adicionar {

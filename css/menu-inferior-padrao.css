@@ -26,6 +26,16 @@
     min-width: 60px;
 }
 
+.item-navegacao:hover {
+    color: #21C25E;
+    background-color: rgba(33, 194, 94, 0.1);
+}
+
+.item-navegacao.ativo {
+    color: #2b2d42; /* Cor neutra ao invés do verde */
+    font-weight: 600;
+}
+
 .item-navegacao span:first-child {
     font-size: 24px;
     margin-bottom: 4px;

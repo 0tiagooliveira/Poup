@@ -361,18 +361,18 @@ function renderDespesas(despesas) {
 
     if (!despesas || despesas.length === 0) {
         container.innerHTML = `
-            <div class="estado-vazio">
-                <div class="icone-vazio">
-                    <span class="material-icons-round">trending_down</span>
+            <div style="text-align: center; padding: 3rem 2rem; color: #6b7280;">
+                <div style="margin-bottom: 1rem;">
+                    <span class="material-icons-round" style="font-size: 3rem; opacity: 0.3;">trending_down</span>
                 </div>
-                <h3>Nenhuma despesa</h3>
-                <p>Comece registrando suas despesas para controlar seus gastos financeiros</p>
-                <div class="acoes-sugeridas">
-                    <a href="../Nova-Despesa/Nova-Despesa.html" class="acao-rapida">
-                        <span class="material-icons-round">add</span>
-                        Adicionar Despesa
-                    </a>
-                </div>
+                <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">Nenhuma despesa encontrada</p>
+                <p style="margin-bottom: 2rem; font-size: 0.9rem; opacity: 0.7;">Comece registrando sua primeira despesa</p>
+                <button onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'" 
+                        class="empty-state-button"
+                        style="background-color: var(--cor-primaria); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s ease;">
+                    <span class="material-icons-round" style="font-size: 20px;">add</span>
+                    Adicionar Despesa
+                </button>
             </div>
         `;
         return;

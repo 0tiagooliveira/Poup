@@ -45,15 +45,36 @@ let usuarioAtual = null;
 let cartoes = [];
 let mesAtual = new Date();
 
-// === NAVEGAÇÃO ===
-// Header dropdown é gerenciado pelo header-padrao.js
+// === FUNÇÕES DE DROPDOWN ===
+function toggleDropdown() {
+    const dropdown = document.getElementById('dropdown-menu');
+    const tituloPagina = document.querySelector('.titulo-pagina');
+    
+    if (dropdown && tituloPagina) {
+        const isVisible = dropdown.style.display === 'block';
+        dropdown.style.display = isVisible ? 'none' : 'block';
+        tituloPagina.classList.toggle('open', !isVisible);
+    }
+}
 
 function navegarPara(url) {
     window.location.href = url;
 }
 
 // Disponibilizar funções globalmente
+window.toggleDropdown = toggleDropdown;
 window.navegarPara = navegarPara;
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', (event) => {
+    const dropdown = document.getElementById('dropdown-menu');
+    const tituloPagina = document.querySelector('.titulo-pagina');
+    
+    if (dropdown && tituloPagina && !tituloPagina.contains(event.target)) {
+        dropdown.style.display = 'none';
+        tituloPagina.classList.remove('open');
+    }
+});
 
 // === INICIALIZAÇÃO ===
 document.addEventListener('DOMContentLoaded', () => {

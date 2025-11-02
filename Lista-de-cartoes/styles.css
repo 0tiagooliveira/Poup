@@ -563,6 +563,10 @@ body {
     background: var(--cor-fundo-claro);
 }
 
+.item-navegacao.ativo {
+    color: var(--cor-primaria);
+}
+
 .item-navegacao .material-icons-round {
     font-size: 24px;
 }

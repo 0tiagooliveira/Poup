@@ -520,6 +520,12 @@ body[cz-shortcut-listen="true"] {
     margin-bottom: 2px;
 }
 
+.item-navegacao.ativo,
+.item-navegacao:hover {
+    color: #21C25E;
+    background: #e8f5ee;
+}
+
 .botao-adicionar-menu {
     width: 64px;
     height: 64px;
