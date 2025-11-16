@@ -62,7 +62,8 @@ body[cz-shortcut-listen="true"] {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
     margin: 0 !important;
     padding: 0 !important;
     z-index: 1; /* Camada baixa para ficar atrás do menu */
@@ -803,15 +804,22 @@ input:checked + .toggle-slider:before {
 .dropdown-menu {
     position: absolute;
     top: 100%;
-    left: 16px;
-    right: 16px;
+    left: 0;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    padding: 8px 0;
-    z-index: 1000;
-    margin-top: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+    min-width: 200px;
+    z-index: 10001;
+    overflow: hidden;
+    margin-top: 8px;
     display: none; /* Inicialmente oculto */
+    pointer-events: auto;
+}
+
+.dropdown-menu[style*="block"] {
+    display: block !important;
+    pointer-events: auto;
 }
 
 .dropdown-item {
@@ -1005,13 +1013,15 @@ input:checked + .toggle-slider:before {
     justify-content: center;
     align-items: center;
     color: #ffffff;
-    margin-top: -36px;
+    margin-top: -32px;
     box-shadow: 0 6px 24px rgba(211,47,47,0.35);
     transition: all 0.3s;
     cursor: pointer;
     border: 4px solid #fff;
     font-size: 2.2rem;
     flex-shrink: 0;
+    z-index: 1001;
+    position: relative;
 }
 
 .botao-adicionar-menu:hover {
@@ -1489,7 +1499,7 @@ input:checked + .slider:before {
     box-shadow: 0 8px 32px rgba(33, 194, 94, 0.15),
                 0 4px 16px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    z-index: 99;
+    z-index: 1002;
     animation: slideUpBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     border: 1px solid rgba(33, 194, 94, 0.1);
 }

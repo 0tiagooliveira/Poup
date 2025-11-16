@@ -898,26 +898,6 @@ function renderizarCartoesCredito(cartoes) {
             const faturaAtualFormatada = cartao.valorFatura ? `R$ ${cartao.valorFatura.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ 0,00';
             const limitePorcentagem = cartao.limite > 0 ? ((cartao.utilizado || 0) / cartao.limite * 100).toFixed(1) : 0;
             
-<<<<<<< HEAD
-            const cartaoHTML = `
-                <div class="cartao-credito-home" onclick="window.location.href='../Lista-de-cartoes/Lista-de-cartoes.html'">
-                    <div class="cartao-credito-header">
-                        <div class="cartao-credito-icone">
-                            <span class="material-icons-round">credit_card</span>
-                        </div>
-                        <div class="cartao-credito-info">
-                            <h4>${cartao.nomeBanco || cartao.nomeCartao || 'Cartão'}</h4>
-                            <p class="cartao-bandeira">${cartao.bandeira || cartao.tipo || 'Cartão de Crédito'}</p>
-                        </div>
-                        <div class="cartao-credito-valores">
-                            <div class="fatura-atual">
-                                <span class="label">Fatura Atual</span>
-                                <span class="valor">${faturaAtualFormatada}</span>
-                            </div>
-                            <div class="limite-total">
-                                <span class="label">Limite</span>
-                                <span class="valor">${limiteTotalFormatado}</span>
-=======
             // Obter ícone SVG e cor do banco
             let iconeSvg = null;
             let corBanco = '#820ad1'; // Padrão Nubank
@@ -978,17 +958,12 @@ function renderizarCartoesCredito(cartoes) {
                             <div class="limite-total">
                                 <div class="label">Limite</div>
                                 <div class="valor">${limiteTotalFormatado}</div>
->>>>>>> 3b0767c (Cartões de Crédito)
                             </div>
                         </div>
                     </div>
                     <div class="cartao-credito-barra">
                         <div class="barra-progresso">
-<<<<<<< HEAD
-                            <div class="barra-preenchida" style="width: ${limitePorcentagem}%"></div>
-=======
                             <div class="barra-preenchida" style="width: ${limitePorcentagem}%; background-color: ${corBanco};"></div>
->>>>>>> 3b0767c (Cartões de Crédito)
                         </div>
                         <span class="porcentagem">${limitePorcentagem}%</span>
                     </div>

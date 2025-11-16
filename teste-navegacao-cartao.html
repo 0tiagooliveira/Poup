@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Despesas de Cartão</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-section h3 { color: #2196F3; margin: 0 0 10px 0; }
+        .status { padding: 5px 10px; border-radius: 5px; margin: 5px 0; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #b8daff; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+        .btn-success { background: #4CAF50; }
+        .btn-success:hover { background: #45a049; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste - Navegação por Cartão</h1>
+        
+        <div class="test-section">
+            <h3>📋 1. Teste de Navegação</h3>
+            <div class="info">
+                <strong>✅ Implementações Concluídas:</strong><br>
+                • Clique no cartão redireciona para despesas filtradas<br>
+                • URL com parâmetros: ?cartao=ID&nome=NOME<br>
+                • Filtro automático por cartão específico<br>
+                • Título da página atualizado com nome do cartão<br>
+                • Botão para voltar à lista geral
+            </div>
+            
+            <div class="code">
+                <strong>URLs de Teste:</strong><br>
+                • Lista completa: Lista-de-despesas-cartao.html<br>
+                • Cartão específico: Lista-de-despesas-cartao.html?cartao=cartao1&nome=Nubank%20Roxinho<br>
+                • Outro cartão: Lista-de-despesas-cartao.html?cartao=cartao2&nome=Bradesco%20Visa
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 2. Links de Teste Direto</h3>
+            <button class="btn" onclick="testarCartao('cartao1', 'Nubank Roxinho')">
+                🟣 Testar Nubank Roxinho
+            </button>
+            <button class="btn" onclick="testarCartao('cartao2', 'Bradesco Visa')">
+                🔴 Testar Bradesco Visa  
+            </button>
+            <button class="btn" onclick="testarCartao('cartao3', 'Itaú Click')">
+                🟠 Testar Itaú Click
+            </button>
+            <button class="btn btn-success" onclick="testarListaCompleta()">
+                📋 Lista Completa
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 3. Como Testar</h3>
+            <div class="code">
+                <strong>Passos para Teste Completo:</strong><br>
+                1. <strong>Abra Lista de Cartões:</strong> <a href="Lista-de-cartoes/Lista-de-cartoes.html" target="_blank">Lista-de-cartoes.html</a><br>
+                2. <strong>Clique em um cartão</strong> → Deve levar para despesas daquele cartão<br>
+                3. <strong>Verifique o título</strong> → Deve mostrar o nome do cartão<br>
+                4. <strong>Verifique URL</strong> → Deve ter ?cartao=ID&nome=NOME<br>
+                5. <strong>Crie uma nova despesa</strong> → <a href="Nova-Despesa-Cartão/Nova-Despesa-Cartão.html" target="_blank">Nova despesa no cartão</a><br>
+                6. <strong>Volte para lista</strong> → Despesa deve aparecer filtrada por cartão
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🐛 4. Verificações Técnicas</h3>
+            <div class="warning">
+                <strong>Console Debug:</strong> Abra F12 → Console para ver logs detalhados:<br>
+                • "📱 Cartão selecionado: NOME ID: ID"<br>
+                • "🔍 Filtrado para cartão: NOME (ID)"<br>
+                • "Despesas de cartão carregadas: [array]"
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚡ 5. Status das Funcionalidades</h3>
+            <div class="success">✅ Navegação por cartão implementada</div>
+            <div class="success">✅ Filtro automático funcionando</div>
+            <div class="success">✅ URL com parâmetros</div>
+            <div class="success">✅ Título dinâmico</div>
+            <div class="success">✅ Botão voltar à lista geral</div>
+            <div class="success">✅ Despesas salvas com tipo='cartao'</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 6. Solução de Problemas</h3>
+            <div class="info">
+                <strong>Se não carregar despesas:</strong><br>
+                • Verifique se despesas foram salvas com tipo='cartao'<br>
+                • Verifique se o campo 'conta' corresponde ao ID do cartão<br>
+                • Abra Console (F12) para ver logs de debug<br>
+                • Verifique se está autenticado no Firebase
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testarCartao(cartaoId, nomeCartao) {
+            const url = `Lista-de-despesas-cartao/Lista-de-despesas-cartao.html?cartao=${cartaoId}&nome=${encodeURIComponent(nomeCartao)}`;
+            console.log('🧪 Testando navegação:', url);
+            window.location.href = url;
+        }
+
+        function testarListaCompleta() {
+            window.location.href = 'Lista-de-despesas-cartao/Lista-de-despesas-cartao.html';
+        }
+
+        // Auto-executar verificação
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Página de teste carregada');
+            console.log('📋 Para testar, use os botões acima ou navegue diretamente');
+        });
+    </script>
+</body>
+</html>

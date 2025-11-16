@@ -35,27 +35,9 @@ const categoryDetails = {
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 // --- INICIALIZAÇÃO ---
-// Configurar menu adicionar
+// Menu adicionar gerenciado pelo menu-adicionar-padrao.js - função removida para evitar conflitos
 function configurarMenuAdicionar() {
-    const botaoAdicionar = document.getElementById('botao-adicionar-despesas');
-    const menu = document.getElementById('menu-adicionar-despesas');
-
-    if (!botaoAdicionar || !menu) return;
-
-    botaoAdicionar.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (menu.style.display === 'none' || !menu.style.display) {
-            menu.style.display = 'block';
-        } else {
-            menu.style.display = 'none';
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && e.target !== botaoAdicionar && !botaoAdicionar.contains(e.target)) {
-            menu.style.display = 'none';
-        }
-    });
+    console.log('Menu adicionar será gerenciado pelo menu-adicionar-padrao.js');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -88,15 +70,7 @@ function initializeUI() {
     // Configurar listeners do modal
     initializeModalListeners();
     
-    // Adicionar listener específico para botão despesa
-    const botaoDespesa = document.querySelector('.botao-despesa');
-    if (botaoDespesa) {
-        botaoDespesa.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.href = '../Nova-Despesa/Nova-Despesa.html';
-        });
-    }
+    // Listener específico removido - menu é gerenciado pelo menu-adicionar-padrao.js
     
     // Listeners do popup de exclusão
     const popupCancelar = document.getElementById('popup-cancelar');
@@ -184,6 +158,11 @@ function setupDropdownAndFilters() {
     
     // Fechar dropdown ao clicar fora
     document.addEventListener('click', (e) => {
+        // Se clicou em um link do dropdown, permite navegação
+        if (e.target.closest('.dropdown-item')) {
+            return;
+        }
+        
         if (!e.target.closest('.titulo-pagina') && !e.target.closest('.dropdown-menu')) {
             hideDropdown();
         }
@@ -305,6 +284,11 @@ async function loadDespesas(filtros = null) {
             console.log('Data está no range?:', despesaDate >= firstDay && despesaDate <= lastDay);
             
             if (despesaDate >= firstDay && despesaDate <= lastDay) {
+                // Excluir despesas de cartão da lista de despesas regulares
+                if (data.tipo === 'cartao') {
+                    console.log('Despesa de cartão ignorada na lista de despesas regulares');
+                    return;
+                }
                 const despesa = { id: doc.id, ...data, data: despesaDate };
                 console.log('Despesa adicionada:', despesa);
                 despesas.push(despesa);
@@ -681,7 +665,7 @@ function abrirModalDetalhesDespesa(despesa) {
     const contaIcone = document.getElementById('modal-conta-icone');
     let contaNome = (nomeContaExibicao || '').toLowerCase();
     const bancos = [
-        { chave:['nubank'], cor:'#8b5cf6', svg:'../Icon/Nubank.svg' },
+        { chave:['nubank'], cor:'#820ad1', svg:'../Icon/Nubank.svg' },
         { chave:['bradesco'], cor:'#e53e3e', svg:'../Icon/bradesco.svg' },
         { chave:['itau','itaú'], cor:'#ff8c00', svg:'../Icon/itau.svg' },
         { chave:['santander'], cor:'#e53e3e', svg:'../Icon/santander.svg' },

@@ -26,8 +26,7 @@ function abrirDropdown() {
     dropdown.style.display = 'block';
     titulo?.classList.add('open');
     
-    // Criar overlay para fechar ao clicar fora
-    criarOverlayDropdown();
+    // Não criar overlay, pois temos event listeners globais que cuidam do fechamento
 }
 
 // Função para fechar dropdown
@@ -40,23 +39,16 @@ function fecharDropdown() {
     dropdown.style.display = 'none';
     titulo?.classList.remove('open');
     
-    // Remover overlay
+    // Remover overlay se existir
     removerOverlayDropdown();
 }
 
-// Criar overlay para fechar dropdown
+// Não usar overlay - deixar event listeners globais cuidarem do fechamento
 function criarOverlayDropdown() {
-    let overlay = document.getElementById('dropdown-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'dropdown-overlay';
-        overlay.className = 'dropdown-overlay';
-        overlay.addEventListener('click', fecharDropdown);
-        document.body.appendChild(overlay);
-    }
+    // Função mantida para compatibilidade, mas não faz nada
 }
 
-// Remover overlay
+// Remover overlay se existir (para limpeza)
 function removerOverlayDropdown() {
     const overlay = document.getElementById('dropdown-overlay');
     if (overlay) {
@@ -79,12 +71,25 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Prevenir que cliques no dropdown fechem o menu
+// Fechar dropdown ao clicar fora
 document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('dropdown-menu');
     const titulo = document.querySelector('.titulo-pagina');
     
     if (dropdown && titulo) {
+        // Debug: log do clique
+        console.log('Clique detectado em:', e.target);
+        
+        // Se clicou em um link do dropdown, permitir navegação
+        const dropdownItem = e.target.closest('.dropdown-item');
+        if (dropdownItem) {
+            console.log('Clique em item do dropdown:', dropdownItem);
+            // Não fechar imediatamente - deixar o navegador processar o link
+            setTimeout(() => fecharDropdown(), 100);
+            return;
+        }
+        
+        // Se clicou fora do título e do dropdown, fechar
         if (!titulo.contains(e.target) && !dropdown.contains(e.target)) {
             fecharDropdown();
         }
@@ -148,6 +153,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Atualizar display do mês
     atualizarMesDisplay();
+    
+    // Configurar cliques nos itens do dropdown
+    setTimeout(() => {
+        const dropdownItems = document.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                console.log('Clique direto no item:', this.href);
+                e.stopPropagation();
+                fecharDropdown();
+                if (this.href) {
+                    window.location.href = this.href;
+                }
+            });
+        });
+    }, 500);
 });
 
 // Expor funções globalmente para compatibilidade

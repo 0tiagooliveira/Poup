@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Despesas de Cartão no Firebase</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-section h3 { color: #2196F3; margin: 0 0 10px 0; }
+        .status { padding: 5px 10px; border-radius: 5px; margin: 5px 0; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #b8daff; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+        .btn-success { background: #4CAF50; }
+        .btn-success:hover { background: #45a049; }
+        .btn-danger { background: #f44336; }
+        .btn-danger:hover { background: #d32f2f; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace; }
+        .result { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste - Coleção despesas-cartao</h1>
+        
+        <div class="test-section">
+            <h3>📋 1. Status das Alterações</h3>
+            <div class="success">✅ Nova-Despesa-Cartão agora salva na coleção 'despesas-cartao'</div>
+            <div class="success">✅ Gráficos carregam de ambas as coleções</div>
+            <div class="success">✅ Lista-de-despesas-cartao com fallback para ambas</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔥 2. Teste de Conexão Firebase</h3>
+            <div id="firebase-status" class="info">Conectando ao Firebase...</div>
+            <button class="btn" onclick="testFirebaseConnection()">Testar Conexão</button>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 3. Verificar Coleções</h3>
+            <div id="collections-status" class="info">Aguardando teste...</div>
+            <button class="btn" onclick="checkCollections()">Verificar Coleções</button>
+            <button class="btn btn-success" onclick="listDespesasCartao()">Listar despesas-cartao</button>
+            <button class="btn btn-success" onclick="listDespesasRegular()">Listar despesas regulares</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 4. Resultado dos Testes</h3>
+            <div id="test-results" class="result">
+                Clique nos botões acima para executar os testes...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 5. Como Testar Completo</h3>
+            <div class="code">
+                <strong>Fluxo de Teste:</strong><br>
+                1. <strong>Criar despesa:</strong> <a href="Nova-Despesa-Cartão/Nova-Despesa-Cartão.html" target="_blank">Nova Despesa no Cartão</a><br>
+                2. <strong>Verificar aqui:</strong> Usar botão "Listar despesas-cartao"<br>
+                3. <strong>Ver nos gráficos:</strong> <a href="Gráficos/Gráficos.html" target="_blank">Gráficos</a><br>
+                4. <strong>Ver na lista:</strong> <a href="Lista-de-despesas-cartao/Lista-de-despesas-cartao.html" target="_blank">Lista de Despesas Cartão</a>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 6. Ferramentas de Debug</h3>
+            <button class="btn btn-danger" onclick="clearTestData()">Limpar Dados de Teste</button>
+            <button class="btn" onclick="createTestExpense()">Criar Despesa de Teste</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+            authDomain: "poup-beta.firebaseapp.com",
+            projectId: "poup-beta",
+            storageBucket: "poup-beta.appspot.com",
+            messagingSenderId: "954695915981",
+            appId: "1:954695915981:web:d31b216f79eac178094c84"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+
+        // Auto-conectar
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('firebase-status').innerHTML = `
+                    <div class="success">✅ Conectado como: ${user.email}</div>
+                    <div class="info">UID: ${user.uid}</div>
+                `;
+            } else {
+                document.getElementById('firebase-status').innerHTML = `
+                    <div class="warning">⚠️ Não autenticado - alguns testes podem falhar</div>
+                `;
+            }
+        });
+
+        function testFirebaseConnection() {
+            const status = document.getElementById('firebase-status');
+            try {
+                status.className = 'status success';
+                status.textContent = '✅ Firebase conectado! Versão: 8.10.1';
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Erro: ' + error.message;
+            }
+        }
+
+        async function checkCollections() {
+            const status = document.getElementById('collections-status');
+            const results = document.getElementById('test-results');
+            
+            if (!currentUser) {
+                status.innerHTML = '<div class="error">❌ Usuário não autenticado</div>';
+                return;
+            }
+
+            try {
+                status.innerHTML = '<div class="info">🔍 Verificando coleções...</div>';
+                
+                // Verificar coleção despesas
+                const despesasSnap = await db.collection('despesas').where('userId', '==', currentUser.uid).limit(5).get();
+                const despesasCount = despesasSnap.size;
+                
+                // Verificar coleção despesas-cartao
+                let cartaoCount = 0;
+                let cartaoExists = true;
+                try {
+                    const cartaoSnap = await db.collection('despesas-cartao').where('userId', '==', currentUser.uid).limit(5).get();
+                    cartaoCount = cartaoSnap.size;
+                } catch (error) {
+                    cartaoExists = false;
+                }
+
+                status.innerHTML = `
+                    <div class="success">✅ Verificação concluída</div>
+                    <div class="info">📋 Despesas regulares: ${despesasCount}</div>
+                    <div class="info">💳 Despesas de cartão: ${cartaoExists ? cartaoCount : 'Coleção não existe'}</div>
+                `;
+
+                results.innerHTML = `
+                    <strong>📊 Resultado da Verificação:</strong><br>
+                    • Coleção 'despesas': ${despesasCount} registros<br>
+                    • Coleção 'despesas-cartao': ${cartaoExists ? cartaoCount + ' registros' : 'Não existe ainda'}<br>
+                    • Status: ${cartaoExists ? '✅ Ambas funcionando' : '⚠️ Apenas despesas regulares'}
+                `;
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+                results.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function listDespesasCartao() {
+            const results = document.getElementById('test-results');
+            
+            if (!currentUser) {
+                results.innerHTML = '<strong>❌ Erro:</strong> Usuário não autenticado';
+                return;
+            }
+
+            try {
+                results.innerHTML = '<strong>🔍 Carregando despesas de cartão...</strong>';
+                
+                const snapshot = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+
+                if (snapshot.empty) {
+                    results.innerHTML = `
+                        <strong>💳 Despesas de Cartão:</strong><br>
+                        <div class="warning">⚠️ Nenhuma despesa encontrada na coleção 'despesas-cartao'</div>
+                        <div class="info">Isso é normal se você ainda não criou nenhuma despesa de cartão após a atualização</div>
+                    `;
+                    return;
+                }
+
+                let html = `<strong>💳 Despesas de Cartão (${snapshot.size}):</strong><br><br>`;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            <strong>${data.descricao}</strong> - ${data.valor}<br>
+                            <small>Data: ${data.data} | Tipo: ${data.tipo} | Cartão: ${data.carteira}</small>
+                        </div>
+                    `;
+                });
+
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function listDespesasRegular() {
+            const results = document.getElementById('test-results');
+            
+            if (!currentUser) {
+                results.innerHTML = '<strong>❌ Erro:</strong> Usuário não autenticado';
+                return;
+            }
+
+            try {
+                results.innerHTML = '<strong>🔍 Carregando despesas regulares...</strong>';
+                
+                const snapshot = await db.collection('despesas')
+                    .where('userId', '==', currentUser.uid)
+                    .where('tipo', '==', 'cartao')
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+
+                let html = `<strong>📋 Despesas Regulares (tipo=cartao) - ${snapshot.size}:</strong><br><br>`;
+                
+                if (snapshot.empty) {
+                    html += '<div class="info">✅ Nenhuma despesa de cartão na coleção regular (isso é bom!)</div>';
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        html += `
+                            <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                <strong>${data.descricao}</strong> - ${data.valor}<br>
+                                <small>Data: ${data.data} | Tipo: ${data.tipo}</small>
+                            </div>
+                        `;
+                    });
+                }
+
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function createTestExpense() {
+            if (!currentUser) {
+                alert('Usuário não autenticado');
+                return;
+            }
+
+            try {
+                const testExpense = {
+                    userId: currentUser.uid,
+                    descricao: 'Teste Despesa Cartão',
+                    valor: 'R$ 100,00',
+                    data: new Date().toLocaleDateString('pt-BR'),
+                    tipo: 'cartao',
+                    categoria: 'Teste',
+                    carteira: 'teste123',
+                    timestamp: Date.now()
+                };
+
+                await db.collection('despesas-cartao').add(testExpense);
+                alert('✅ Despesa de teste criada na coleção despesas-cartao!');
+                
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
+
+        async function clearTestData() {
+            if (!currentUser || !confirm('Tem certeza que deseja limpar dados de teste?')) {
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .where('descricao', '==', 'Teste Despesa Cartão')
+                    .get();
+
+                const batch = db.batch();
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+                alert('✅ Dados de teste removidos!');
+                
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

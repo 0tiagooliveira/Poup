@@ -63,8 +63,8 @@ let dadosBrutos = {
 };
 
 // Estado atual dos gráficos
-let tipoAtivo = 'donut'; // Inicia com gráfico de rosca (Despesas por categoria)
-let categoriaAtiva = 'despesas-categoria'; // Mostra despesas por categoria
+let tipoAtivo = 'colunas'; // Inicia com gráfico de barras (Balanço mensal)
+let categoriaAtiva = 'balanco-mensal'; // Mostra balanço mensal
 let graficoAtual = null;
 
 // Período selecionado
@@ -181,12 +181,20 @@ async function carregarDadosReais() {
         
         const dadosCarregados = { despesas, receitas, contas, transferencias };
         
+        // Debug específico para despesas de cartão
+        const despesasCartao = despesas.filter(d => d.tipo === 'cartao');
+        const despesasRegulares = despesas.filter(d => d.tipo !== 'cartao');
+        
         logInfo('📊', 'Dados carregados:', {
             despesas: despesas.length,
+            despesasRegulares: despesasRegulares.length,
+            despesasCartao: despesasCartao.length,
             receitas: receitas.length,
             contas: contas.length,
             transferencias: transferencias.length
         });
+        
+        console.log('💳 Despesas de cartão encontradas:', despesasCartao);
         
         // Processar dados
         processarDadosParaGraficos(dadosCarregados);
@@ -215,13 +223,30 @@ async function carregarDespesas() {
         }
         
         const despesas = [];
-        const snapshot = await db.collection('despesas').where('userId', '==', usuarioAtual.uid).get();
         
+        // Carregar despesas regulares
+        const snapshot = await db.collection('despesas').where('userId', '==', usuarioAtual.uid).get();
         snapshot.forEach(doc => {
             despesas.push({ id: doc.id, ...doc.data() });
         });
         
-        logInfo('💸', `${despesas.length} despesas carregadas`);
+        // Carregar despesas de cartão (se a coleção existir)
+        try {
+            const snapshotCartao = await db.collection('despesas-cartao').where('userId', '==', usuarioAtual.uid).get();
+            snapshotCartao.forEach(doc => {
+                const data = doc.data();
+                despesas.push({ 
+                    id: doc.id, 
+                    ...data,
+                    tipo: 'cartao' // Garantir que tenha o tipo marcado
+                });
+            });
+            logInfo('💳', `${snapshotCartao.size} despesas de cartão carregadas da coleção específica`);
+        } catch (error) {
+            logInfo('💳', 'Coleção despesas-cartao não existe, despesas de cartão já incluídas na coleção principal');
+        }
+        
+        logInfo('💸', `${despesas.length} despesas totais carregadas (incluindo cartão)`);
         return despesas;
     } catch (error) {
         logError('❌', 'Erro ao carregar despesas:', error);
@@ -339,6 +364,13 @@ function processarDadosParaGraficos(dados) {
 function processarPorCategoria(transacoes, tipo) {
     const resultado = {};
     
+    // Debug para despesas de cartão
+    if (tipo === 'despesa') {
+        const despesasCartao = transacoes.filter(t => t.tipo === 'cartao');
+        const despesasRegulares = transacoes.filter(t => t.tipo !== 'cartao');
+        logInfo('💳', `Processando ${tipo}s: ${despesasRegulares.length} regulares + ${despesasCartao.length} de cartão = ${transacoes.length} total`);
+    }
+    
     transacoes.forEach(transacao => {
         // Converter valores usando a mesma lógica da Home
         let valor = 0;
@@ -354,9 +386,10 @@ function processarPorCategoria(transacoes, tipo) {
         const categoria = transacao.categoria || 'Outros';
         resultado[categoria] = (resultado[categoria] || 0) + valor;
         
-        // Log para debug
+        // Log para debug incluindo tipo de despesa
         if (DEBUG_MODE) {
-            logInfo('📝', `Processando ${tipo}: ${categoria} = R$ ${valor.toFixed(2)}`);
+            const tipoTransacao = transacao.tipo === 'cartao' ? ' (CARTÃO)' : '';
+            logInfo('📝', `Processando ${tipo}${tipoTransacao}: ${categoria} = R$ ${valor.toFixed(2)}`);
         }
     });
     
@@ -582,18 +615,18 @@ function mapearCategoria(categoria) {
 
 // === INICIALIZAÇÃO DA UI ===
 function inicializarUIInicial() {
-    // Ativar botão de rosca/donut
+    // Ativar botão de barras/colunas
     document.querySelectorAll('.tipo-grafico').forEach(btn => {
-        if (btn.dataset.tipo === 'donut' || btn.dataset.tipo === 'rosca') {
+        if (btn.dataset.tipo === 'colunas') {
             btn.classList.add('ativo');
         } else {
             btn.classList.remove('ativo');
         }
     });
     
-    // Ativar filtro de despesas por categoria
+    // Ativar filtro de balanço mensal (gráfico de barras)
     document.querySelectorAll('.filtro-categoria').forEach(btn => {
-        if (btn.dataset.categoria === 'despesas-categoria') {
+        if (btn.dataset.categoria === 'balanco-mensal') {
             btn.classList.add('ativo');
         } else {
             btn.classList.remove('ativo');
@@ -755,6 +788,11 @@ function inicializarControles() {
         // Inicializar com o mês atual
         atualizarPeriodo();
     }
+    
+    // Inicializar filtros corretos baseado no tipo ativo
+    document.getElementById('filtros-donut').style.display = tipoAtivo === 'donut' ? 'flex' : 'none';
+    document.getElementById('filtros-linha').style.display = tipoAtivo === 'linha' ? 'flex' : 'none';
+    document.getElementById('filtros-colunas').style.display = tipoAtivo === 'colunas' ? 'flex' : 'none';
 }
 
 // === FILTRAR DADOS POR PERÍODO ===

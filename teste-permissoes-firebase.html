@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Permissões Firebase</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #b8daff; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Teste de Permissões Firebase</h1>
+        
+        <div id="status" class="info">
+            Aguardando teste...
+        </div>
+
+        <button class="btn" onclick="testarPermissoes()">
+            🧪 Testar Permissões despesas-cartao
+        </button>
+
+        <button class="btn" onclick="criarDespesaTeste()">
+            💳 Criar Despesa de Teste
+        </button>
+
+        <div id="results" style="margin-top: 20px;">
+            <!-- Resultados aparecerão aqui -->
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+            authDomain: "poup-beta.firebaseapp.com",
+            projectId: "poup-beta",
+            storageBucket: "poup-beta.appspot.com",
+            messagingSenderId: "954695915981",
+            appId: "1:954695915981:web:d31b216f79eac178094c84"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            const status = document.getElementById('status');
+            if (user) {
+                status.className = 'status success';
+                status.innerHTML = `✅ Conectado como: ${user.email}<br>UID: ${user.uid}`;
+            } else {
+                status.className = 'status error';
+                status.innerHTML = '❌ Não autenticado';
+            }
+        });
+
+        async function testarPermissoes() {
+            const results = document.getElementById('results');
+            
+            if (!currentUser) {
+                results.innerHTML = '<div class="status error">❌ Usuário não autenticado</div>';
+                return;
+            }
+
+            results.innerHTML = '<div class="status info">🔍 Testando permissões...</div>';
+
+            try {
+                // Teste 1: Ler da coleção despesas-cartao
+                console.log('Testando leitura...');
+                const readTest = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .limit(1)
+                    .get();
+                
+                results.innerHTML += '<div class="status success">✅ LEITURA: Permissão OK</div>';
+
+                // Teste 2: Escrever na coleção despesas-cartao
+                console.log('Testando escrita...');
+                const testDoc = {
+                    userId: currentUser.uid,
+                    descricao: 'Teste Permissão',
+                    valor: 'R$ 1,00',
+                    data: new Date().toLocaleDateString('pt-BR'),
+                    tipo: 'cartao',
+                    timestamp: Date.now()
+                };
+
+                const writeTest = await db.collection('despesas-cartao').add(testDoc);
+                results.innerHTML += '<div class="status success">✅ ESCRITA: Permissão OK</div>';
+
+                // Teste 3: Deletar o documento de teste
+                await db.collection('despesas-cartao').doc(writeTest.id).delete();
+                results.innerHTML += '<div class="status success">✅ EXCLUSÃO: Permissão OK</div>';
+
+                results.innerHTML += '<div class="status success"><strong>🎉 TODAS AS PERMISSÕES FUNCIONANDO!</strong></div>';
+
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                results.innerHTML += `<div class="status error">❌ ERRO: ${error.message}</div>`;
+                
+                if (error.code === 'permission-denied') {
+                    results.innerHTML += '<div class="status error">Problema de permissão no Firestore. Aguarde alguns minutos para as regras serem aplicadas.</div>';
+                }
+            }
+        }
+
+        async function criarDespesaTeste() {
+            if (!currentUser) {
+                alert('Usuário não autenticado');
+                return;
+            }
+
+            try {
+                const despesaTeste = {
+                    userId: currentUser.uid,
+                    descricao: 'Despesa de Cartão - Teste',
+                    valor: 'R$ 123,45',
+                    data: new Date().toLocaleDateString('pt-BR'),
+                    categoria: 'Teste',
+                    tipo: 'cartao',
+                    carteira: 'teste-cartao',
+                    pago: false,
+                    timestamp: Date.now()
+                };
+
+                const docRef = await db.collection('despesas-cartao').add(despesaTeste);
+                
+                document.getElementById('results').innerHTML += `
+                    <div class="status success">
+                        ✅ Despesa criada com sucesso!<br>
+                        ID: ${docRef.id}<br>
+                        <small>Agora teste criar uma despesa real na página Nova-Despesa-Cartão</small>
+                    </div>
+                `;
+
+            } catch (error) {
+                document.getElementById('results').innerHTML += `
+                    <div class="status error">
+                        ❌ Erro ao criar despesa: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Executar teste automático após 2 segundos
+        setTimeout(() => {
+            if (currentUser) {
+                testarPermissoes();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

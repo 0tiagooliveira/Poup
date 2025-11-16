@@ -129,8 +129,7 @@ function initializeUI() {
         popupExcluir.addEventListener('click', confirmDeleteReceita);
     }
     
-    // Adicionar listeners para dropdown, filtros e busca
-    setupDropdownAndFilters();
+    // Adicionar listeners para filtros e busca (dropdown gerenciado pelo header-padrao.js)
     setupBusca();
     setupPopupFiltros();
     
@@ -210,49 +209,7 @@ function buscarReceitas(termo) {
     updateTotals(receitasFiltradas);
 }
 
-function setupDropdownAndFilters() {
-    // Dropdown toggle
-    const titleElement = document.querySelector('.titulo-pagina');
-    if (titleElement) {
-        titleElement.addEventListener('click', toggleDropdown);
-    }
-    
-    // Fechar dropdown ao clicar fora
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.titulo-pagina') && !e.target.closest('.dropdown-menu')) {
-            hideDropdown();
-        }
-    });
-}
-
-function createDropdown() {
-    const dropdown = document.createElement('div');
-    dropdown.id = 'dropdown-menu';
-    dropdown.className = 'dropdown-menu';
-    dropdown.innerHTML = `
-        <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item active">
-            <span class="material-icons">trending_up</span>
-            Receitas
-        </a>
-        <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
-            <span class="material-icons">trending_down</span>
-            Despesas
-        </a>
-    `;
-    
-    const cabecalho = document.querySelector('.cabecalho');
-    if (cabecalho) {
-        cabecalho.appendChild(dropdown);
-        dropdown.style.display = 'block';
-    }
-}
-
-function hideDropdown() {
-    const dropdown = document.getElementById('dropdown-menu');
-    if (dropdown) {
-        dropdown.style.display = 'none';
-    }
-}
+// Funções de dropdown removidas - usando as do header-padrao.js
 
 function changeMonth(direction) {
     currentMonth += direction;
@@ -676,7 +633,7 @@ function abrirModalDetalhesReceita(receita) {
     const contaIcone = document.getElementById('modal-conta-icone');
     let contaNome = (nomeContaExibicao || '').toLowerCase();
     const bancos = [
-        { chave:['nubank'], cor:'#8b5cf6', svg:'../Icon/Nubank.svg' },
+        { chave:['nubank'], cor:'#820ad1', svg:'../Icon/Nubank.svg' },
         { chave:['bradesco'], cor:'#e53e3e', svg:'../Icon/bradesco.svg' },
         { chave:['itau','itaú'], cor:'#ff8c00', svg:'../Icon/itau.svg' },
         { chave:['santander'], cor:'#e53e3e', svg:'../Icon/santander.svg' },
@@ -976,53 +933,7 @@ function aplicarFiltrosReceitas() {
     mostrarPopup('Filtros aplicados com sucesso!');
 }
 
-// Funções do Dropdown de Navegação
-function toggleDropdown() {
-    console.log('toggleDropdown chamado!');
-    
-    const dropdown = document.getElementById('dropdown-menu');
-    if (!dropdown) {
-        console.error('Elemento dropdown-menu não encontrado');
-        return;
-    }
-    
-    console.log('Estado atual do dropdown:', dropdown.style.display);
-    console.log('Posição do dropdown:', dropdown.getBoundingClientRect());
-    
-    const isVisible = dropdown.style.display === 'block';
-    
-    // Abrir/fechar o dropdown atual
-    if (isVisible) {
-        dropdown.style.display = 'none';
-        console.log('Dropdown fechado');
-    } else {
-        dropdown.style.display = 'block';
-        dropdown.style.visibility = 'visible';
-        dropdown.style.opacity = '1';
-        console.log('Dropdown aberto');
-        
-        // Log de debug para verificar se está visível
-        setTimeout(() => {
-            const rect = dropdown.getBoundingClientRect();
-            console.log('Posição após abrir:', rect);
-            console.log('Estilos computados:', window.getComputedStyle(dropdown));
-        }, 100);
-    }
-    
-    // Rotacionar ícone
-    const icon = document.querySelector('.titulo-pagina .material-icons');
-    if (icon) {
-        icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
-        console.log('Ícone rotacionado:', icon.style.transform);
-    }
-    
-    console.log('Novo estado do dropdown:', dropdown.style.display);
-}
-
-function navegarPara(url) {
-    console.log('Navegando para:', url);
-    window.location.href = url;
-}
+// Funções do Dropdown de Navegação - Removidas, usando as do header-padrao.js
 
 // Fechar dropdown ao clicar fora
 document.addEventListener('click', function(event) {

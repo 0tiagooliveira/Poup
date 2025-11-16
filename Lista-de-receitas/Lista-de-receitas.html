@@ -31,7 +31,7 @@
                 </div>
                 
                 <!-- Dropdown Menu -->
-                                    <div class="dropdown-menu">
+                <div class="dropdown-menu" id="dropdown-menu">
                         <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
                             <span class="material-icons-round">receipt_long</span>
                             Lista de Despesas
@@ -134,6 +134,25 @@
             </a>
         </nav>
 
+        <!-- Menu de seleção ao clicar no botão + -->
+        <div class="menu-adicionar" id="menu-adicionar" style="display: none;">
+            <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+                <span class="material-icons-round">trending_up</span>
+                <span>Nova Receita</span>
+            </div>
+            <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+                <span class="material-icons-round">trending_down</span>
+                <span>Nova Despesa</span>
+            </div>
+            <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa-Cartão/Nova-Despesa-Cartão.html'">
+                <span class="material-icons-round">credit_card</span>
+                <span>Despesa no Cartão</span>
+            </div>
+            <div class="menu-opcao" onclick="window.location.href='../Nova-conta/Nova-conta.html'">
+                <span class="material-icons-round">account_balance</span>
+                <span>Nova Conta</span>
+            </div>
+        </div>
 
     </div>
 
@@ -399,5 +418,36 @@
     <script src="../js/header-padrao.js"></script>
     <script src="../js/menu-inferior-padrao.js"></script>
     <script src="../js/menu-adicionar-padrao.js"></script>
+    
+    <script>
+    // Debug específico para receitas
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔍 DEBUG RECEITAS - Verificando dropdown...');
+        
+        setTimeout(() => {
+            const dropdown = document.getElementById('dropdown-menu');
+            const titulo = document.querySelector('.titulo-pagina');
+            
+            console.log('Dropdown encontrado:', dropdown);
+            console.log('Título encontrado:', titulo);
+            
+            if (dropdown) {
+                console.log('Estilos do dropdown:', window.getComputedStyle(dropdown));
+                console.log('Display atual:', dropdown.style.display);
+            }
+            
+            if (titulo) {
+                titulo.addEventListener('click', function() {
+                    console.log('🖱️ Clique no título detectado!');
+                    if (typeof toggleDropdown === 'function') {
+                        console.log('Função toggleDropdown disponível');
+                    } else {
+                        console.error('Função toggleDropdown NÃO disponível');
+                    }
+                });
+            }
+        }, 1000);
+    });
+    </script>
 </body>
 </html>

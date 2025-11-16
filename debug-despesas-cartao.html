@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Despesas de Cartão</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #b8daff; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; }
+        .despesa { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 5px; background: #fff; }
+        .despesa h4 { margin: 0 0 5px 0; color: #333; }
+        .despesa .valor { font-size: 18px; font-weight: bold; color: #d32f2f; }
+        .despesa .data { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug - Despesas de Cartão</h1>
+        
+        <div id="status" class="info">Aguardando conexão...</div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn" onclick="listarTodasDespesas()">📋 Listar Todas as Despesas de Cartão</button>
+            <button class="btn" onclick="listarPorMes()">📅 Listar Novembro 2025</button>
+            <button class="btn" onclick="verificarFormatos()">🔍 Verificar Formatos de Data</button>
+        </div>
+
+        <div id="results" class="result" style="display: none;">
+            Resultados aparecerão aqui...
+        </div>
+
+        <div id="despesas-container">
+            <!-- Despesas aparecerão aqui -->
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+            authDomain: "poup-beta.firebaseapp.com",
+            projectId: "poup-beta",
+            storageBucket: "poup-beta.appspot.com",
+            messagingSenderId: "954695915981",
+            appId: "1:954695915981:web:d31b216f79eac178094c84"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            const status = document.getElementById('status');
+            if (user) {
+                status.className = 'status success';
+                status.innerHTML = `✅ Conectado: ${user.email}`;
+                // Auto-executar listagem
+                setTimeout(() => listarTodasDespesas(), 1000);
+            } else {
+                status.className = 'status warning';
+                status.innerHTML = '⚠️ Não autenticado';
+            }
+        });
+
+        async function listarTodasDespesas() {
+            if (!currentUser) return;
+
+            const results = document.getElementById('results');
+            const container = document.getElementById('despesas-container');
+            
+            results.style.display = 'block';
+            results.textContent = '🔍 Buscando despesas de cartão...';
+            container.innerHTML = '';
+
+            try {
+                // Buscar da coleção despesas-cartao
+                const snapshot = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                results.textContent = `📊 Encontradas ${snapshot.size} despesas na coleção 'despesas-cartao':\n\n`;
+
+                if (snapshot.empty) {
+                    results.textContent += '❌ NENHUMA DESPESA ENCONTRADA na coleção despesas-cartao\n';
+                    results.textContent += 'Isso significa que as despesas ainda estão sendo salvas na coleção "despesas"\n';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    results.textContent += `${index + 1}. ID: ${doc.id}\n`;
+                    results.textContent += `   Descrição: ${data.descricao}\n`;
+                    results.textContent += `   Valor: ${data.valor}\n`;
+                    results.textContent += `   Data: ${data.data} (${typeof data.data})\n`;
+                    results.textContent += `   Tipo: ${data.tipo}\n`;
+                    results.textContent += `   Carteira: ${data.carteira}\n`;
+                    results.textContent += `   Timestamp: ${data.timestamp}\n\n`;
+
+                    html += `
+                        <div class="despesa">
+                            <h4>${data.descricao}</h4>
+                            <div class="valor">${data.valor}</div>
+                            <div class="data">📅 ${data.data}</div>
+                            <div class="data">💳 Cartão: ${data.carteira}</div>
+                            <div class="data">🏷️ Tipo: ${data.tipo}</div>
+                            <div class="data">🆔 ID: ${doc.id}</div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                results.textContent = `❌ ERRO: ${error.message}`;
+                console.error('Erro:', error);
+            }
+        }
+
+        async function listarPorMes() {
+            if (!currentUser) return;
+
+            const results = document.getElementById('results');
+            const container = document.getElementById('despesas-container');
+            
+            results.style.display = 'block';
+            results.textContent = '🔍 Filtrando despesas para Novembro 2025...\n';
+            container.innerHTML = '';
+
+            try {
+                const snapshot = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .get();
+
+                results.textContent += `📊 Total de despesas: ${snapshot.size}\n\n`;
+
+                const despesasNovembro = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    
+                    // Verificar se a data é de novembro 2025
+                    if (data.data && typeof data.data === 'string') {
+                        const partesData = data.data.split('/');
+                        if (partesData.length === 3) {
+                            const dia = parseInt(partesData[0]);
+                            const mes = parseInt(partesData[1]);
+                            const ano = parseInt(partesData[2]);
+                            
+                            if (mes === 11 && ano === 2025) {
+                                despesasNovembro.push({id: doc.id, ...data});
+                            }
+                        }
+                    }
+                });
+
+                results.textContent += `📅 Despesas de Novembro/2025: ${despesasNovembro.length}\n\n`;
+
+                if (despesasNovembro.length === 0) {
+                    results.textContent += '❌ Nenhuma despesa encontrada para Novembro 2025\n';
+                    results.textContent += 'Verifique se a data está no formato correto (DD/MM/AAAA)\n';
+                } else {
+                    let html = '';
+                    despesasNovembro.forEach((despesa, index) => {
+                        results.textContent += `${index + 1}. ${despesa.descricao} - ${despesa.valor} (${despesa.data})\n`;
+                        
+                        html += `
+                            <div class="despesa">
+                                <h4>${despesa.descricao}</h4>
+                                <div class="valor">${despesa.valor}</div>
+                                <div class="data">📅 ${despesa.data}</div>
+                                <div class="data">💳 Cartão: ${despesa.carteira}</div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+
+            } catch (error) {
+                results.textContent = `❌ ERRO: ${error.message}`;
+            }
+        }
+
+        async function verificarFormatos() {
+            if (!currentUser) return;
+
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.textContent = '🔍 Verificando formatos de data...\n\n';
+
+            try {
+                // Verificar também na coleção despesas (caso ainda tenham despesas lá)
+                const snapshotDespesas = await db.collection('despesas')
+                    .where('userId', '==', currentUser.uid)
+                    .where('tipo', '==', 'cartao')
+                    .get();
+
+                results.textContent += `📋 Despesas de cartão na coleção 'despesas': ${snapshotDespesas.size}\n`;
+
+                const snapshotCartao = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .get();
+
+                results.textContent += `💳 Despesas na coleção 'despesas-cartao': ${snapshotCartao.size}\n\n`;
+
+                results.textContent += '📊 FORMATOS DE DATA ENCONTRADOS:\n';
+
+                // Analisar formatos da coleção despesas
+                snapshotDespesas.forEach(doc => {
+                    const data = doc.data();
+                    results.textContent += `[DESPESAS] ${data.descricao}: "${data.data}" (${typeof data.data})\n`;
+                });
+
+                // Analisar formatos da coleção despesas-cartao
+                snapshotCartao.forEach(doc => {
+                    const data = doc.data();
+                    results.textContent += `[CARTÃO] ${data.descricao}: "${data.data}" (${typeof data.data})\n`;
+                });
+
+            } catch (error) {
+                results.textContent = `❌ ERRO: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

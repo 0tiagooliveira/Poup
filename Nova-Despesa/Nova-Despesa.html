@@ -182,7 +182,8 @@
                 <div class="linha-campo" id="linha-repetir" style="cursor: pointer;" onclick="abrirModalRepetir()">
                     <span class="material-icons icone-campo">repeat</span>
                     <span>Repetir</span>
-                    <span class="material-icons" style="margin-left: auto; color: #666;">chevron_right</span>
+                    <span id="texto-repeticoes" style="margin-left: auto; color: #999; font-size: 0.9rem;"></span>
+                    <span class="material-icons" style="color: #666;">chevron_right</span>
                 </div>
             </div>
 
@@ -197,8 +198,16 @@
                 </div>
             </div>
 
-            <!-- Modal de Repetição -->
-            <div id="modal-repetir" class="modal-overlay" style="display: none;">
+            <!-- Campos ocultos para armazenar os valores -->
+            <input type="hidden" id="quantidade-repeticoes" value="1">
+            <input type="hidden" id="frequencia-repeticoes" value="meses">
+
+            <button class="botao-primario" id="botao-salvar">Salvar Despesa</button>
+            <br><br><br><br>
+        </main>
+
+        <!-- Modal de Repetição -->
+        <div id="modal-repetir" class="modal-overlay" style="display: none;">
                 <div class="modal-repetir-content">
                     <div class="modal-repetir-header">
                         <h3>Como sua transação se repete?</h3>

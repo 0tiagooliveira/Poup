@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Lista de Cartões</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .cartao { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Teste Lista de Cartões</h1>
+    
+    <div class="debug" id="debug-info">
+        <h3>Debug Info</h3>
+        <p>Firebase disponível: <span id="firebase-status">Verificando...</span></p>
+        <p>Elementos encontrados: <span id="elementos-status">Verificando...</span></p>
+    </div>
+    
+    <div>
+        <h2>Resumo</h2>
+        <p>Limite Total: <span id="limite-total">R$ 0,00</span></p>
+        <p>Valor Faturas: <span id="valor-faturas">R$ 0,00</span></p>
+    </div>
+    
+    <div>
+        <h2>Cartões</h2>
+        <div id="cartoes-list">Carregando...</div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script src="script.js"></script>
+
+    <script>
+        // Debug adicional
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar Firebase
+            const firebaseStatus = document.getElementById('firebase-status');
+            firebaseStatus.textContent = typeof firebase !== 'undefined' ? 'SIM' : 'NÃO';
+            
+            // Verificar elementos
+            const elementos = ['cartoes-list', 'limite-total', 'valor-faturas'];
+            const elementosStatus = document.getElementById('elementos-status');
+            const encontrados = elementos.filter(id => document.getElementById(id));
+            elementosStatus.textContent = `${encontrados.length}/${elementos.length} (${encontrados.join(', ')})`;
+        });
+    </script>
+</body>
+</html>

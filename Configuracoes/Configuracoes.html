@@ -2,39 +2,35 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poup+ Configurações</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<<<<<<< HEAD
-=======
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
->>>>>>> 3b0767c (Cartões de Crédito)
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Configurações</title>
+
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../css/header-padrao.css">
     <link rel="stylesheet" href="../css/menu-inferior-padrao.css">
-    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 
-    <!-- Firebase scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="../Icon/LogoPoup.svg">
 </head>
 <body>
-    <!-- Header -->
-<<<<<<< HEAD
-    <header class="header">
-        <div class="header-container">
-            <button class="btn-voltar" onclick="window.history.back()">
-                <span class="material-icons-round">arrow_back</span>
-            </button>
-            <h1 class="header-title">Configurações</h1>
-            <div class="dropdown-container">
-                <button class="btn-dropdown" onclick="toggleDropdown(event)">
-                    <span class="material-icons-round">menu</span>
+    <div class="app-container">
+        <header class="cabecalho">
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons">arrow_back</span>
                 </button>
-                <div class="dropdown-menu">
+                <div class="titulo-pagina" onclick="toggleDropdown()">
+                    <h1>Configurações</h1>
+                    <span class="material-icons-round">expand_more</span>
+                </div>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdown-menu">
                     <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
                         <span class="material-icons-round">receipt_long</span>
                         Lista de Despesas
@@ -60,49 +56,15 @@
                         Configurações
                     </a>
                 </div>
-=======
-    <header class="cabecalho">
-        <div class="cabecalho-superior">
-            <button class="botao-voltar" onclick="window.history.back()">
-                <span class="material-icons">arrow_back</span>
-            </button>
-            <div class="titulo-pagina" onclick="toggleDropdown()">
-                <h1>Configurações</h1>
-                <span class="material-icons-round">expand_more</span>
+                
+                <div class="acoes-cabecalho">
+                    <!-- Espaço para futuras ações se necessário -->
+                </div>
             </div>
-            <div class="dropdown-menu">
-                <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
-                    <span class="material-icons-round">receipt_long</span>
-                    Lista de Despesas
-                </a>
-                <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
-                    <span class="material-icons-round">payment</span>
-                    Lista de Receitas
-                </a>
-                <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item">
-                    <span class="material-icons-round">credit_card</span>
-                    Cartões de Crédito
-                </a>
-                <a href="../Transações/Transações.html" class="dropdown-item">
-                    <span class="material-icons-round">swap_horiz</span>
-                    Transações
-                </a>
-                <a href="../Gráficos/Gráficos.html" class="dropdown-item">
-                    <span class="material-icons-round">bar_chart</span>
-                    Gráficos
-                </a>
-                <a href="../Configuracoes/Configuracoes.html" class="dropdown-item active">
-                    <span class="material-icons-round">settings</span>
-                    Configurações
-                </a>
->>>>>>> 3b0767c (Cartões de Crédito)
-            </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
+        <main class="conteudo-principal">
+            <div class="container">
             <!-- Seção Perfil -->
             <section class="config-section">
                 <div class="section-header">
@@ -581,9 +543,42 @@
         </a>
     </nav>
 
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons-round">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons-round">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Novo Cartão/Novo Cartão.html'">
+            <span class="material-icons-round">credit_card</span>
+            <span>Novo Cartão</span>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    </script>
+    
+    <script src="script.js"></script>
     <script src="../js/header-padrao.js"></script>
     <script src="../js/menu-inferior-padrao.js"></script>
     <script src="../js/menu-adicionar-padrao.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>

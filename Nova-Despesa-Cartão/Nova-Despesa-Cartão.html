@@ -3,24 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<<<<<<< HEAD
     <title>Nova Despesa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="../css/header-despesas.css">
-=======
-    <title>Nova Despesa no Cartão</title>
-    <link rel="stylesheet" href="styles.css">
->>>>>>> 3b0767c (Cartões de Crédito)
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
       rel="stylesheet"
     />
-<<<<<<< HEAD
     <!-- Removido CSS inline do modal. Todos os estilos estão em styles.css -->
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
 </head>
 <body>
     <div class="aplicativo desktop-layout">
@@ -29,11 +20,7 @@
             <button class="botao-voltar" aria-label="Voltar" onclick="window.location.href='../Lista-de-despesas/Lista-de-despesas.html'">
                 <span class="material-icons">arrow_back</span>
             </button>
-<<<<<<< HEAD
-            <h1>Nova Despesa</h1>
-=======
-            <h1>Nova Despesa no Cartão</h1>
->>>>>>> 3b0767c (Cartões de Crédito)
+            <h1>Nova Despesa Cartão</h1>
         </header>
 
         <!-- Seção do Valor -->
@@ -46,31 +33,12 @@
         <main class="formulario-receita">
             <div class="campo-formulario">
                 <div class="linha-campo">
-<<<<<<< HEAD
                     <span class="material-icons icone-campo">paid</span>
                     <span>Pago</span>
                     <label class="alternador">
                         <input type="checkbox" id="pago" checked>
                         <span class="controle-alternador"></span>
                     </label>
-=======
-                    <span class="material-icons icone-campo">credit_card</span>
-                    <div class="seletor-cartao" id="seletor-cartao">
-                        <div class="opcao-selecionada">
-                            <span>Selecione um cartão</span>
-                        </div>
-                        <div class="opcoes-cartao">
-                            <!-- Cartões disponíveis serão carregados dinamicamente -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="campo-formulario">
-                <div class="linha-campo">
-                    <span class="material-icons icone-campo">description</span>
-                    <input type="text" id="descricao" placeholder="Descrição da despesa">
->>>>>>> 3b0767c (Cartões de Crédito)
                 </div>
             </div>
 
@@ -84,7 +52,6 @@
 
             <div class="campo-formulario">
                 <div class="linha-campo">
-<<<<<<< HEAD
                     <span class="material-icons icone-campo">description</span>
                     <input type="text" id="descricao" placeholder="Descrição da despesa">
                 </div>
@@ -92,39 +59,24 @@
 
             <div class="campo-formulario">
                 <div class="linha-campo">
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
                     <span class="material-icons icone-campo">category</span>
                     <div class="seletor-categoria" id="seletor-categoria">
                         <div class="opcao-selecionada">
                             <span>Selecione uma categoria</span>
                         </div>
                         <div class="opcoes-categoria">
-                            <!-- Categorias de despesa -->
-<<<<<<< HEAD
-                            <div class="opcao-categoria" data-value="restaurant">
-                                <span class="material-icons-round">restaurant</span> <span>Alimentação</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="directions_car">
-                                <span class="material-icons-round">directions_car</span> <span>Transporte</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="home">
-                                <span class="material-icons-round">home</span> <span>Moradia</span>
-                            </div>
+                            <!-- Categorias específicas para cartão de crédito -->
                             <div class="opcao-categoria" data-value="shopping_cart">
-                                <span class="material-icons-round">shopping_cart</span> <span>Mercado</span>
+                                <span class="material-icons-round">shopping_cart</span> <span>Compras Online</span>
                             </div>
                             <div class="opcao-categoria" data-value="local_mall">
-                                <span class="material-icons-round">local_mall</span> <span>Compras</span>
+                                <span class="material-icons-round">local_mall</span> <span>Shopping</span>
                             </div>
-                            <div class="opcao-categoria" data-value="local_hospital">
-                                <span class="material-icons-round">local_hospital</span> <span>Saúde</span>
+                            <div class="opcao-categoria" data-value="restaurant">
+                                <span class="material-icons-round">restaurant</span> <span>Restaurantes</span>
                             </div>
-                            <div class="opcao-categoria" data-value="school">
-                                <span class="material-icons-round">school</span> <span>Educação</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="sports_soccer">
-                                <span class="material-icons-round">sports_soccer</span> <span>Lazer</span>
+                            <div class="opcao-categoria" data-value="local_gas_station">
+                                <span class="material-icons-round">local_gas_station</span> <span>Combustível</span>
                             </div>
                             <div class="opcao-categoria" data-value="flight">
                                 <span class="material-icons-round">flight</span> <span>Viagem</span>
@@ -132,60 +84,51 @@
                             <div class="opcao-categoria" data-value="subscriptions">
                                 <span class="material-icons-round">subscriptions</span> <span>Assinaturas</span>
                             </div>
-                            <div class="opcao-categoria" data-value="credit_card">
-                                <span class="material-icons-round">credit_card</span> <span>Cartão de Crédito</span>
+                            <div class="opcao-categoria" data-value="local_pharmacy">
+                                <span class="material-icons-round">local_pharmacy</span> <span>Farmácia</span>
                             </div>
-                            <div class="opcao-categoria" data-value="paid">
-                                <span class="material-icons-round">paid</span> <span>Impostos</span>
+                            <div class="opcao-categoria" data-value="movie">
+                                <span class="material-icons-round">movie</span> <span>Entretenimento</span>
                             </div>
-                            <div class="opcao-categoria" data-value="emoji_events">
-                                <span class="material-icons-round">emoji_events</span> <span>Presentes</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="pet_supplies">
-                                <span class="material-icons-round">pets</span> <span>Pets</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="build">
-                                <span class="material-icons-round">build</span> <span>Manutenção</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="phone_iphone">
-                                <span class="material-icons-round">phone_iphone</span> <span>Telefonia/Internet</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="bolt">
-                                <span class="material-icons-round">bolt</span> <span>Energia</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="water_drop">
-                                <span class="material-icons-round">water_drop</span> <span>Água</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="local_fire_department">
-                                <span class="material-icons-round">local_fire_department</span> <span>Gás</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="self_improvement">
-                                <span class="material-icons-round">self_improvement</span> <span>Bem-estar</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="attach_money">
-                                <span class="material-icons-round">attach_money</span> <span>Empréstimos</span>
-                            </div>
-                            <div class="opcao-categoria" data-value="directions_bus">
-                                <span class="material-icons-round">directions_bus</span> <span>Transporte Público</span>
+                            <div class="opcao-categoria" data-value="storefront">
+                                <span class="material-icons-round">storefront</span> <span>Supermercado</span>
                             </div>
                             <div class="opcao-categoria" data-value="local_taxi">
-                                <span class="material-icons-round">local_taxi</span> <span>Táxi/App</span>
+                                <span class="material-icons-round">local_taxi</span> <span>Transporte</span>
                             </div>
-                            <div class="opcao-categoria" data-value="savings">
-                                <span class="material-icons-round">savings</span> <span>Poupança</span>
+                            <div class="opcao-categoria" data-value="hotel">
+                                <span class="material-icons-round">hotel</span> <span>Hospedagem</span>
                             </div>
-                            <div class="opcao-categoria" data-value="emoji_food_beverage">
-                                <span class="material-icons-round">emoji_food_beverage</span> <span>Café/Lanches</span>
+                            <div class="opcao-categoria" data-value="shopping_bag">
+                                <span class="material-icons-round">shopping_bag</span> <span>Roupas</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="devices">
+                                <span class="material-icons-round">devices</span> <span>Eletrônicos</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="spa">
+                                <span class="material-icons-round">spa</span> <span>Beleza</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="library_books">
+                                <span class="material-icons-round">library_books</span> <span>Educação</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="local_hospital">
+                                <span class="material-icons-round">local_hospital</span> <span>Saúde</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="pets">
+                                <span class="material-icons-round">pets</span> <span>Pet Shop</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="payment">
+                                <span class="material-icons-round">payment</span> <span>Pagamento de Contas</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="delivery_dining">
+                                <span class="material-icons-round">delivery_dining</span> <span>Delivery</span>
+                            </div>
+                            <div class="opcao-categoria" data-value="fitness_center">
+                                <span class="material-icons-round">fitness_center</span> <span>Academia</span>
                             </div>
                             <div class="opcao-categoria" data-value="add_circle" style="color:#21C25E;font-weight:600;">
                                 <span class="material-icons-round">add</span> <span>+ Criar categoria</span>
                             </div>
-                            <!-- Adicione esta opção ao final -->
-                            <div class="opcao-categoria" data-value="criar-categoria" style="color:#21C25E;font-weight:600;">
-                                <span class="material-icons-round">add</span> <span>+ Criar categoria</span>
-                            </div>
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
                         </div>
                     </div>
                 </div>
@@ -193,13 +136,12 @@
 
             <div class="campo-formulario">
                 <div class="linha-campo">
-<<<<<<< HEAD
-                    <span class="material-icons icone-campo">account_balance</span>
+                    <span class="material-icons icone-campo">credit_card</span>
                     <div class="seletor-carteira" id="seletor-carteira">
                         <div class="opcao-selecionada">
-                            <!-- Ícone da conta selecionada será inserido aqui via JS -->
+                            <!-- Ícone do cartão selecionado será inserido aqui via JS -->
                             <span id="icone-conta-selecionada"></span>
-                            <span>Selecione uma conta</span>
+                            <span>Selecione um cartão</span>
                         </div>
                         <div class="opcoes-carteira"></div>
                     </div>
@@ -208,22 +150,20 @@
 
             <div class="campo-formulario">
                 <div class="linha-campo">
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
                     <span class="material-icons icone-campo">attach_file</span>
                     <input type="file" id="anexo" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
                     <button class="botao-anexo" id="botao-anexo">Adicionar Anexo</button>
                 </div>
                 <span class="nome-arquivo" id="nome-arquivo"></span>
             </div>
-<<<<<<< HEAD
             
 
             <div class="campo-formulario">
                 <div class="linha-campo" id="linha-repetir" style="cursor: pointer;" onclick="abrirModalRepetir()">
                     <span class="material-icons icone-campo">repeat</span>
                     <span>Repetir</span>
-                    <span class="material-icons" style="margin-left: auto; color: #666;">chevron_right</span>
+                    <span id="texto-repeticoes" style="margin-left: auto; color: #999; font-size: 0.9rem;"></span>
+                    <span class="material-icons" style="color: #666;">chevron_right</span>
                 </div>
             </div>
 
@@ -238,8 +178,16 @@
                 </div>
             </div>
 
-            <!-- Modal de Repetição -->
-            <div id="modal-repetir" class="modal-overlay" style="display: none;">
+            <!-- Campos ocultos para armazenar os valores -->
+            <input type="hidden" id="quantidade-repeticoes" value="1">
+            <input type="hidden" id="frequencia-repeticoes" value="meses">
+
+            <button class="botao-primario" id="botao-salvar">Salvar Despesa</button>
+            <br><br><br><br>
+        </main>
+
+        <!-- Modal de Repetição -->
+        <div id="modal-repetir" class="modal-overlay" style="display: none;">
                 <div class="modal-repetir-content">
                     <div class="modal-repetir-header">
                         <h3>Como sua transação se repete?</h3>
@@ -286,13 +234,7 @@
                     </div>
                 </div>
             </div>
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
-
-            <button class="botao-primario" id="botao-salvar">Salvar Despesa</button>
-            <br><br><br><br>
         </main>
-<<<<<<< HEAD
 
         <!-- Calculadora para editar saldo -->
         <div class="calculadora-container" id="calculadora-container" role="dialog" aria-modal="true" aria-labelledby="calculadora-titulo">
@@ -434,20 +376,13 @@
         </div>
     </div>
     
-=======
-    </div>
-
->>>>>>> 3b0767c (Cartões de Crédito)
     <!-- Configuração do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>
-<<<<<<< HEAD
       // A configuração do seu app da web do Firebase
       // Lembre-se de substituir pelas suas chaves reais
-=======
->>>>>>> 3b0767c (Cartões de Crédito)
       const firebaseConfig = {
                 apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
                 authDomain: "poup-beta.firebaseapp.com",
@@ -457,7 +392,6 @@
                 appId: "1:954695915981:web:d31b216f79eac178094c84",
                 measurementId: "G-LP9BDVD3KJ"
       };
-<<<<<<< HEAD
       // Inicializa o Firebase
       if (!firebase.apps.length) {
          firebase.initializeApp(firebaseConfig);
@@ -474,15 +408,5 @@
     <script src="script.js"></script>
     </script>
     <!-- FIM: Configuração do Firebase -->
-=======
-      if (!firebase.apps.length) {
-         firebase.initializeApp(firebaseConfig);
-      } else {
-         firebase.app();
-      }
-    </script>
-    <script src="../js/notificacoes-utils.js"></script>
-    <script src="script.js"></script>
->>>>>>> 3b0767c (Cartões de Crédito)
 </body>
 </html>

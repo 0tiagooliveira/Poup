@@ -300,7 +300,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Coleta dados de forma otimizada
-        const repetir = elementos.toggleRepetir ? elementos.toggleRepetir.checked : false;
+        const quantidadeRepeticoes = parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1;
+        const repetir = quantidadeRepeticoes > 1; // Se quantidade > 1, é repetição
         const despesaFixa = document.getElementById('toggle-despesa-fixa')?.checked || false;
         
         // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
@@ -313,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             iconeCategoria: estado.iconeSelecionado, // Adicionar ícone da categoria
             corCategoria: estado.corCategoriaSelecionada || '#D32F2F', // Adicionar cor da categoria
             carteira: estado.carteiraSelecionada,
+            tipo: 'cartao', // Marcar como despesa de cartão
             anexo: elementos.inputAnexo.files.length > 0 ? elementos.inputAnexo.files[0].name : null,
             repetir: repetir,
             quantidadeRepeticoes: repetir ? document.getElementById('quantidade-repeticoes')?.value : null,
@@ -327,15 +329,24 @@ document.addEventListener('DOMContentLoaded', function() {
             corCategoria: novaDespesa.corCategoria
         });
 
-    // Preparando persistência da nova despesa (log detalhado removido)
+        // Preparar numeração se for repetida ou fixa
+        let despesaComNumeracao = { ...novaDespesa };
+        
+        if (repetir || despesaFixa) {
+            // Se for repetida ou fixa, primeiro vamos preparar a numeração
+            const totalRepeticoes = repetir ? parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1 : 12;
+            despesaComNumeracao.descricao = `${novaDespesa.descricao} 1/${totalRepeticoes}`;
+            despesaComNumeracao.numeroSequencia = 1;
+            despesaComNumeracao.totalSequencia = totalRepeticoes;
+        }
 
-        // Salvar em lote para melhor performance
+        // Salvar despesa principal (original) com numeração
         Promise.all([
-            salvarLocalStorage(novaDespesa),
-            salvarFirestore(novaDespesa)
+            salvarLocalStorage(despesaComNumeracao),
+            salvarFirestore(despesaComNumeracao)
         ]).then(() => {
             // Gerar despesas futuras se for fixa ou repetida
-            return gerarDespesasFuturas(novaDespesa);
+            return gerarDespesasFuturas(despesaComNumeracao);
         }).then(() => {
             const mensagem = (novaDespesa.despesaFixa || novaDespesa.repetir) 
                 ? 'Despesa salva com sucesso! Despesas futuras foram geradas automaticamente.'
@@ -343,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             mostrarPopup(mensagem, () => {
                 limparFormulario();
-                window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
+                window.location.href = "../Lista-de-despesas-cartao/Lista-de-despesas-cartao.html";
             });
         }).catch(error => {
             console.error('Erro ao salvar:', error);
@@ -382,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const despesaFirestore = { ...despesa, userId: user.uid };
-            firebase.firestore().collection('despesas').add(despesaFirestore)
+            firebase.firestore().collection('despesas-cartao').add(despesaFirestore)
                 .then((docRef) => {
                     console.log('Despesa salva no Firestore!');
                     const despesaComId = { ...despesaFirestore, id: docRef.id };
@@ -410,40 +421,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 const despesasFuturas = [];
                 const dataBase = new Date(converterDataParaISO(despesaBase.data));
                 
-                // Determinar quantidade de meses para gerar
-                let mesesParaGerar = 12; // Padrão: 12 meses para despesas fixas
+                // Determinar quantidade e frequência para gerar
+                let totalParaGerar = 12; // Padrão: 12 meses para despesas fixas
+                let frequencia = 'meses';
                 
                 if (despesaBase.repetir && despesaBase.quantidadeRepeticoes) {
-                    const quantidade = parseInt(despesaBase.quantidadeRepeticoes);
-                    const frequencia = despesaBase.frequenciaRepeticoes || 'mensal';
-                    
-                    if (frequencia === 'mensal') {
-                        mesesParaGerar = quantidade;
-                    } else if (frequencia === 'anual') {
-                        mesesParaGerar = quantidade * 12;
-                    }
+                    totalParaGerar = parseInt(despesaBase.quantidadeRepeticoes);
+                    frequencia = despesaBase.frequenciaRepeticoes || 'meses';
                 }
 
-                console.log(`Gerando ${mesesParaGerar} despesas futuras...`);
+                console.log(`Gerando ${totalParaGerar} despesas futuras com frequência ${frequencia}...`);
 
-                // Gerar despesas para os próximos meses
-                for (let i = 1; i <= mesesParaGerar; i++) {
+                // Preparar descrição original removendo qualquer numeração existente
+                const descricaoOriginal = despesaBase.descricao.replace(/ \d+\/\d+$/, '');
+
+                // Gerar despesas para os próximos períodos
+                for (let i = 1; i < totalParaGerar; i++) {
                     const novaData = new Date(dataBase);
-                    novaData.setMonth(dataBase.getMonth() + i);
                     
-                    // Ajustar para o último dia do mês se necessário
-                    if (novaData.getDate() !== dataBase.getDate()) {
-                        novaData.setDate(0); // Vai para o último dia do mês anterior
-                        novaData.setMonth(novaData.getMonth() + 1);
+                    // Ajustar data baseado na frequência
+                    switch (frequencia) {
+                        case 'dias':
+                            novaData.setDate(dataBase.getDate() + i);
+                            break;
+                        case 'semanas':
+                            novaData.setDate(dataBase.getDate() + (i * 7));
+                            break;
+                        case 'meses':
+                        default:
+                            novaData.setMonth(dataBase.getMonth() + i);
+                            // Ajustar para o último dia do mês se necessário
+                            if (novaData.getDate() !== dataBase.getDate()) {
+                                novaData.setDate(0); // Vai para o último dia do mês anterior
+                                novaData.setMonth(novaData.getMonth() + 1);
+                            }
+                            break;
+                        case 'anos':
+                            novaData.setFullYear(dataBase.getFullYear() + i);
+                            break;
                     }
 
                     const despesaFutura = {
                         ...despesaBase,
+                        descricao: `${descricaoOriginal} ${i + 1}/${totalParaGerar}`, // Numeração sequencial
                         data: formatarDataParaExibicao(novaData),
                         pago: false, // Despesas futuras começam como não pagas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
-                        despesaOrigem: despesaBase.timestamp // Referência à despesa original
+                        despesaOrigem: despesaBase.timestamp, // Referência à despesa original
+                        numeroSequencia: i + 1,
+                        totalSequencia: totalParaGerar
                     };
 
                     despesasFuturas.push(despesaFutura);
@@ -459,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 Promise.all(promessas)
                     .then(() => {
-                        console.log(`${despesasFuturas.length} despesas futuras criadas com sucesso!`);
+                        console.log(`${despesasFuturas.length} despesas futuras criadas com numeração`);
                         resolve();
                     })
                     .catch(reject);
@@ -477,18 +504,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
 
-                // Verificar se já existe despesa para este mês
-                const mesAno = despesa.data.substring(3); // MM/AAAA
+                // Verificar duplicatas usando descrição completa (com numeração) e timestamp de origem
                 const existeDespesa = despesas.some(r => 
-                    r.data.substring(3) === mesAno && 
                     r.descricao === despesa.descricao &&
-                    r.categoria === despesa.categoria
+                    r.categoria === despesa.categoria &&
+                    r.despesaOrigem === despesa.despesaOrigem &&
+                    r.numeroSequencia === despesa.numeroSequencia
                 );
 
                 if (!existeDespesa) {
                     despesas.push(despesa);
                     localStorage.setItem('despesas', JSON.stringify(despesas));
-                    console.log(`Despesa futura salva no localStorage: ${despesa.data}`);
+                    console.log(`Despesa futura salva: ${despesa.descricao} para ${despesa.data}`);
                 }
                 
                 resolve();
@@ -513,30 +540,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Verificar se já existe despesa para este mês no Firestore
-            const mesAno = despesa.data.substring(3); // MM/AAAA
-
-            firebase.firestore().collection('despesas')
+            // Verificar duplicatas usando descrição completa, despesaOrigem e numeroSequencia
+            firebase.firestore().collection('despesas-cartao')
                 .where('userId', '==', user.uid)
                 .where('descricao', '==', despesa.descricao)
-                .where('categoria', '==', despesa.categoria)
+                .where('despesaOrigem', '==', despesa.despesaOrigem)
+                .where('numeroSequencia', '==', despesa.numeroSequencia)
                 .get()
                 .then(snapshot => {
-                    const existeDespesa = snapshot.docs.some(doc => {
-                        const data = doc.data().data;
-                        return data && data.substring(3) === mesAno;
-                    });
-
-                    if (!existeDespesa) {
+                    if (snapshot.empty) {
+                        // Não existe duplicata, salvar a despesa
                         const despesaFirestore = { ...despesa, userId: user.uid };
-                        return firebase.firestore().collection('despesas').add(despesaFirestore);
+                        return firebase.firestore().collection('despesas-cartao').add(despesaFirestore);
                     } else {
-                        console.log(`Despesa já existe para ${mesAno}, pulando...`);
+                        console.log(`Despesa duplicada detectada: ${despesa.descricao}`);
                         return Promise.resolve();
                     }
                 })
                 .then(() => {
-                    console.log(`Despesa futura salva no Firestore: ${despesa.data}`);
+                    console.log(`Despesa futura salva no Firestore: ${despesa.descricao} para ${despesa.data}`);
                     resolve();
                 })
                 .catch(reject);
@@ -876,8 +898,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
             if (user) {
-                console.log('Usuário autenticado encontrado, buscando contas no Firebase...');
-                buscarContasUsuario(user.uid);
+                console.log('Usuário autenticado encontrado, buscando cartões no Firebase...');
+                buscarCartoesUsuario(user.uid);
                 return;
             }
         }
@@ -1066,8 +1088,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 botaoSalvar.disabled = false;
                 botaoSalvar.textContent = 'Salvar Despesa';
                 
-                // Carregar contas do usuário autenticado
-                buscarContasUsuario(user.uid);
+                // Carregar cartões do usuário autenticado
+                buscarCartoesUsuario(user.uid);
             } else {
                 console.warn('Nenhum usuário autenticado.');
                 botaoSalvar.textContent = 'Faça login para salvar';
@@ -1167,9 +1189,9 @@ function carregarIconesLazy(galeria, iconePreview, modal) {
     carregarChunk();
 }
 
-// Função para popular as contas no seletor com SVG do banco dentro de um círculo
-function carregarContasNoSeletor(contas) {
-    console.log('Carregando contas no seletor...', contas);
+// Função para popular os cartões no seletor com SVG do banco dentro de um círculo
+function carregarCartoesNoSeletor(cartoes) {
+    console.log('Carregando cartões no seletor...', cartoes);
     const opcoesCarteira = elementos.opcoesCarteira;
     const opcaoSelecionada = elementos.opcaoSelecionadaCarteira;
     
@@ -1191,23 +1213,23 @@ function carregarContasNoSeletor(contas) {
         'PicPay': '../Icon/picpay.svg'
     };
     
-    contas.forEach(conta => {
-        // Determinar o ícone a usar
-        let iconeUrl = conta.icone;
-        if (!iconeUrl && conta.banco && bancosIcones[conta.banco]) {
-            iconeUrl = bancosIcones[conta.banco];
+    cartoes.forEach(cartao => {
+        // Determinar o ícone do banco do cartão
+        let iconeUrl = cartao.icone;
+        if (!iconeUrl && cartao.banco && bancosIcones[cartao.banco]) {
+            iconeUrl = bancosIcones[cartao.banco];
         }
         if (!iconeUrl) {
-            iconeUrl = '../Icon/conta-corrente-banco.svg'; // Ícone padrão
+            iconeUrl = '../Icon/credit-card.svg'; // Ícone padrão para cartão
         }
         
-        const corFundo = conta.cor || '#e8f5ee';
-        const nomeConta = conta.nome || conta.descricao || conta.banco || 'Conta';
-        const tipoConta = conta.tipo || 'Conta bancária';
+        const corFundo = cartao.cor || '#2196F3';
+        const nomeCartao = cartao.nome || cartao.apelido || 'Cartão';
+        const bancoCartao = cartao.banco || 'Cartão de Crédito';
 
         const div = document.createElement('div');
         div.className = 'opcao-carteira';
-        div.setAttribute('data-id', conta.id);
+        div.setAttribute('data-id', cartao.id);
         div.setAttribute('data-icone', iconeUrl);
         div.innerHTML = `
             <span class="circulo-icone-conta" style="
@@ -1220,17 +1242,17 @@ function carregarContasNoSeletor(contas) {
                 background:${corFundo};
                 margin-right:10px;
                 ">
-                <img src="${iconeUrl}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+                <img src="${iconeUrl}" alt="${cartao.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
             </span>
             <div class="detalhes-carteira">
-                <span class="nome-carteira">${nomeConta}</span>
-                <span>${tipoConta}</span>
+                <span class="nome-carteira">${nomeCartao}</span>
+                <span>${bancoCartao}</span>
             </div>
         `;
         
         div.addEventListener('click', function() {
-            console.log(`Conta selecionada: ${nomeConta} (${conta.id})`);
-            estado.carteiraSelecionada = conta.id;
+            console.log(`Cartão selecionado: ${nomeCartao} (${cartao.id})`);
+            estado.carteiraSelecionada = cartao.id;
             
             opcaoSelecionada.innerHTML = `
                 <span class="circulo-icone-conta" style="
@@ -1243,60 +1265,60 @@ function carregarContasNoSeletor(contas) {
                     background:${corFundo};
                     margin-right:10px;
                     ">
-                    <img src="${iconeUrl}" alt="${conta.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
+                    <img src="${iconeUrl}" alt="${cartao.banco || 'Banco'}" style="width:22px;height:22px;object-fit:contain;">
                 </span>
-                <span>${nomeConta}</span>
+                <span>${nomeCartao}</span>
             `;
             opcoesCarteira.classList.remove('mostrar');
         });
         opcoesCarteira.appendChild(div);
     });
     
-    // Adicionar opção para criar nova conta
+    // Adicionar opção para criar novo cartão
     const opcaoCrear = document.createElement('div');
     opcaoCrear.className = 'opcao-carteira';
     opcaoCrear.id = 'criar-nova-carteira';
     opcaoCrear.innerHTML = `
         <span class="icone-carteira">➕</span>
         <div class="detalhes-carteira">
-            <span class="nome-carteira">Criar nova conta</span>
+            <span class="nome-carteira">Criar novo cartão</span>
         </div>
     `;
     opcaoCrear.addEventListener('click', function() {
-        console.log('Redirecionando para criar nova conta');
-        window.location.href = "../Nova-conta/Nova-conta.html";
+        console.log('Redirecionando para criar novo cartão');
+        window.location.href = "../Novo Cartão/Novo Cartão.html";
     });
     opcoesCarteira.appendChild(opcaoCrear);
 }
 
-// Exemplo de uso após autenticação do usuário:
-function buscarContasUsuario(uid) {
-    console.log('Buscando contas do usuário no Firebase...', uid);
-    firebase.firestore().collection('contas')
+// Função para buscar cartões do usuário:
+function buscarCartoesUsuario(uid) {
+    console.log('Buscando cartões do usuário no Firebase...', uid);
+    firebase.firestore().collection('cartoes')
         .where('userId', '==', uid)
         .get()
         .then(snapshot => {
-            const contas = [];
+            const cartoes = [];
             snapshot.forEach(doc => {
-                contas.push({ id: doc.id, ...doc.data() });
+                cartoes.push({ id: doc.id, ...doc.data() });
             });
-            console.log(`Contas encontradas no Firebase: ${contas.length}`, contas);
+            console.log(`Cartões encontrados no Firebase: ${cartoes.length}`, cartoes);
             
-            if (contas.length === 0) {
-                // Se não há contas, mostrar opção para criar
-                mostrarOpcaoCriarConta();
+            if (cartoes.length === 0) {
+                // Se não há cartões, mostrar opção para criar
+                mostrarOpcaoCriarCartao();
             } else {
-                carregarContasNoSeletor(contas);
+                carregarCartoesNoSeletor(cartoes);
             }
         })
         .catch(error => {
-            console.error('Erro ao buscar contas no Firebase:', error);
-            // Fallback para criar conta em caso de erro
-            mostrarOpcaoCriarConta();
+            console.error('Erro ao buscar cartões no Firebase:', error);
+            // Fallback para criar cartão em caso de erro
+            mostrarOpcaoCriarCartao();
         });
 }
 
-function mostrarOpcaoCriarConta() {
+function mostrarOpcaoCriarCartao() {
     const opcoesCarteira = elementos.opcoesCarteira;
     if (!opcoesCarteira) {
         console.error('Elemento opcoesCarteira não encontrado');
@@ -1368,28 +1390,27 @@ function selecionarPeriodo(texto, valor) {
 }
 
 function confirmarRepetir() {
-    const quantidadeInput = document.getElementById('quantidade-repeticoes');
-    const frequenciaInput = document.getElementById('frequencia-repeticoes');
+    document.getElementById('quantidade-repeticoes').value = quantidadeRepetir;
+    document.getElementById('frequencia-repeticoes').value = periodoRepetir;
     
-    if (quantidadeInput) {
-        quantidadeInput.value = quantidadeRepetir;
-    }
-    if (frequenciaInput) {
-        frequenciaInput.value = periodoRepetir;
-    }
-    
-    fecharModalRepetir();
-    
-    // Mostrar confirmação visual no trigger
-    const trigger = document.querySelector('.repeticao-campo');
-    if (trigger) {
-        const labelSpan = trigger.querySelector('.repeticao-label');
-        const valoresDiv = trigger.querySelector('.repeticao-info > div');
-        
-        if (valoresDiv) {
-            valoresDiv.innerHTML = `<span style="font-size: 1rem; font-weight: 600; color: #333;">${quantidadeRepetir}x ${periodoTextoRepetir}</span>`;
+    const textoRepeticoes = document.getElementById('texto-repeticoes');
+    if (textoRepeticoes) {
+        if (quantidadeRepetir > 1) {
+            textoRepeticoes.textContent = `${quantidadeRepetir}x - ${periodoTextoRepetir}`;
+            
+            // Desativar despesa fixa se repetir estiver ativo
+            const toggleDespesaFixa = document.getElementById('toggle-despesa-fixa');
+            if (toggleDespesaFixa) {
+                toggleDespesaFixa.checked = false;
+            }
+        } else {
+            textoRepeticoes.textContent = '';
         }
     }
+    
+    console.log(`Repetição configurada: ${quantidadeRepetir}x ${periodoTextoRepetir}`);
+    
+    fecharModalRepetir();
 }
 
 // Event listener para fechar modal ao clicar fora
@@ -1402,10 +1423,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-<<<<<<< HEAD
 });
-=======
-});
+
 
 // Função para carregar cartões
 function carregarCartoes() {
@@ -1446,60 +1465,5 @@ function carregarCartoes() {
     seletorCartao.querySelector('.opcao-selecionada').addEventListener('click', function() {
         opcoesCartao.classList.toggle('mostrar');
     });
+
 }
-
-// Chamar a função ao carregar a página
-document.addEventListener('DOMContentLoaded', carregarCartoes);
-
-// Função para carregar cartões do Firebase
-function carregarCartoesDoFirebase() {
-    const seletorCartao = document.getElementById('seletor-cartao');
-    const opcoesCartao = seletorCartao.querySelector('.opcoes-cartao');
-
-    if (!opcoesCartao) return;
-
-    opcoesCartao.innerHTML = '';
-
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-        const user = firebase.auth().currentUser;
-        if (user) {
-            firebase.firestore().collection('cartoes')
-                .where('userId', '==', user.uid)
-                .get()
-                .then(snapshot => {
-                    snapshot.forEach(doc => {
-                        const cartao = doc.data();
-                        const opcao = document.createElement('div');
-                        opcao.className = 'opcao-cartao';
-                        opcao.setAttribute('data-id', doc.id);
-                        opcao.innerHTML = `
-                            <span class="material-icons">credit_card</span>
-                            <span>${cartao.nome}</span>
-                        `;
-
-                        opcao.addEventListener('click', function() {
-                            const opcaoSelecionada = seletorCartao.querySelector('.opcao-selecionada');
-                            opcaoSelecionada.innerHTML = `
-                                <span class="material-icons">credit_card</span>
-                                <span>${cartao.nome}</span>
-                            `;
-                            opcoesCartao.classList.remove('mostrar');
-                        });
-
-                        opcoesCartao.appendChild(opcao);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar cartões do Firebase:', error);
-                });
-        }
-    }
-
-    seletorCartao.querySelector('.opcao-selecionada').addEventListener('click', function() {
-        opcoesCartao.classList.toggle('mostrar');
-    });
-}
-
-// Chamar a função ao carregar a página
-document.addEventListener('DOMContentLoaded', carregarCartoesDoFirebase);
->>>>>>> 3b0767c (Cartões de Crédito)

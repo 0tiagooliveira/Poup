@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migração - Despesas de Cartão</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .warning { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7; margin: 20px 0; }
+        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; margin: 20px 0; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 8px; border: 1px solid #b8daff; margin: 20px 0; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+        .btn-danger { background: #f44336; }
+        .btn-danger:hover { background: #d32f2f; }
+        .btn-success { background: #4CAF50; }
+        .btn-success:hover { background: #45a049; }
+        .progress { background: #f0f0f0; border-radius: 10px; padding: 3px; margin: 10px 0; }
+        .progress-bar { background: #4CAF50; height: 20px; border-radius: 7px; width: 0%; transition: width 0.3s; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; max-height: 400px; overflow-y: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Migração - Despesas de Cartão</h1>
+        
+        <div class="warning">
+            <h3>⚠️ ATENÇÃO - Ferramenta de Migração</h3>
+            <p>Esta ferramenta migra despesas de cartão da coleção <code>despesas</code> para <code>despesas-cartao</code>.</p>
+            <p><strong>Use apenas uma vez!</strong> Depois que as novas despesas já estão sendo salvas na coleção correta.</p>
+        </div>
+
+        <div class="info">
+            <h3>📋 O que esta migração faz:</h3>
+            <ul>
+                <li>✅ Busca despesas com <code>tipo: 'cartao'</code> na coleção <code>despesas</code></li>
+                <li>✅ Copia essas despesas para a coleção <code>despesas-cartao</code></li>
+                <li>✅ Remove as despesas de cartão da coleção <code>despesas</code></li>
+                <li>✅ Mantém backup dos IDs migrados</li>
+            </ul>
+        </div>
+
+        <div id="status" class="info">
+            <strong>Status:</strong> Aguardando autenticação...
+        </div>
+
+        <div class="progress" id="progress-container" style="display: none;">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn" onclick="analizarDados()" id="btn-analisar">
+                🔍 Analisar Dados
+            </button>
+            <button class="btn btn-danger" onclick="executarMigracao()" id="btn-migrar" style="display: none;">
+                🔄 Executar Migração
+            </button>
+            <button class="btn btn-success" onclick="verificarResultado()" id="btn-verificar" style="display: none;">
+                ✅ Verificar Resultado
+            </button>
+        </div>
+
+        <div id="results" class="result" style="display: none;">
+            Resultados aparecerão aqui...
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+            authDomain: "poup-beta.firebaseapp.com",
+            projectId: "poup-beta",
+            storageBucket: "poup-beta.appspot.com",
+            messagingSenderId: "954695915981",
+            appId: "1:954695915981:web:d31b216f79eac178094c84"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+        let despesasParaMigrar = [];
+
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            const status = document.getElementById('status');
+            if (user) {
+                status.innerHTML = `
+                    <strong>Status:</strong> ✅ Conectado como ${user.email}<br>
+                    <strong>UID:</strong> ${user.uid}
+                `;
+                document.getElementById('btn-analisar').style.display = 'inline-block';
+            } else {
+                status.innerHTML = '<strong>Status:</strong> ❌ Não autenticado - faça login primeiro';
+            }
+        });
+
+        async function analizarDados() {
+            if (!currentUser) {
+                alert('Usuário não autenticado');
+                return;
+            }
+
+            try {
+                const status = document.getElementById('status');
+                const results = document.getElementById('results');
+                
+                status.innerHTML = '<strong>Status:</strong> 🔍 Analisando dados...';
+                results.style.display = 'block';
+                results.innerHTML = 'Buscando despesas de cartão na coleção "despesas"...\n';
+
+                // Buscar despesas de cartão na coleção despesas
+                const snapshot = await db.collection('despesas')
+                    .where('userId', '==', currentUser.uid)
+                    .where('tipo', '==', 'cartao')
+                    .get();
+
+                despesasParaMigrar = [];
+                snapshot.forEach(doc => {
+                    despesasParaMigrar.push({
+                        id: doc.id,
+                        data: doc.data()
+                    });
+                });
+
+                // Verificar se já existem na coleção despesas-cartao
+                let jaExistem = 0;
+                try {
+                    const cartaoSnap = await db.collection('despesas-cartao')
+                        .where('userId', '==', currentUser.uid)
+                        .get();
+                    jaExistem = cartaoSnap.size;
+                } catch (error) {
+                    results.innerHTML += 'Coleção "despesas-cartao" ainda não existe (normal).\n';
+                }
+
+                const totalParaMigrar = despesasParaMigrar.length;
+                
+                results.innerHTML += `\n📊 ANÁLISE COMPLETA:\n`;
+                results.innerHTML += `• Despesas de cartão encontradas na coleção "despesas": ${totalParaMigrar}\n`;
+                results.innerHTML += `• Despesas já existentes na coleção "despesas-cartao": ${jaExistem}\n`;
+                results.innerHTML += `• Despesas que serão migradas: ${totalParaMigrar}\n\n`;
+
+                if (totalParaMigrar > 0) {
+                    results.innerHTML += '📋 DETALHES DAS DESPESAS PARA MIGRAR:\n';
+                    despesasParaMigrar.forEach((despesa, index) => {
+                        const data = despesa.data;
+                        results.innerHTML += `${index + 1}. ${data.descricao} - ${data.valor} (${data.data})\n`;
+                    });
+
+                    status.innerHTML = `<strong>Status:</strong> ✅ Análise concluída - ${totalParaMigrar} despesas prontas para migração`;
+                    document.getElementById('btn-migrar').style.display = 'inline-block';
+                } else {
+                    status.innerHTML = '<strong>Status:</strong> ✅ Nenhuma despesa de cartão encontrada para migrar';
+                    results.innerHTML += '\n✅ NADA PARA MIGRAR - Todas as despesas já estão nas coleções corretas!';
+                }
+
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<strong>Status:</strong> ❌ Erro na análise: ${error.message}`;
+                document.getElementById('results').innerHTML += `\n❌ ERRO: ${error.message}`;
+            }
+        }
+
+        async function executarMigracao() {
+            if (!currentUser || despesasParaMigrar.length === 0) {
+                alert('Nenhuma despesa para migrar');
+                return;
+            }
+
+            if (!confirm(`Tem certeza que deseja migrar ${despesasParaMigrar.length} despesas de cartão?`)) {
+                return;
+            }
+
+            try {
+                const status = document.getElementById('status');
+                const results = document.getElementById('results');
+                const progressContainer = document.getElementById('progress-container');
+                const progressBar = document.getElementById('progress-bar');
+                
+                progressContainer.style.display = 'block';
+                results.innerHTML += '\n\n🔄 INICIANDO MIGRAÇÃO...\n';
+                
+                const total = despesasParaMigrar.length;
+                let migradas = 0;
+                let erros = 0;
+                const idsRemovidos = [];
+
+                for (let i = 0; i < total; i++) {
+                    const despesa = despesasParaMigrar[i];
+                    
+                    try {
+                        // Criar na coleção despesas-cartao
+                        await db.collection('despesas-cartao').add(despesa.data);
+                        
+                        // Remover da coleção despesas
+                        await db.collection('despesas').doc(despesa.id).delete();
+                        
+                        migradas++;
+                        idsRemovidos.push(despesa.id);
+                        
+                        results.innerHTML += `✅ Migrada: ${despesa.data.descricao}\n`;
+                        
+                        // Atualizar progresso
+                        const progress = ((i + 1) / total) * 100;
+                        progressBar.style.width = progress + '%';
+                        
+                    } catch (error) {
+                        erros++;
+                        results.innerHTML += `❌ Erro ao migrar ${despesa.data.descricao}: ${error.message}\n`;
+                    }
+                }
+
+                results.innerHTML += `\n📊 MIGRAÇÃO CONCLUÍDA:\n`;
+                results.innerHTML += `• Total migradas: ${migradas}\n`;
+                results.innerHTML += `• Erros: ${erros}\n`;
+                results.innerHTML += `• IDs removidos: ${idsRemovidos.length}\n`;
+
+                status.innerHTML = `<strong>Status:</strong> ✅ Migração concluída - ${migradas} despesas migradas`;
+                
+                document.getElementById('btn-migrar').style.display = 'none';
+                document.getElementById('btn-verificar').style.display = 'inline-block';
+
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<strong>Status:</strong> ❌ Erro na migração: ${error.message}`;
+                document.getElementById('results').innerHTML += `\n❌ ERRO GERAL: ${error.message}`;
+            }
+        }
+
+        async function verificarResultado() {
+            if (!currentUser) return;
+
+            try {
+                const results = document.getElementById('results');
+                results.innerHTML += '\n\n🔍 VERIFICANDO RESULTADO DA MIGRAÇÃO...\n';
+
+                // Verificar coleção despesas (não deve ter mais despesas de cartão)
+                const despesasSnap = await db.collection('despesas')
+                    .where('userId', '==', currentUser.uid)
+                    .where('tipo', '==', 'cartao')
+                    .get();
+
+                // Verificar coleção despesas-cartao
+                const cartaoSnap = await db.collection('despesas-cartao')
+                    .where('userId', '==', currentUser.uid)
+                    .get();
+
+                results.innerHTML += `\n📊 VERIFICAÇÃO FINAL:\n`;
+                results.innerHTML += `• Despesas de cartão restantes na coleção "despesas": ${despesasSnap.size}\n`;
+                results.innerHTML += `• Despesas na coleção "despesas-cartao": ${cartaoSnap.size}\n`;
+
+                if (despesasSnap.size === 0 && cartaoSnap.size > 0) {
+                    results.innerHTML += `\n✅ SUCESSO! Migração concluída com êxito!\n`;
+                    results.innerHTML += `• Todas as despesas de cartão foram movidas para a coleção correta\n`;
+                    results.innerHTML += `• Novas despesas de cartão serão salvas automaticamente na coleção "despesas-cartao"\n`;
+                } else {
+                    results.innerHTML += `\n⚠️ ATENÇÃO! Verifique se a migração foi completa\n`;
+                }
+
+                document.getElementById('status').innerHTML = '<strong>Status:</strong> ✅ Verificação concluída';
+
+            } catch (error) {
+                document.getElementById('results').innerHTML += `\n❌ ERRO NA VERIFICAÇÃO: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

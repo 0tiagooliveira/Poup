@@ -300,7 +300,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Coleta dados de forma otimizada
-        const repetir = elementos.toggleRepetir ? elementos.toggleRepetir.checked : false;
+        const quantidadeRepeticoes = parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1;
+        const repetir = quantidadeRepeticoes > 1; // Se quantidade > 1, é repetição
         const despesaFixa = document.getElementById('toggle-despesa-fixa')?.checked || false;
         
         // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
@@ -327,15 +328,24 @@ document.addEventListener('DOMContentLoaded', function() {
             corCategoria: novaDespesa.corCategoria
         });
 
-    // Preparando persistência da nova despesa (log detalhado removido)
+        // Preparar numeração se for repetida ou fixa
+        let despesaComNumeracao = { ...novaDespesa };
+        
+        if (repetir || despesaFixa) {
+            // Se for repetida ou fixa, primeiro vamos preparar a numeração
+            const totalRepeticoes = repetir ? parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1 : 12;
+            despesaComNumeracao.descricao = `${novaDespesa.descricao} 1/${totalRepeticoes}`;
+            despesaComNumeracao.numeroSequencia = 1;
+            despesaComNumeracao.totalSequencia = totalRepeticoes;
+        }
 
-        // Salvar em lote para melhor performance
+        // Salvar despesa principal (original) com numeração
         Promise.all([
-            salvarLocalStorage(novaDespesa),
-            salvarFirestore(novaDespesa)
+            salvarLocalStorage(despesaComNumeracao),
+            salvarFirestore(despesaComNumeracao)
         ]).then(() => {
             // Gerar despesas futuras se for fixa ou repetida
-            return gerarDespesasFuturas(novaDespesa);
+            return gerarDespesasFuturas(despesaComNumeracao);
         }).then(() => {
             const mensagem = (novaDespesa.despesaFixa || novaDespesa.repetir) 
                 ? 'Despesa salva com sucesso! Despesas futuras foram geradas automaticamente.'
@@ -410,40 +420,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 const despesasFuturas = [];
                 const dataBase = new Date(converterDataParaISO(despesaBase.data));
                 
-                // Determinar quantidade de meses para gerar
-                let mesesParaGerar = 12; // Padrão: 12 meses para despesas fixas
+                // Determinar quantidade e frequência para gerar
+                let totalParaGerar = 12; // Padrão: 12 meses para despesas fixas
+                let frequencia = 'meses';
                 
                 if (despesaBase.repetir && despesaBase.quantidadeRepeticoes) {
-                    const quantidade = parseInt(despesaBase.quantidadeRepeticoes);
-                    const frequencia = despesaBase.frequenciaRepeticoes || 'mensal';
-                    
-                    if (frequencia === 'mensal') {
-                        mesesParaGerar = quantidade;
-                    } else if (frequencia === 'anual') {
-                        mesesParaGerar = quantidade * 12;
-                    }
+                    totalParaGerar = parseInt(despesaBase.quantidadeRepeticoes);
+                    frequencia = despesaBase.frequenciaRepeticoes || 'meses';
                 }
 
-                console.log(`Gerando ${mesesParaGerar} despesas futuras...`);
+                console.log(`Gerando ${totalParaGerar} despesas futuras com frequência ${frequencia}...`);
 
-                // Gerar despesas para os próximos meses
-                for (let i = 1; i <= mesesParaGerar; i++) {
+                // Preparar descrição original removendo qualquer numeração existente
+                const descricaoOriginal = despesaBase.descricao.replace(/ \d+\/\d+$/, '');
+
+                // Gerar despesas para os próximos períodos
+                for (let i = 1; i < totalParaGerar; i++) {
                     const novaData = new Date(dataBase);
-                    novaData.setMonth(dataBase.getMonth() + i);
                     
-                    // Ajustar para o último dia do mês se necessário
-                    if (novaData.getDate() !== dataBase.getDate()) {
-                        novaData.setDate(0); // Vai para o último dia do mês anterior
-                        novaData.setMonth(novaData.getMonth() + 1);
+                    // Ajustar data baseado na frequência
+                    switch (frequencia) {
+                        case 'dias':
+                            novaData.setDate(dataBase.getDate() + i);
+                            break;
+                        case 'semanas':
+                            novaData.setDate(dataBase.getDate() + (i * 7));
+                            break;
+                        case 'meses':
+                        default:
+                            novaData.setMonth(dataBase.getMonth() + i);
+                            // Ajustar para o último dia do mês se necessário
+                            if (novaData.getDate() !== dataBase.getDate()) {
+                                novaData.setDate(0); // Vai para o último dia do mês anterior
+                                novaData.setMonth(novaData.getMonth() + 1);
+                            }
+                            break;
+                        case 'anos':
+                            novaData.setFullYear(dataBase.getFullYear() + i);
+                            break;
                     }
 
                     const despesaFutura = {
                         ...despesaBase,
+                        descricao: `${descricaoOriginal} ${i + 1}/${totalParaGerar}`, // Numeração sequencial
                         data: formatarDataParaExibicao(novaData),
                         pago: false, // Despesas futuras começam como não pagas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
-                        despesaOrigem: despesaBase.timestamp // Referência à despesa original
+                        despesaOrigem: despesaBase.timestamp, // Referência à despesa original
+                        numeroSequencia: i + 1,
+                        totalSequencia: totalParaGerar
                     };
 
                     despesasFuturas.push(despesaFutura);
@@ -459,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 Promise.all(promessas)
                     .then(() => {
-                        console.log(`${despesasFuturas.length} despesas futuras criadas com sucesso!`);
+                        console.log(`${despesasFuturas.length} despesas futuras criadas com numeração`);
                         resolve();
                     })
                     .catch(reject);
@@ -477,18 +503,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
 
-                // Verificar se já existe despesa para este mês
-                const mesAno = despesa.data.substring(3); // MM/AAAA
+                // Verificar duplicatas usando descrição completa (com numeração) e timestamp de origem
                 const existeDespesa = despesas.some(r => 
-                    r.data.substring(3) === mesAno && 
                     r.descricao === despesa.descricao &&
-                    r.categoria === despesa.categoria
+                    r.categoria === despesa.categoria &&
+                    r.despesaOrigem === despesa.despesaOrigem &&
+                    r.numeroSequencia === despesa.numeroSequencia
                 );
 
                 if (!existeDespesa) {
                     despesas.push(despesa);
                     localStorage.setItem('despesas', JSON.stringify(despesas));
-                    console.log(`Despesa futura salva no localStorage: ${despesa.data}`);
+                    console.log(`Despesa futura salva: ${despesa.descricao} para ${despesa.data}`);
                 }
                 
                 resolve();
@@ -513,30 +539,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Verificar se já existe despesa para este mês no Firestore
-            const mesAno = despesa.data.substring(3); // MM/AAAA
-
+            // Verificar duplicatas usando descrição completa, despesaOrigem e numeroSequencia
             firebase.firestore().collection('despesas')
                 .where('userId', '==', user.uid)
                 .where('descricao', '==', despesa.descricao)
-                .where('categoria', '==', despesa.categoria)
+                .where('despesaOrigem', '==', despesa.despesaOrigem)
+                .where('numeroSequencia', '==', despesa.numeroSequencia)
                 .get()
                 .then(snapshot => {
-                    const existeDespesa = snapshot.docs.some(doc => {
-                        const data = doc.data().data;
-                        return data && data.substring(3) === mesAno;
-                    });
-
-                    if (!existeDespesa) {
+                    if (snapshot.empty) {
+                        // Não existe duplicata, salvar a despesa
                         const despesaFirestore = { ...despesa, userId: user.uid };
                         return firebase.firestore().collection('despesas').add(despesaFirestore);
                     } else {
-                        console.log(`Despesa já existe para ${mesAno}, pulando...`);
+                        console.log(`Despesa duplicada detectada: ${despesa.descricao}`);
                         return Promise.resolve();
                     }
                 })
                 .then(() => {
-                    console.log(`Despesa futura salva no Firestore: ${despesa.data}`);
+                    console.log(`Despesa futura salva no Firestore: ${despesa.descricao} para ${despesa.data}`);
                     resolve();
                 })
                 .catch(reject);
@@ -1368,28 +1389,27 @@ function selecionarPeriodo(texto, valor) {
 }
 
 function confirmarRepetir() {
-    const quantidadeInput = document.getElementById('quantidade-repeticoes');
-    const frequenciaInput = document.getElementById('frequencia-repeticoes');
+    document.getElementById('quantidade-repeticoes').value = quantidadeRepetir;
+    document.getElementById('frequencia-repeticoes').value = periodoRepetir;
     
-    if (quantidadeInput) {
-        quantidadeInput.value = quantidadeRepetir;
-    }
-    if (frequenciaInput) {
-        frequenciaInput.value = periodoRepetir;
-    }
-    
-    fecharModalRepetir();
-    
-    // Mostrar confirmação visual no trigger
-    const trigger = document.querySelector('.repeticao-campo');
-    if (trigger) {
-        const labelSpan = trigger.querySelector('.repeticao-label');
-        const valoresDiv = trigger.querySelector('.repeticao-info > div');
-        
-        if (valoresDiv) {
-            valoresDiv.innerHTML = `<span style="font-size: 1rem; font-weight: 600; color: #333;">${quantidadeRepetir}x ${periodoTextoRepetir}</span>`;
+    const textoRepeticoes = document.getElementById('texto-repeticoes');
+    if (textoRepeticoes) {
+        if (quantidadeRepetir > 1) {
+            textoRepeticoes.textContent = `${quantidadeRepetir}x - ${periodoTextoRepetir}`;
+            
+            // Desativar despesa fixa se repetir estiver ativo
+            const toggleDespesaFixa = document.getElementById('toggle-despesa-fixa');
+            if (toggleDespesaFixa) {
+                toggleDespesaFixa.checked = false;
+            }
+        } else {
+            textoRepeticoes.textContent = '';
         }
     }
+    
+    console.log(`Repetição configurada: ${quantidadeRepetir}x ${periodoTextoRepetir}`);
+    
+    fecharModalRepetir();
 }
 
 // Event listener para fechar modal ao clicar fora

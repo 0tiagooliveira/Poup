@@ -326,22 +326,14 @@ body[cz-shortcut-listen="true"] {
     font-weight: 600;
 }
 
-<<<<<<< HEAD
 .receita-item, .despesa-item {
-=======
-.receita-item, .despesa-item, .transacao-item {
->>>>>>> 3b0767c (Cartões de Crédito)
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 0;
 }
 
-<<<<<<< HEAD
 .receita-icone, .despesa-icone {
-=======
-.receita-icone, .despesa-icone, .transacao-icone {
->>>>>>> 3b0767c (Cartões de Crédito)
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -352,19 +344,11 @@ body[cz-shortcut-listen="true"] {
     color: var(--cor-texto-branco);
 }
 
-<<<<<<< HEAD
 .receita-icone .material-icons, .despesa-icone .material-icons {
     font-size: 24px;
 }
 
 .receita-conteudo, .despesa-conteudo {
-=======
-.receita-icone .material-icons, .despesa-icone .material-icons, .transacao-icone .material-icons-round {
-    font-size: 24px;
-}
-
-.receita-conteudo, .despesa-conteudo, .transacao-info {
->>>>>>> 3b0767c (Cartões de Crédito)
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -372,37 +356,15 @@ body[cz-shortcut-listen="true"] {
     min-width: 0;
 }
 
-<<<<<<< HEAD
 .receita-titulo, .despesa-titulo {
-=======
-.receita-titulo, .despesa-titulo, .transacao-descricao {
->>>>>>> 3b0767c (Cartões de Crédito)
     font-size: 1rem;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--cor-texto-principal);
-<<<<<<< HEAD
     line-height: 1.4;
     margin-bottom: 2px;
-=======
-}
-
-.receita-categoria, .despesa-categoria, .transacao-categoria {
-    font-size: 0.85rem;
-    color: var(--cor-texto-secundario);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.receita-valor, .despesa-valor, .transacao-valor {
-    font-size: 1rem;
-    font-weight: 600;
-    white-space: nowrap;
-    flex-shrink: 0;
->>>>>>> 3b0767c (Cartões de Crédito)
 }
 
 

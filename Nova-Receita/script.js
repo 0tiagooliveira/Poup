@@ -42,9 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelarCategoriaBtn: document.getElementById('cancelar-categoria'),
         popupMensagem: document.getElementById('popup-mensagem'),
         popupTexto: document.getElementById('popup-texto'),
-        popupBotao: document.getElementById('popup-botao'),
-        toggleRepetir: document.getElementById('toggle-repetir'),
-        camposRepetir: document.getElementById('campos-repetir')
+        popupBotao: document.getElementById('popup-botao')
     };
 
     // Inicializar estado da aplicação
@@ -224,13 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addEventListenerOnce(elementos.corCategoriaInput, 'input', atualizarCorPreview, 'cor-categoria');
         }
 
-        // Toggle de repetição (se existir)
-        if (elementos.toggleRepetir) {
-            addEventListenerOnce(elementos.toggleRepetir, 'change', function() {
-                console.log('Toggle de repetição alterado:', this.checked);
-                elementos.camposRepetir.style.display = this.checked ? 'block' : 'none';
-            }, 'toggle-repetir');
-        }
+        // Sistema de repetição é controlado pelo modal, não por toggle
 
         // Configurar eventos de categoria personalizada
         configurarEventosCategoriaPersonalizada();
@@ -305,7 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Coleta dados de forma otimizada
-        const repetir = elementos.toggleRepetir?.checked || false;
+        const quantidadeRepeticoes = parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1;
+        const repetir = quantidadeRepeticoes > 1; // Se quantidade > 1, é repetição
         const receitaFixa = document.getElementById('toggle-receita-fixa')?.checked || false;
         
         // IMPORTANTE: campo 'carteira' armazena somente o ID da conta para permitir agregação rápida na Home
@@ -334,13 +327,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Preparando persistência da nova receita (log detalhado removido)
 
-        // Salvar em lote para melhor performance
+        // Gerar receitas futuras primeiro para obter a numeração correta
+        let receitaComNumeracao = { ...novaReceita };
+        
+        if (repetir || receitaFixa) {
+            // Se for repetida ou fixa, primeiro vamos preparar a numeração
+            const totalRepeticoes = repetir ? parseInt(document.getElementById('quantidade-repeticoes')?.value) || 1 : 12;
+            receitaComNumeracao.descricao = `${novaReceita.descricao} 1/${totalRepeticoes}`;
+            receitaComNumeracao.numeroSequencia = 1;
+            receitaComNumeracao.totalSequencia = totalRepeticoes;
+        }
+        
+        // Salvar receita principal (original) com numeração
         Promise.all([
-            salvarLocalStorage(novaReceita),
-            salvarFirestore(novaReceita)
+            salvarLocalStorage(receitaComNumeracao),
+            salvarFirestore(receitaComNumeracao)
         ]).then(() => {
             // Gerar receitas futuras se for fixa ou repetida
-            return gerarReceitasFuturas(novaReceita);
+            return gerarReceitasFuturas(receitaComNumeracao);
         }).then(() => {
             const mensagem = (novaReceita.receitaFixa || novaReceita.repetir) 
                 ? 'Receita salva com sucesso! Receitas futuras foram geradas automaticamente.'
@@ -364,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             mostrarPopup(mensagem, () => {
                 limparFormulario();
-                window.location.href = "../Lista-de-despesas/Lista-de-despesas.html";
+                window.location.href = "../Lista-de-receitas/Lista-de-receitas.html";
             });
         }).catch(error => {
             console.error('Erro ao salvar:', error);
@@ -434,40 +438,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 const receitasFuturas = [];
                 const dataBase = new Date(converterDataParaISO(receitaBase.data));
                 
-                // Determinar quantidade de meses para gerar
-                let mesesParaGerar = 12; // Padrão: 12 meses para receitas fixas
+                // Determinar quantidade e frequência para gerar
+                let totalParaGerar = 12; // Padrão: 12 meses para receitas fixas
+                let frequencia = 'meses';
                 
                 if (receitaBase.repetir && receitaBase.quantidadeRepeticoes) {
-                    const quantidade = parseInt(receitaBase.quantidadeRepeticoes);
-                    const frequencia = receitaBase.frequenciaRepeticoes || 'mensal';
-                    
-                    if (frequencia === 'mensal') {
-                        mesesParaGerar = quantidade;
-                    } else if (frequencia === 'anual') {
-                        mesesParaGerar = quantidade * 12;
-                    }
+                    totalParaGerar = parseInt(receitaBase.quantidadeRepeticoes);
+                    frequencia = receitaBase.frequenciaRepeticoes || 'meses';
                 }
 
-                console.log(`Gerando ${mesesParaGerar} receitas futuras...`);
+                console.log(`Gerando ${totalParaGerar} receitas futuras com frequência ${frequencia}...`);
 
-                // Gerar receitas para os próximos meses
-                for (let i = 1; i <= mesesParaGerar; i++) {
+                // Preparar descrição original removendo qualquer numeração existente
+                const descricaoOriginal = receitaBase.descricao.replace(/ \d+\/\d+$/, '');
+
+                // Gerar receitas para os próximos períodos
+                for (let i = 1; i < totalParaGerar; i++) {
                     const novaData = new Date(dataBase);
-                    novaData.setMonth(dataBase.getMonth() + i);
                     
-                    // Ajustar para o último dia do mês se necessário
-                    if (novaData.getDate() !== dataBase.getDate()) {
-                        novaData.setDate(0); // Vai para o último dia do mês anterior
-                        novaData.setMonth(novaData.getMonth() + 1);
+                    // Ajustar data baseado na frequência
+                    switch (frequencia) {
+                        case 'dias':
+                            novaData.setDate(dataBase.getDate() + i);
+                            break;
+                        case 'semanas':
+                            novaData.setDate(dataBase.getDate() + (i * 7));
+                            break;
+                        case 'meses':
+                        default:
+                            novaData.setMonth(dataBase.getMonth() + i);
+                            // Ajustar para o último dia do mês se necessário
+                            if (novaData.getDate() !== dataBase.getDate()) {
+                                novaData.setDate(0); // Vai para o último dia do mês anterior
+                                novaData.setMonth(novaData.getMonth() + 1);
+                            }
+                            break;
+                        case 'anos':
+                            novaData.setFullYear(dataBase.getFullYear() + i);
+                            break;
                     }
 
                     const receitaFutura = {
                         ...receitaBase,
+                        descricao: `${descricaoOriginal} ${i + 1}/${totalParaGerar}`, // Numeração sequencial
                         data: formatarDataParaExibicao(novaData),
                         recebido: false, // Receitas futuras sempre começam como não recebidas
                         timestamp: Date.now() + i, // Timestamp único
                         origem: 'automatica', // Marcar como gerada automaticamente
-                        receitaOrigem: receitaBase.timestamp // Referência à receita original
+                        receitaOrigem: receitaBase.timestamp, // Referência à receita original
+                        numeroSequencia: i + 1,
+                        totalSequencia: totalParaGerar
                     };
 
                     receitasFuturas.push(receitaFutura);
@@ -483,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 Promise.all(promessas)
                     .then(() => {
-                        // Quantidade de receitas futuras criadas
+                        console.log(`${receitasFuturas.length} receitas futuras criadas com numeração`);
                         resolve();
                     })
                     .catch(reject);
@@ -501,18 +521,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 let receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
                 
-                // Verificar se já existe receita para este mês
-                const mesAno = receita.data.substring(3); // MM/AAAA
+                // Verificar duplicatas usando descricão completa (com numeração) e timestamp de origem
                 const existeReceita = receitas.some(r => 
-                    r.data.substring(3) === mesAno && 
                     r.descricao === receita.descricao &&
-                    r.categoria === receita.categoria
+                    r.categoria === receita.categoria &&
+                    r.receitaOrigem === receita.receitaOrigem &&
+                    r.numeroSequencia === receita.numeroSequencia
                 );
 
                 if (!existeReceita) {
                     receitas.push(receita);
                     localStorage.setItem('receitas', JSON.stringify(receitas));
-                    // Receita futura salva no localStorage para data
+                    console.log(`Receita futura salva: ${receita.descricao} para ${receita.data}`);
                 }
                 
                 resolve();
@@ -537,30 +557,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Verificar se já existe receita para este mês no Firestore
-            const mesAno = receita.data.substring(3); // MM/AAAA
-            
+            // Verificar duplicatas usando descricão completa, receitaOrigem e numeroSequencia
             firebase.firestore().collection('receitas')
                 .where('userId', '==', user.uid)
                 .where('descricao', '==', receita.descricao)
-                .where('categoria', '==', receita.categoria)
+                .where('receitaOrigem', '==', receita.receitaOrigem)
+                .where('numeroSequencia', '==', receita.numeroSequencia)
                 .get()
                 .then(snapshot => {
-                    const existeReceita = snapshot.docs.some(doc => {
-                        const data = doc.data().data;
-                        return data && data.substring(3) === mesAno;
-                    });
-
-                    if (!existeReceita) {
+                    if (snapshot.empty) {
+                        // Não existe duplicata, salvar a receita
                         const receitaFirestore = { ...receita, userId: user.uid };
                         return firebase.firestore().collection('receitas').add(receitaFirestore);
                     } else {
-                        // Receita duplicada para o mês detectada e ignorada
+                        console.log(`Receita duplicada detectada: ${receita.descricao}`);
                         return Promise.resolve();
                     }
                 })
                 .then(() => {
-                    // Receita futura salva no Firestore
+                    console.log(`Receita futura salva no Firestore: ${receita.descricao} para ${receita.data}`);
                     resolve();
                 })
                 .catch(reject);
@@ -591,11 +606,13 @@ document.addEventListener('DOMContentLoaded', function() {
         elementos.opcaoSelecionadaCarteira.innerHTML = '<span>Selecione uma conta</span>';
         elementos.nomeArquivo.textContent = '';
         elementos.inputAnexo.value = '';
-        if (elementos.toggleRepetir) {
-            elementos.toggleRepetir.checked = false;
-        }
-        if (elementos.camposRepetir) {
-            elementos.camposRepetir.style.display = 'none';
+        
+        // Resetar campos de repetição
+        document.getElementById('quantidade-repeticoes').value = '1';
+        document.getElementById('frequencia-repeticoes').value = 'meses';
+        const textoRepeticoes = document.getElementById('texto-repeticoes');
+        if (textoRepeticoes) {
+            textoRepeticoes.textContent = '';
         }
         
         estado.categoriaSelecionada = null;
@@ -1393,10 +1410,18 @@ function confirmarRepetir() {
     if (textoRepeticoes) {
         if (quantidadeRepetir > 1) {
             textoRepeticoes.textContent = `${quantidadeRepetir}x - ${periodoTextoRepetir}`;
+            
+            // Desativar receita fixa se repetir estiver ativo
+            const toggleReceitaFixa = document.getElementById('toggle-receita-fixa');
+            if (toggleReceitaFixa) {
+                toggleReceitaFixa.checked = false;
+            }
         } else {
             textoRepeticoes.textContent = '';
         }
     }
+    
+    console.log(`Repetição configurada: ${quantidadeRepetir}x ${periodoTextoRepetir}`);
     
     fecharModalRepetir();
 }

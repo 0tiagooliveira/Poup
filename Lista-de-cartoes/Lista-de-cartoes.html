@@ -20,114 +20,61 @@
 </head>
 <body>
     <div class="app-container">
-<<<<<<< HEAD
-        <header class="header">
-            <div class="header-container">
-                <button class="btn-voltar" onclick="window.location.href='../Home/home.html'">
-                    <span class="material-icons-round">arrow_back</span>
+        <header class="cabecalho">
+            <div class="cabecalho-superior">
+                <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
+                    <span class="material-icons">arrow_back</span>
                 </button>
-                <h1 class="header-title">Cartões de Crédito</h1>
-                <div class="dropdown-container">
-                    <button class="btn-dropdown" onclick="toggleDropdown(event)">
-                        <span class="material-icons-round">menu</span>
+                <div class="titulo-pagina" onclick="toggleDropdown()">
+                    <h1>Cartões</h1>
+                    <span class="material-icons-round">expand_more</span>
+                </div>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
+                        <span class="material-icons-round">receipt_long</span>
+                        Lista de Despesas
+                    </a>
+                    <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
+                        <span class="material-icons-round">payment</span>
+                        Lista de Receitas
+                    </a>
+                    <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item active">
+                        <span class="material-icons-round">credit_card</span>
+                        Cartões de Crédito
+                    </a>
+                    <a href="../Transações/Transações.html" class="dropdown-item">
+                        <span class="material-icons-round">swap_horiz</span>
+                        Transações
+                    </a>
+                    <a href="../Gráficos/Gráficos.html" class="dropdown-item">
+                        <span class="material-icons-round">bar_chart</span>
+                        Gráficos
+                    </a>
+                    <a href="../Configuracoes/Configuracoes.html" class="dropdown-item">
+                        <span class="material-icons-round">settings</span>
+                        Configurações
+                    </a>
+                </div>
+                
+                <div class="acoes-cabecalho">
+                    <button class="botao-icone" id="botao-busca">
+                        <span class="material-icons-round">search</span>
                     </button>
-                    <div class="dropdown-menu">
-                        <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
-                            <span class="material-icons-round">receipt_long</span>
-                            Lista de Despesas
-                        </a>
-                        <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
-                            <span class="material-icons-round">payment</span>
-                            Lista de Receitas
-                        </a>
-                        <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item active">
-                            <span class="material-icons-round">credit_card</span>
-                            Cartões de Crédito
-                        </a>
-                        <a href="../Transações/Transações.html" class="dropdown-item">
-                            <span class="material-icons-round">swap_horiz</span>
-                            Transações
-                        </a>
-                        <a href="../Gráficos/Gráficos.html" class="dropdown-item">
-                            <span class="material-icons-round">bar_chart</span>
-                            Gráficos
-                        </a>
-                        <a href="../Configuracoes/Configuracoes.html" class="dropdown-item">
-                            <span class="material-icons-round">settings</span>
-                            Configurações
-                        </a>
-                    </div>
                 </div>
             </div>
+            <nav class="navegacao-mes">
+                <button class="botao-navegacao" id="prev-month">
+                    <span class="material-icons-round">chevron_left</span>
+                </button>
+                <h2 class="mes-atual" id="mes-atual">Outubro 2025</h2>
+                <button class="botao-navegacao" id="next-month">
+                    <span class="material-icons-round">chevron_right</span>
+                </button>
+            </nav>
         </header>
-        
-        <nav class="navegacao-mes">
-            <button class="botao-navegacao" id="prev-month">
-                <span class="material-icons-round">chevron_left</span>
-            </button>
-            <h2 class="mes-atual" id="mes-atual">Outubro 2025</h2>
-            <button class="botao-navegacao" id="next-month">
-                <span class="material-icons-round">chevron_right</span>
-            </button>
-        </nav>
 
-=======
-        <header class="cabecalho">
-    <div class="cabecalho-superior">
-        <button class="botao-voltar" onclick="window.location.href='../Home/home.html'">
-            <span class="material-icons">arrow_back</span>
-        </button>
-        <div class="titulo-pagina" onclick="toggleDropdown()">
-            <h1>Cartões de Crédito</h1>
-            <span class="material-icons-round">expand_more</span>
-        </div>
-        <div class="dropdown-menu">
-            <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item">
-                <span class="material-icons-round">receipt_long</span>
-                Lista de Despesas
-            </a>
-            <a href="../Lista-de-receitas/Lista-de-receitas.html" class="dropdown-item">
-                <span class="material-icons-round">payment</span>
-                Lista de Receitas
-            </a>
-            <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="dropdown-item active">
-                <span class="material-icons-round">credit_card</span>
-                Cartões de Crédito
-            </a>
-            <a href="../Transações/Transações.html" class="dropdown-item">
-                <span class="material-icons-round">swap_horiz</span>
-                Transações
-            </a>
-            <a href="../Gráficos/Gráficos.html" class="dropdown-item">
-                <span class="material-icons-round">bar_chart</span>
-                Gráficos
-            </a>
-            <a href="../Configuracoes/Configuracoes.html" class="dropdown-item">
-                <span class="material-icons-round">settings</span>
-                Configurações
-            </a>
-        </div>
-        <div class="acoes-cabecalho">
-            <button class="botao-icone" id="botao-busca">
-                <span class="material-icons-round">search</span>
-            </button>
-            <button class="botao-icone" id="botao-filtros">
-                <span class="material-icons-round">filter_list</span>
-            </button>
-        </div>
-    </div>
-    <nav class="navegacao-mes">
-        <button class="botao-navegacao" id="prev-month">
-            <span class="material-icons-round">chevron_left</span>
-        </button>
-        <h2 class="mes-atual" id="mes-atual">Outubro 2025</h2>
-        <button class="botao-navegacao" id="next-month">
-            <span class="material-icons-round">chevron_right</span>
-        </button>
-    </nav>
-</header>
-        
->>>>>>> 3b0767c (Cartões de Crédito)
         <!-- Barra de Busca (inicialmente oculta) -->
         <div class="barra-busca" id="barra-busca" style="display: none;">
             <div class="input-busca-container">
@@ -140,7 +87,6 @@
         </div>
 
         <main class="conteudo-principal">
-            <!-- Resumo -->
             <section class="secao-resumo compacta">
                 <div class="resumo-bloco">
                     <div class="resumo-label">
@@ -154,7 +100,7 @@
                         <span class="material-icons-round icone-mini">credit_card</span>
                         <span>Total Faturas</span>
                     </div>
-                    <span class="resumo-valor destaque" id="valor-faturas">R$ 0,00</span>
+                    <span class="resumo-valor" id="valor-faturas">R$ 0,00</span>
                 </div>
             </section>
 
@@ -188,15 +134,9 @@
                 <span class="material-icons-round">home</span>
                 <span>Principal</span>
             </a>
-<<<<<<< HEAD
             <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="item-navegacao ativo">
                 <span class="material-icons-round">credit_card</span>
                 <span>Cartões</span>
-=======
-            <a href="../Transações/Transações.html" class="item-navegacao ativo">
-                <span class="material-icons-round">swap_horiz</span>
-                <span>Transações</span>
->>>>>>> 3b0767c (Cartões de Crédito)
             </a>
             <div class="botao-adicionar-menu" id="botao-adicionar-menu">
                 <span class="material-icons-round">add</span>
@@ -264,9 +204,67 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <!-- Barra de navegação inferior -->
+    <nav class="barra-navegacao-inferior">
+        <a href="../Home/home.html" class="item-navegacao">
+            <span class="material-icons-round">home</span>
+            <span>Principal</span>
+        </a>
+        <a href="../Transações/Transações.html" class="item-navegacao">
+            <span class="material-icons-round">swap_horiz</span>
+            <span>Transações</span>
+        </a>
+        <div class="botao-adicionar-menu" id="botao-adicionar-menu">
+            <span class="material-icons-round">add</span>
+        </div>
+        <a href="../Gráficos/Gráficos.html" class="item-navegacao">
+            <span class="material-icons-round">bar_chart</span>
+            <span>Gráficos</span>
+        </a>
+        <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
+            <span class="material-icons-round">settings</span>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Menu de seleção ao clicar no botão + -->
+    <div class="menu-adicionar" id="menu-adicionar" style="display: none;">
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
+            <span class="material-icons-round">trending_up</span>
+            <span>Nova Receita</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
+            <span class="material-icons-round">trending_down</span>
+            <span>Nova Despesa</span>
+        </div>
+        <div class="menu-opcao" onclick="window.location.href='../Novo Cartão/Novo Cartão.html'">
+            <span class="material-icons-round">credit_card</span>
+            <span>Novo Cartão</span>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7RB9fULmkp9xeJIjc0dL58atHJ8CM-Xc",
+        authDomain: "poup-beta.firebaseapp.com",
+        projectId: "poup-beta",
+        storageBucket: "poup-beta.appspot.com",
+        messagingSenderId: "954695915981",
+        appId: "1:954695915981:web:d31b216f79eac178094c84",
+        measurementId: "G-LP9BDVD3KJ"
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    </script>
+    
+    <script src="script.js"></script>
     <script src="../js/header-padrao.js"></script>
     <script src="../js/menu-inferior-padrao.js"></script>
     <script src="../js/menu-adicionar-padrao.js"></script>
+    
+
 </body>
 </html>

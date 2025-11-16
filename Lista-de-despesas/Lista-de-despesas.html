@@ -32,7 +32,7 @@
                 </div>
                 
                 <!-- Dropdown Menu -->
-                                    <div class="dropdown-menu">
+                <div class="dropdown-menu" id="dropdown-menu">
                         <a href="../Lista-de-despesas/Lista-de-despesas.html" class="dropdown-item active">
                             <span class="material-icons-round">receipt_long</span>
                             Lista de Despesas
@@ -118,22 +118,6 @@
                 <span class="material-icons-round">home</span>
                 <span>Principal</span>
             </a>
-            <a href="../Lista-de-cartoes/Lista-de-cartoes.html" class="item-navegacao">
-                <span class="material-icons-round">credit_card</span>
-                <span>Cartões</span>
-            </a>
-            <div class="botao-adicionar-menu" id="botao-adicionar-menu">
-                <span class="material-icons-round">add</span>
-            </div>
-            <a href="../Gráficos/Gráficos.html" class="item-navegacao">
-                <span class="material-icons-round">bar_chart</span>
-                <span>Gráficos</span>
-            </a>
-            <a href="../Configuracoes/Configuracoes.html" class="item-navegacao">
-                <span class="material-icons-round">settings</span>
-                <span>Configurações</span>
-            </a>
-        </nav>
 
         <!-- Menu de seleção ao clicar no botão + -->
         <div class="menu-adicionar" id="menu-adicionar" style="display: none;">
@@ -408,7 +392,7 @@
             <span class="material-icons-round">swap_horiz</span>
             <span>Transações</span>
         </a>
-        <div class="botao-adicionar-menu" id="botao-adicionar-menu">
+        <div class="botao-adicionar-menu botao-despesa" id="botao-adicionar-menu">
             <span class="material-icons-round">add</span>
         </div>
         <a href="../Gráficos/Gráficos.html" class="item-navegacao">
@@ -444,5 +428,33 @@
     <script src="../js/header-padrao.js"></script>
     <script src="../js/menu-inferior-padrao.js"></script>
     <script src="../js/menu-adicionar-padrao.js"></script>
+    
+    <script>
+    // Debug específico para menu adicionar das despesas
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔍 DEBUG DESPESAS - Verificando menu adicionar...');
+        
+        setTimeout(() => {
+            const botao = document.getElementById('botao-adicionar-menu');
+            const menu = document.getElementById('menu-adicionar');
+            
+            console.log('Botão + encontrado:', botao);
+            console.log('Menu adicionar encontrado:', menu);
+            
+            if (botao && menu) {
+                console.log('✅ Elementos encontrados');
+                botao.addEventListener('click', function(e) {
+                    console.log('🖱️ Clique no botão + detectado!');
+                    e.stopPropagation();
+                    const isVisible = menu.style.display === 'block';
+                    menu.style.display = isVisible ? 'none' : 'block';
+                    console.log('Menu visibility:', menu.style.display);
+                });
+            } else {
+                console.error('❌ Elementos não encontrados');
+            }
+        }, 1000);
+    });
+    </script>
 </body>
 </html>

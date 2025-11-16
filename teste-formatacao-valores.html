@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Formatação de Valores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        .result { font-weight: bold; color: #2196F3; }
+        .btn { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste - Formatação de Valores</h1>
+        
+        <button class="btn" onclick="testarFormatacao()">🔄 Testar Formatação</button>
+        
+        <div id="results">
+            <!-- Resultados aparecerão aqui -->
+        </div>
+    </div>
+
+    <script>
+        // Copiar a função formatCurrency corrigida
+        function formatCurrency(value) {
+            if (!value && value !== 0) return '0,00';
+            
+            // Se já é uma string formatada (ex: "R$ 500,00"), extrair apenas o número
+            if (typeof value === 'string') {
+                // Remover R$, espaços e converter vírgula para ponto
+                const cleanValue = value.replace(/[R$\s]/g, '').replace(',', '.');
+                const numValue = parseFloat(cleanValue);
+                
+                if (isNaN(numValue)) return '0,00';
+                
+                return numValue.toLocaleString('pt-BR', { 
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 
+                });
+            }
+            
+            // Se é um número
+            return parseFloat(value).toLocaleString('pt-BR', { 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2 
+            });
+        }
+
+        function testarFormatacao() {
+            const results = document.getElementById('results');
+            
+            const testCases = [
+                'R$ 500,00',
+                'R$ 100,00', 
+                '500.00',
+                '100.50',
+                500,
+                100.50,
+                '0',
+                '',
+                null,
+                undefined,
+                'R$ 1.234,56',
+                '1234.56'
+            ];
+            
+            let html = '<h3>📊 Resultados dos Testes:</h3>';
+            
+            testCases.forEach((testValue, index) => {
+                const result = formatCurrency(testValue);
+                html += `
+                    <div class="test">
+                        <strong>Teste ${index + 1}:</strong> 
+                        Input: <code>${JSON.stringify(testValue)}</code> (${typeof testValue}) → 
+                        <span class="result">R$ ${result}</span>
+                    </div>
+                `;
+            });
+            
+            results.innerHTML = html;
+        }
+
+        // Executar teste automaticamente
+        setTimeout(testarFormatacao, 1000);
+    </script>
+</body>
+</html>

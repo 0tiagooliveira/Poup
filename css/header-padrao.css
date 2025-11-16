@@ -123,12 +123,20 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
     min-width: 200px;
     overflow: hidden;
-    z-index: 1000;
+    z-index: 10001;
     margin-top: 8px;
     margin-left: 56px; /* Alinhado com o título */
     animation: dropdownFadeIn 0.2s ease;
+    display: none !important;
+    pointer-events: auto;
+}
+
+.dropdown-menu[style*="block"] {
+    display: block !important;
+    pointer-events: auto;
 }
 
 @keyframes dropdownFadeIn {
@@ -143,7 +151,7 @@
 }
 
 .dropdown-item {
-    display: flex;
+    display: flex !important;
     align-items: center;
     padding: 12px 16px;
     color: #333;
@@ -152,10 +160,13 @@
     font-size: 0.95rem;
     font-weight: 500;
     transition: background-color 0.2s ease;
-    cursor: pointer;
+    cursor: pointer !important;
     border: none;
     width: 100%;
     background: none;
+    position: relative;
+    z-index: 10002;
+    pointer-events: auto !important;
 }
 
 .dropdown-item:hover {
@@ -227,8 +238,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
+    z-index: 9998;
     background: transparent;
+    pointer-events: none;
 }
 
 /* Responsividade */

@@ -54,6 +54,12 @@ service cloud.firestore {
       allow create: if isCreatingOwn();
     }
 
+    // Despesas de cartão de crédito
+    match /despesas-cartao/{despesaId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isCreatingOwn();
+    }
+
     // Transferências entre contas
     match /transferencias/{transferenciaId} {
       allow read, update, delete: if isOwner();

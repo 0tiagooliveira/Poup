@@ -43,11 +43,15 @@
                         <span class="material-icons-round">credit_card</span>
                         <span>Cartões</span>
                     </div>
+                    <div class="dropdown-item" onclick="navegarPara('../Lista-de-despesas-cartao/Lista-de-despesas-cartao.html')">
+                        <span class="material-icons-round">credit_card_off</span>
+                        <span>Despesas do Cartão</span>
+                    </div>
                     <div class="dropdown-item" onclick="navegarPara('../Gráficos/Gráficos.html')">
                         <span class="material-icons-round">bar_chart</span>
                         <span>Gráficos</span>
                     </div>
-                    <div class="dropdown-item active">
+                    <div class="dropdown-item active" onclick="navegarPara('../Transações/Transações.html')">
                         <span class="material-icons-round">swap_horiz</span>
                         <span>Transações</span>
                     </div>
@@ -88,15 +92,15 @@
             <section class="secao-resumo compacta">
                 <div class="resumo-bloco">
                     <div class="resumo-label">
-                        <span class="material-icons-round icone-mini">account_balance_wallet</span>
-                        <span>Saldo atual</span>
+                        <span class="material-icons-round icone-mini">trending_up</span>
+                        <span>Total receitas</span>
                     </div>
                     <span class="resumo-valor" id="saldo-atual">R$ 0,00</span>
                 </div>
                 <div class="resumo-bloco">
                     <div class="resumo-label">
-                        <span class="material-icons-round icone-mini">wallet</span>
-                        <span>Balanço mensal</span>
+                        <span class="material-icons-round icone-mini">account_balance</span>
+                        <span>Saldo do mês</span>
                     </div>
                     <span class="resumo-valor" id="balanco-mensal">R$ 0,00</span>
                 </div>
