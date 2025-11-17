@@ -1566,17 +1566,17 @@ input:checked + .slider:before {
 
 .menu-opcao:nth-child(1) .material-icons {
     background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-    color: #21C25E;
+    color: white;
 }
 
 .menu-opcao:nth-child(2) .material-icons {
     background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-    color: #D32F2F;
+    color: white;
 }
 
 .menu-opcao:nth-child(3) .material-icons {
     background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-    color: #2196F3;
+    color: white;
 }
 
 .menu-opcao:hover .material-icons {
