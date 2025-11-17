@@ -356,14 +356,14 @@ function criarElementoCartao(cartao) {
     itemCartao.className = 'cartao-credito-home';
     itemCartao.style.cursor = 'pointer';
     
-    // Adicionar evento de clique para navegar para despesas do cartão
+    // Adicionar evento de clique para navegar para despesas do cartão sem filtro
     itemCartao.addEventListener('click', (e) => {
         // Evitar navegação se clicar nos botões de ação
         if (e.target.closest('.btn-acao')) {
             return;
         }
-        console.log('📱 Navegando para despesas do cartão:', cartao.nome, 'ID:', cartao.id);
-        window.location.href = `../Lista-de-despesas-cartao/Lista-de-despesas-cartao.html?cartao=${cartao.id}&nome=${encodeURIComponent(cartao.nome)}`;
+        console.log('📱 Navegando para todas as despesas de cartão');
+        window.location.href = '../Lista-de-despesas-cartao/Lista-de-despesas-cartao.html';
     });
     
     itemCartao.innerHTML = `

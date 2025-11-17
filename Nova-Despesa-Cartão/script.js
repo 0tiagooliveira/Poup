@@ -314,6 +314,8 @@ document.addEventListener('DOMContentLoaded', function() {
             iconeCategoria: estado.iconeSelecionado, // Adicionar ícone da categoria
             corCategoria: estado.corCategoriaSelecionada || '#D32F2F', // Adicionar cor da categoria
             carteira: estado.carteiraSelecionada,
+            conta: estado.carteiraSelecionada, // Também salvar no campo conta para compatibilidade
+            cartaoId: estado.carteiraSelecionada, // ID do cartão específico
             tipo: 'cartao', // Marcar como despesa de cartão
             anexo: elementos.inputAnexo.files.length > 0 ? elementos.inputAnexo.files[0].name : null,
             repetir: repetir,

@@ -305,6 +305,12 @@ async function loadDespesasCartao() {
                 .orderBy('timestamp', 'desc')
                 .get();
             console.log(`📋 Encontradas ${querySnapshot.size} despesas na coleção despesas-cartao para filtrar por ${monthNames[currentMonth]} ${currentYear}`);
+            
+            // Se não encontrou nada na coleção específica, buscar também na geral
+            if (querySnapshot.size === 0) {
+                console.log('🔍 Nenhuma despesa encontrada na coleção despesas-cartao, buscando na coleção despesas...');
+                throw new Error('Coleção vazia, tentar fallback');
+            }
         } catch (error) {
             console.log('Coleção despesas-cartao não existe ainda, usando filtro na coleção despesas');
             // Fallback: buscar na coleção despesas com tipo=cartao
@@ -519,7 +525,18 @@ function renderDespesasCartao(despesas) {
 function createDespesaCartaoHTML(despesa) {
     const category = (despesa.categoria || '').toLowerCase();
     const categoryInfo = categoryDetails[category] || categoryDetails['default'];
-    const nomeCartao = mapaCartoes[despesa.cartaoId] || mapaCartoes[despesa.conta] || 'Cartão não identificado';
+    
+    // Tentar múltiplos campos para identificar o cartão
+    let nomeCartao = 'Cartão não identificado';
+    if (despesa.cartaoId && mapaCartoes[despesa.cartaoId]) {
+        nomeCartao = mapaCartoes[despesa.cartaoId];
+    } else if (despesa.conta && mapaCartoes[despesa.conta]) {
+        nomeCartao = mapaCartoes[despesa.conta];
+    } else if (despesa.carteira && mapaCartoes[despesa.carteira]) {
+        nomeCartao = mapaCartoes[despesa.carteira];
+    }
+    
+    console.log(`💳 Despesa: ${despesa.descricao}, CartaoId: ${despesa.cartaoId}, Conta: ${despesa.conta}, Carteira: ${despesa.carteira}, Nome: ${nomeCartao}`);
     
     return `
         <div class="despesa-item" onclick="abrirModalDetalhes('${despesa.id}', ${JSON.stringify(despesa).replace(/"/g, '&quot;')})">
@@ -548,7 +565,16 @@ function createDespesaCartaoHTML(despesa) {
 }
 
 function getBadgeCartao(despesa) {
-    const nomeCartao = mapaCartoes[despesa.cartaoId] || '';
+    // Usar a mesma lógica de identificação do cartão
+    let nomeCartao = '';
+    if (despesa.cartaoId && mapaCartoes[despesa.cartaoId]) {
+        nomeCartao = mapaCartoes[despesa.cartaoId];
+    } else if (despesa.conta && mapaCartoes[despesa.conta]) {
+        nomeCartao = mapaCartoes[despesa.conta];
+    } else if (despesa.carteira && mapaCartoes[despesa.carteira]) {
+        nomeCartao = mapaCartoes[despesa.carteira];
+    }
+    
     let iconeSvg = getIconeCartao(nomeCartao);
     
     return `
