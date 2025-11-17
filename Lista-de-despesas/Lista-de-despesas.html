@@ -119,20 +119,7 @@
                 <span>Principal</span>
             </a>
 
-        <!-- Menu de seleção ao clicar no botão + -->
-        <div class="menu-adicionar" id="menu-adicionar" style="display: none;">
-            <div class="menu-opcao" onclick="window.location.href='../Nova-Receita/Nova-Receita.html'">
-                <span class="material-icons-round">trending_up</span>
-                <span>Nova Receita</span>
-            </div>
-            <div class="menu-opcao" onclick="window.location.href='../Nova-Despesa/Nova-Despesa.html'">
-                <span class="material-icons-round">trending_down</span>
-                <span>Nova Despesa</span>
-            </div>
-            <div class="menu-opcao" onclick="window.location.href='../Novo Cartão/Novo Cartão.html'">
-                <span class="material-icons-round">credit_card</span>
-                <span>Novo Cartão</span>
-            </div>
+
             <div class="menu-opcao" onclick="alert('Transferência em breve!')">
                 <span class="material-icons-round">swap_horiz</span>
                 <span>Transferência</span>
@@ -430,31 +417,6 @@
     <script src="../js/menu-adicionar-padrao.js"></script>
     
     <script>
-    // Debug específico para menu adicionar das despesas
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🔍 DEBUG DESPESAS - Verificando menu adicionar...');
-        
-        setTimeout(() => {
-            const botao = document.getElementById('botao-adicionar-menu');
-            const menu = document.getElementById('menu-adicionar');
-            
-            console.log('Botão + encontrado:', botao);
-            console.log('Menu adicionar encontrado:', menu);
-            
-            if (botao && menu) {
-                console.log('✅ Elementos encontrados');
-                botao.addEventListener('click', function(e) {
-                    console.log('🖱️ Clique no botão + detectado!');
-                    e.stopPropagation();
-                    const isVisible = menu.style.display === 'block';
-                    menu.style.display = isVisible ? 'none' : 'block';
-                    console.log('Menu visibility:', menu.style.display);
-                });
-            } else {
-                console.error('❌ Elementos não encontrados');
-            }
-        }, 1000);
-    });
     </script>
 </body>
 </html>
